@@ -1,35 +1,82 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { Navbar } from './components/Navbar';
+import { HomePage } from './components/HomePage';
+import { NewsPage } from './components/NewsPage';
+import { JobsPage } from './components/JobsPage';
+import { UserProfilePage } from './components/UserProfilePage';
+import { TablePage } from './components/TablePage';
+import { AdminNewsPage } from './components/AdminNewsPage';
+import { AdminUsersPage } from './components/AdminUsersPage';
+import { GenericPage } from './components/GenericPage';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [currentPage, setCurrentPage] = useState('home');
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'home':
+        return <HomePage onNavigate={setCurrentPage} />;
+      case 'news':
+        return <NewsPage />;
+      case 'jobs':
+        return <JobsPage />;
+      case 'profile':
+        return <UserProfilePage />;
+      case 'table':
+        return <TablePage />;
+      case 'admin-news':
+        return <AdminNewsPage />;
+      case 'admin-users':
+        return <AdminUsersPage />;
+      case 'yearbook':
+        return (
+          <GenericPage
+            title="Anuario"
+            description="Consulta los anuarios de miembros del Colegio de Ingenieros Civiles"
+            type="yearbook"
+          />
+        );
+      case 'regulations':
+        return (
+          <GenericPage
+            title="Reglamentos"
+            description="Accede a los reglamentos y normativas del CICB"
+            type="regulations"
+          />
+        );
+      case 'announcements':
+        return (
+          <GenericPage
+            title="Convocatorias"
+            description="Mantente informado sobre las convocatorias oficiales del colegio"
+            type="announcements"
+          />
+        );
+      default:
+        return <HomePage onNavigate={setCurrentPage} />;
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="min-h-screen bg-background">
+      <Navbar currentPage={currentPage} onNavigate={setCurrentPage} />
+      {renderPage()}
+      
+      {/* Admin Access Button - Only for demonstration */}
+      <div className="fixed bottom-4 right-4 flex flex-col gap-2">
+        <button
+          onClick={() => setCurrentPage('admin-news')}
+          className="bg-accent text-accent-foreground px-4 py-2 rounded-lg shadow-lg hover:bg-accent/90 transition-colors"
+        >
+          Admin: Noticias
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button
+          onClick={() => setCurrentPage('admin-users')}
+          className="bg-accent text-accent-foreground px-4 py-2 rounded-lg shadow-lg hover:bg-accent/90 transition-colors"
+        >
+          Admin: Usuarios
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
-
-export default App
