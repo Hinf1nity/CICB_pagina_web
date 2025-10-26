@@ -3,6 +3,8 @@ import { Navbar } from './components/Navbar';
 import { HomePage } from './components/HomePage';
 import { NewsPage } from './components/NewsPage';
 import { JobsPage } from './components/JobsPage';
+import { NewsDetailPage } from './components/NewsDetailPage';
+import { JobDetailPage } from './components/JobDetailPage';
 import { UserProfilePage } from './components/UserProfilePage';
 import { TablePage } from './components/TablePage';
 import { AdminNewsPage } from './components/AdminNewsPage';
@@ -11,15 +13,24 @@ import { GenericPage } from './components/GenericPage';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [selectedId, setSelectedId] = useState<number | undefined>(undefined);
 
-  const renderPage = () => {
+  const handleNavigate = (page: string, id?: number) => {
+    setCurrentPage(page);
+    setSelectedId(id);
+  };
+    const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HomePage onNavigate={setCurrentPage} />;
+        return <HomePage onNavigate={handleNavigate} />;
       case 'news':
-        return <NewsPage />;
+        return <NewsPage onNavigate={handleNavigate} />;
+      case 'news-detail':
+        return <NewsDetailPage newsId={selectedId || 1} onNavigate={handleNavigate} />;
       case 'jobs':
-        return <JobsPage />;
+        return <JobsPage onNavigate={handleNavigate} />;
+      case 'job-detail':
+        return <JobDetailPage jobId={selectedId || 1} onNavigate={handleNavigate} />;
       case 'profile':
         return <UserProfilePage />;
       case 'table':
@@ -53,7 +64,7 @@ export default function App() {
           />
         );
       default:
-        return <HomePage onNavigate={setCurrentPage} />;
+        return <HomePage onNavigate={handleNavigate} />;
     }
   };
 

@@ -4,9 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Search, Calendar, User as UserIcon } from 'lucide-react';
+import { Search, Calendar, User as UserIcon, ArrowRight } from 'lucide-react';
+import { Button } from './ui/button';
 
-export function NewsPage() {
+interface NewsPageProps {
+  onNavigate?: (page: string, id?: number) => void;
+}
+
+export function NewsPage({ onNavigate }: NewsPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
 
@@ -130,7 +135,11 @@ export function NewsPage() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredNews.map((item) => (
-            <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card 
+              key={item.id} 
+              className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => onNavigate && onNavigate('news-detail', item.id)}
+            >
               <div className="h-48 overflow-hidden bg-muted">
                 <ImageWithFallback
                   src={item.image}
@@ -152,9 +161,24 @@ export function NewsPage() {
               </CardHeader>
               <CardContent>
                 <CardDescription className="mb-4">{item.excerpt}</CardDescription>
-                <div className="flex items-center text-muted-foreground">
-                  <UserIcon className="w-4 h-4 mr-2" />
-                  <span>{item.author}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center text-muted-foreground">
+                    <UserIcon className="w-4 h-4 mr-2" />
+                    <span>{item.author}</span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    className="text-primary hover:text-primary/80"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onNavigate) {
+                        onNavigate('news-detail', item.id);
+                      }
+                    }}
+                  >
+                    Leer más
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

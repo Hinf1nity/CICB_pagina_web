@@ -4,9 +4,13 @@ import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Button } from './ui/button';
-import { Search, MapPin, Briefcase, Calendar, DollarSign } from 'lucide-react';
+import { Search, MapPin, Briefcase, Calendar, DollarSign, ArrowRight } from 'lucide-react';
 
-export function JobsPage() {
+interface JobsPageProps {
+  onNavigate?: (page: string, id?: number) => void;
+}
+
+export function JobsPage({ onNavigate }: JobsPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('all');
   const [type, setType] = useState('all');
@@ -153,7 +157,11 @@ export function JobsPage() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="space-y-6">
           {filteredJobs.map((job) => (
-            <Card key={job.id} className="hover:shadow-lg transition-shadow">
+            <Card 
+              key={job.id} 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => onNavigate && onNavigate('job-detail', job.id)}
+            >
               <CardHeader>
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
@@ -181,20 +189,34 @@ export function JobsPage() {
                       </div>
                     </div>
                   </div>
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                    Postular
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNavigate && onNavigate('job-detail', job.id);
+                      }}
+                    >
+                      Ver Detalles
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="mb-4 text-foreground">{job.description}</p>
                 <div>
-                  <h4 className="mb-2 text-foreground">Requisitos:</h4>
+                  <h4 className="mb-2 text-foreground">Requisitos principales:</h4>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    {job.requirements.map((req, idx) => (
+                    {job.requirements.slice(0, 3).map((req, idx) => (
                       <li key={idx}>{req}</li>
                     ))}
                   </ul>
+                  {job.requirements.length > 3 && (
+                    <p className="text-primary mt-2">
+                      + {job.requirements.length - 3} requisitos más...
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
