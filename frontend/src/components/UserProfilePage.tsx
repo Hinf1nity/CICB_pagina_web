@@ -43,6 +43,7 @@ export function UserProfilePage() {
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-12">
         <div className="max-w-7xl mx-auto px-4">
+          <User className="w-8 h-8 mb-4" />
           <h1 className="mb-3">Mi Perfil</h1>
           <p>Gestiona tu información profesional y credenciales</p>
         </div>

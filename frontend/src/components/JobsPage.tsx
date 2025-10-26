@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
@@ -6,11 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from './ui/button';
 import { Search, MapPin, Briefcase, Calendar, DollarSign, ArrowRight } from 'lucide-react';
 
-interface JobsPageProps {
-  onNavigate?: (page: string, id?: number) => void;
-}
-
-export function JobsPage({ onNavigate }: JobsPageProps) {
+export function JobsPage() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('all');
   const [type, setType] = useState('all');
@@ -160,7 +158,7 @@ export function JobsPage({ onNavigate }: JobsPageProps) {
             <Card 
               key={job.id} 
               className="hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => onNavigate && onNavigate('job-detail', job.id)}
+              onClick={() => navigate(`/trabajos/${job.id}`)}
             >
               <CardHeader>
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -194,7 +192,7 @@ export function JobsPage({ onNavigate }: JobsPageProps) {
                       className="bg-primary text-primary-foreground hover:bg-primary/90"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onNavigate && onNavigate('job-detail', job.id);
+                        navigate(`/trabajos/${job.id}`);
                       }}
                     >
                       Ver Detalles

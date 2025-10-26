@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -7,13 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Search, Calendar, User as UserIcon, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
 
-interface NewsPageProps {
-  onNavigate?: (page: string, id?: number) => void;
-}
 
-export function NewsPage({ onNavigate }: NewsPageProps) {
+export function NewsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
+  const navigate = useNavigate();
 
   const newsItems = [
     {
@@ -138,7 +137,7 @@ export function NewsPage({ onNavigate }: NewsPageProps) {
             <Card 
               key={item.id} 
               className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => onNavigate && onNavigate('news-detail', item.id)}
+              onClick={() => navigate(`/noticias/${item.id}`)}
             >
               <div className="h-48 overflow-hidden bg-muted">
                 <ImageWithFallback
@@ -171,9 +170,7 @@ export function NewsPage({ onNavigate }: NewsPageProps) {
                     className="text-primary hover:text-primary/80"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (onNavigate) {
-                        onNavigate('news-detail', item.id);
-                      }
+                      navigate(`/noticias/${item.id}`);
                     }}
                   >
                     Leer más

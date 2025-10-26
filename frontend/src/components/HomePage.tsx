@@ -1,13 +1,13 @@
+import { useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Building2, Users, Award, BookOpen, Target, Eye, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 
-interface HomePageProps {
-  onNavigate: (page: string) => void;
-}
 
-export function HomePage({ onNavigate }: HomePageProps) {
+export function HomePage() {
+  const navigate = useNavigate();
+
   const stats = [
     { icon: Users, label: 'Miembros Activos', value: '2,500+' },
     { icon: Building2, label: 'Proyectos Certificados', value: '1,200+' },
@@ -58,13 +58,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </p>
             <div className="flex flex-wrap gap-4">
               <Button
-                onClick={() => onNavigate('profile')}
+                onClick={() => navigate('/perfil')}
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
               >
                 Iniciar Sesión
               </Button>
               <Button
-                onClick={() => onNavigate('news')}
+                onClick={() => navigate('/noticias')}
                 variant="outline"
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
               >
@@ -242,7 +242,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-foreground">Últimas Noticias</h2>
             <Button
-              onClick={() => onNavigate('news')}
+              onClick={() => navigate('/noticias')}
               variant="outline"
             >
               Ver Todas
@@ -288,17 +288,17 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <h3 className="mb-3">Enlaces Rápidos</h3>
               <ul className="space-y-2">
                 <li>
-                  <button onClick={() => onNavigate('regulations')} className="hover:text-accent">
+                  <button onClick={() => navigate('/reglamentos')} className="hover:text-accent">
                     Reglamentos
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => onNavigate('announcements')} className="hover:text-accent">
+                  <button onClick={() => navigate('/convocatorias')} className="hover:text-accent">
                     Convocatorias
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => onNavigate('jobs')} className="hover:text-accent">
+                  <button onClick={() => navigate('/trabajos')} className="hover:text-accent">
                     Trabajos
                   </button>
                 </li>

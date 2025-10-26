@@ -1,17 +1,33 @@
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MapPin, Briefcase, Calendar, DollarSign, FileText, Download, Building2, Clock } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
 
-interface JobDetailPageProps {
-  jobId: number;
-  onNavigate: (page: string, id?: number) => void;
-}
-
-export function JobDetailPage({ jobId, onNavigate }: JobDetailPageProps) {
+export function JobDetailPage() {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   // Datos de ejemplo - en producción vendrían de una API o estado global
-  const jobsData: { [key: number]: any } = {
+  type Job = {
+    id: number;
+    title: string;
+    company: string;
+    location: string;
+    type: string;
+    salary: string;
+    posted: string;
+    deadline: string;
+    vacancies: number;
+    description: string;
+    responsibilities: string[];
+    requirements: string[];
+    benefits: string[];
+    aboutCompany: string;
+    pdfUrl: string;
+  };
+
+  const jobsData: Record<number, Job> = {
     1: {
       id: 1,
       title: 'Ingeniero Civil Senior - Gestión de Proyectos',
@@ -149,7 +165,7 @@ export function JobDetailPage({ jobId, onNavigate }: JobDetailPageProps) {
     },
   };
 
-  const job = jobsData[jobId] || jobsData[1];
+  const job = jobsData[Number(id)] || jobsData[1];
 
   const getTypeColor = (jobType: string) => {
     const colors: { [key: string]: string } = {
@@ -167,7 +183,7 @@ export function JobDetailPage({ jobId, onNavigate }: JobDetailPageProps) {
         <div className="max-w-6xl mx-auto px-4">
           <Button
             variant="ghost"
-            onClick={() => onNavigate('jobs')}
+            onClick={() => navigate('/trabajos')}
             className="text-primary-foreground hover:bg-primary-foreground/10 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

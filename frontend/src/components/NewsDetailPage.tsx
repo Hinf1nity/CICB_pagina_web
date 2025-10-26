@@ -1,3 +1,4 @@
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, User as UserIcon, FileText, Download } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Button } from './ui/button';
@@ -5,14 +6,22 @@ import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import { Separator } from './ui/separator';
 
-interface NewsDetailPageProps {
-  newsId: number;
-  onNavigate: (page: string, id?: number) => void;
-}
-
-export function NewsDetailPage({ newsId, onNavigate }: NewsDetailPageProps) {
+export function NewsDetailPage() {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   // Datos de ejemplo - en producción vendrían de una API o estado global
-  const newsData: { [key: number]: any } = {
+  type NewsItem = {
+    id: number;
+    title: string;
+    category: string;
+    date: string;
+    author: string;
+    image: string;
+    content: string;
+    pdfUrl?: string;
+  };
+
+  const newsData: Record<number, NewsItem> = {
     1: {
       id: 1,
       title: 'Convocatoria a Asamblea General Ordinaria 2025',
@@ -137,7 +146,7 @@ export function NewsDetailPage({ newsId, onNavigate }: NewsDetailPageProps) {
     },
   };
 
-  const news = newsData[newsId] || newsData[1];
+  const news = newsData[Number(id)] || newsData[1];
 
   const getCategoryColor = (cat: string) => {
     const colors: { [key: string]: string } = {
@@ -157,7 +166,7 @@ export function NewsDetailPage({ newsId, onNavigate }: NewsDetailPageProps) {
         <div className="max-w-5xl mx-auto px-4">
           <Button
             variant="ghost"
-            onClick={() => onNavigate('news')}
+            onClick={() => navigate('/noticias')}
             className="text-primary-foreground hover:bg-primary-foreground/10 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -243,15 +252,15 @@ export function NewsDetailPage({ newsId, onNavigate }: NewsDetailPageProps) {
         <div>
           <h3 className="text-foreground mb-4">Noticias Relacionadas</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].filter(id => id !== newsId).slice(0, 3).map((id) => {
-              const relatedNews = newsData[id];
+            {[1, 2, 3].filter(id_filter => id_filter !== Number(id)).slice(0, 3).map((id_map) => {
+              const relatedNews = newsData[id_map];
               if (!relatedNews) return null;
               
               return (
-                <Card 
-                  key={id} 
+                <Card
+                  key={id_map}
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => onNavigate('news-detail', id)}
+                  onClick={() => navigate(`/noticias/${id_map}`)}
                 >
                   <div className="h-32 bg-muted overflow-hidden">
                     <ImageWithFallback

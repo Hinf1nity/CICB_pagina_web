@@ -1,23 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, User } from 'lucide-react';
 import { Button } from './ui/button';
 
-interface NavbarProps {
-  currentPage: string;
-  onNavigate: (page: string) => void;
-}
-
-export function Navbar({ currentPage, onNavigate }: NavbarProps) {
+export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState('home');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname.split('/')[1];
+    setCurrentPage(path || 'home');
+  }, [location]);
 
   const navItems = [
     { id: 'home', label: 'Inicio' },
-    { id: 'jobs', label: 'Trabajos' },
-    { id: 'news', label: 'Noticias' },
-    { id: 'table', label: 'Tabla' },
-    { id: 'yearbook', label: 'Anuario' },
-    { id: 'regulations', label: 'Reglamentos' },
-    { id: 'announcements', label: 'Convocatorias' },
+    { id: 'trabajos', label: 'Trabajos' },
+    { id: 'noticias', label: 'Noticias' },
+    { id: 'tabla', label: 'Tabla' },
+    { id: 'anuario', label: 'Anuario' },
+    { id: 'reglamentos', label: 'Reglamentos' },
+    { id: 'convocatorias', label: 'Convocatorias' },
   ];
 
   return (
@@ -40,9 +44,9 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => (
-              <button
+              <Button
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
+                onClick={() => navigate(`/${item.id}`)}
                 className={`px-4 py-2 rounded transition-colors ${
                   currentPage === item.id
                     ? 'bg-accent text-accent-foreground'
@@ -50,19 +54,19 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                 }`}
               >
                 {item.label}
-              </button>
+              </Button>
             ))}
-            <button
-              onClick={() => onNavigate('profile')}
+            <Button
+              onClick={() => navigate('/perfil')}
               className={`ml-2 px-4 py-2 rounded flex items-center space-x-2 transition-colors ${
-                currentPage === 'profile'
+                currentPage === 'perfil'
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-primary/80'
               }`}
             >
               <User className="w-4 h-4" />
               <span>Mi Perfil</span>
-            </button>
+            </Button>
           </div>
 
           {/* Mobile menu button */}
@@ -81,7 +85,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
               <button
                 key={item.id}
                 onClick={() => {
-                  onNavigate(item.id);
+                  navigate(`/${item.id}`);
                   setIsMenuOpen(false);
                 }}
                 className={`block w-full text-left px-4 py-2 rounded transition-colors ${
@@ -95,11 +99,11 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
             ))}
             <button
               onClick={() => {
-                onNavigate('profile');
+                navigate('/perfil');
                 setIsMenuOpen(false);
               }}
               className={`block w-full text-left px-4 py-2 rounded flex items-center space-x-2 transition-colors ${
-                currentPage === 'profile'
+                currentPage === 'perfil'
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-primary/80'
               }`}
