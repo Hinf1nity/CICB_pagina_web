@@ -7,8 +7,8 @@ urlpatterns = [
     path('regulation/', include('regulation.urls')),
     path('calls/', include('calls.urls')),
     path('yearbooks/', include('yearbooks.urls')),
-    path('PDFs/', include('PDFs.urls')),
-    path('IMGs/', include('IMGs.urls')),
+    path('pdfs/', include('PDFs.urls')),
+    path('imgs/', include('IMGs.urls')),
     path('performance_chart/', include('performance_chart.urls')),
     path('resource_chart/', include('resource_chart.urls')),
 ]
