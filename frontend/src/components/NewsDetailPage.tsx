@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, User as UserIcon, FileText, Download } from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Download } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -200,10 +200,10 @@ export function NewsDetailPage() {
                 day: 'numeric' 
               })}</span>
             </div>
-            <div className="flex items-center text-muted-foreground">
+            {/* <div className="flex items-center text-muted-foreground">
               <UserIcon className="w-4 h-4 mr-2" />
               <span>{news.author}</span>
-            </div>
+            </div> */}
           </div>
 
           <h1 className="text-foreground mb-4">{news.title}</h1>

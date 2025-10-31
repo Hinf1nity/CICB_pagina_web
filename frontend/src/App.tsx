@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { HomePage } from './components/HomePage';
-import { NewsPage } from './components/NewsPage';
+//import { NewsPage } from './components/NewsPage';
 import { JobsPage } from './components/JobsPage';
 import { NewsDetailPage } from './components/NewsDetailPage';
 import { JobDetailPage } from './components/JobDetailPage';
@@ -10,6 +10,7 @@ import { TablePage } from './components/TablePage';
 import { AdminNewsPage } from './components/AdminNewsPage';
 import { AdminUsersPage } from './components/AdminUsersPage';
 import { GenericPage } from './components/GenericPage';
+import { NewsPage } from './components/NoticiasNews';
 
 export default function App() {
   // const navigate = useNavigate();

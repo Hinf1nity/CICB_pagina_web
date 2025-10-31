@@ -1,83 +1,46 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Search, Calendar, User as UserIcon, ArrowRight } from 'lucide-react';
+import { Search, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
-//import {useNoticias} from '../hocks/useNoticias';
+import { useNoticias } from '../Hooks/useNoticias';
 
 export function NewsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
   const navigate = useNavigate();
-  //const {noticias, loading, error} = useNoticias();
 
-  const newsItems = [
-    {
-      id: 1,
-      title: 'Convocatoria a Asamblea General Ordinaria 2025',
-      excerpt: 'Se convoca a todos los miembros activos del Colegio de Ingenieros Civiles de Bolivia a la Asamblea General Ordinaria que se llevará a cabo el próximo 15 de noviembre.',
-      category: 'Institucional',
-      date: '2025-10-22',
-      author: 'Directorio CICB',
-      image: 'https://images.unsplash.com/photo-1748345952129-3bdd7d39f155?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbmdpbmVlcmluZyUyMHRlYW0lMjBvZmZpY2V8ZW58MXx8fHwxNzYxMTYzNzQ3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-    },
-    {
-      id: 2,
-      title: 'Nuevo Reglamento de Registro de Proyectos',
-      excerpt: 'El Colegio aprobó nuevas normativas para el registro y validación de proyectos de ingeniería civil. Todos los colegiados deben familiarizarse con estos cambios.',
-      category: 'Normativa',
-      date: '2025-10-18',
-      author: 'Comisión Técnica',
-      image: 'https://images.unsplash.com/photo-1653201587864-c6280a0bb4eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaXZpbCUyMGVuZ2luZWVyaW5nJTIwY29uc3RydWN0aW9ufGVufDF8fHx8MTc2MTA5NTQ5Nnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-    },
-    {
-      id: 3,
-      title: 'Seminario Internacional de Ingeniería Estructural',
-      excerpt: 'El CICB organiza un seminario internacional con expertos de América Latina sobre las últimas tendencias en diseño estructural antisísmico.',
-      category: 'Eventos',
-      date: '2025-10-15',
-      author: 'Comité de Eventos',
-      image: 'https://images.unsplash.com/photo-1696966627839-24b0297e365c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib2xpdmlhJTIwYXJjaGl0ZWN0dXJlfGVufDF8fHx8MTc2MTE2Mzc0N3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-    },
-    {
-      id: 4,
-      title: 'Reconocimiento a Proyectos Destacados 2024',
-      excerpt: 'El colegio reconoce a los mejores proyectos de ingeniería civil del año 2024, destacando la innovación y calidad técnica.',
-      category: 'Premios',
-      date: '2025-10-10',
-      author: 'Directorio CICB',
-      image: 'https://images.unsplash.com/photo-1748345952129-3bdd7d39f155?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbmdpbmVlcmluZyUyMHRlYW0lMjBvZmZpY2V8ZW58MXx8fHwxNzYxMTYzNzQ3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-    },
-    {
-      id: 5,
-      title: 'Capacitación en Normativa de Construcción Sostenible',
-      excerpt: 'Curso de actualización sobre construcción sostenible y certificaciones ambientales para proyectos de ingeniería.',
-      category: 'Capacitación',
-      date: '2025-10-05',
-      author: 'Comisión de Capacitación',
-      image: 'https://images.unsplash.com/photo-1653201587864-c6280a0bb4eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaXZpbCUyMGVuZ2luZWVyaW5nJTIwY29uc3RydWN0aW9ufGVufDF8fHx8MTc2MTA5NTQ5Nnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-    },
-    {
-      id: 6,
-      title: 'Apertura de Nuevas Oficinas Regionales',
-      excerpt: 'El CICB amplía su presencia en el país con la apertura de oficinas regionales en Santa Cruz y Cochabamba.',
-      category: 'Institucional',
-      date: '2025-09-28',
-      author: 'Directorio CICB',
-      image: 'https://images.unsplash.com/photo-1696966627839-24b0297e365c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib2xpdmlhJTIwYXJjaGl0ZWN0dXJlfGVufDF8fHx8MTc2MTE2Mzc0N3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-    },
-  ];
+  const { noticias, loading, error } = useNoticias();
 
-  const filteredNews = newsItems.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = category === 'all' || item.category === category;
-    return matchesSearch && matchesCategory;
-  });
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Cargando noticias...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500">Error al cargar noticias: {error}</p>
+      </div>
+    );
+  }
+
+  const filteredNews = useMemo(() => {
+    return noticias.filter((item) => {
+      const matchesSearch =
+        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = category === 'all' || item.category === category;
+      return matchesSearch && matchesCategory;
+    });
+  }, [noticias, searchTerm, category]);
 
   const getCategoryColor = (cat: string) => {
     const colors: { [key: string]: string } = {
@@ -162,10 +125,10 @@ export function NewsPage() {
               <CardContent>
                 <CardDescription className="mb-4">{item.excerpt}</CardDescription>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center text-muted-foreground">
+                  {/* <div className="flex items-center text-muted-foreground">
                     <UserIcon className="w-4 h-4 mr-2" />
                     <span>{item.author}</span>
-                  </div>
+                  </div> */}
                   <Button 
                     variant="ghost" 
                     className="text-primary hover:text-primary/80"
