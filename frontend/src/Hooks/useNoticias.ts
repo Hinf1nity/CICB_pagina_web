@@ -21,6 +21,7 @@ export function useNoticias(){
         try{
             const data: Noticia[] = await api.get("noticias").json();
             setNoticias(data);
+            console.log(data);
         }catch(err) {
             setError("Error al cargar las noticias");
         }finally{

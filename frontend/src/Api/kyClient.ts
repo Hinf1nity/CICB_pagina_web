@@ -2,7 +2,7 @@ import ky from "ky";
 
 const api = ky.create({
 
-    prefixUrl:"https://",
+    prefixUrl:"http://localhost:4000/",
     headers: {"Content-Type" : "application/json",},
 });
 
