@@ -11,6 +11,7 @@ class User(models.Model):
     especialidad = models.CharField(max_length=100)
     celular = models.CharField(max_length=20)
     ruta_foto = models.CharField(max_length=500)
+    registro_empleado = models.CharField(max_length=255)
 
     def save(self, *args, **kwargs):
         if not self.contrasena.startswith('pbkdf2_'):
