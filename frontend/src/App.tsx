@@ -5,7 +5,9 @@ import { NewsPage } from './components/NewsPage';
 import { JobsPage } from './components/JobsPage';
 import { NewsDetailPage } from './components/NewsDetailPage';
 import { JobDetailPage } from './components/JobDetailPage';
+import { LoginPage } from './components/LoginPage';
 import { UserProfilePage } from './components/UserProfilePage';
+import { UserCardPage } from './components/UserCardPage';
 import { TablePage } from './components/TablePage';
 import { StatsPage } from './components/StatsPage';
 import { AdminNewsPage } from './components/AdminNewsPage';
@@ -48,7 +50,9 @@ function AppRoutes() {
       <Route path="/noticias/:id" element={<NewsDetailPage />} />
       <Route path="/trabajos" element={<JobsPage />} />
       <Route path="/trabajos/:id" element={<JobDetailPage />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/perfil" element={<UserProfilePage />} />
+      <Route path="/tarjeta_usuario/:id" element={<UserCardPage />} />
       <Route path="/tabla" element={<TablePage />} />
       <Route path="/estadisticas" element={<StatsPage />} />
       <Route path="/admin/noticias" element={<AdminNewsPage />} />

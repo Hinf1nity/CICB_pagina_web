@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { Building2, Users, Award, BookOpen, Target, Eye, Info } from 'lucide-react';
+import { Building2, Users, Award, BookOpen, Target, Eye, Info, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function HomePage() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [direction, setDirection] = useState(0);
   const navigate = useNavigate();
 
   const stats = [
@@ -38,6 +41,35 @@ export function HomePage() {
     },
   ];
 
+  const departmentalColleges = [
+    { id: 1, name: 'CIC La Paz', department: 'La Paz', abbreviation: 'LP' },
+    { id: 2, name: 'CIC Cochabamba', department: 'Cochabamba', abbreviation: 'CB' },
+    { id: 3, name: 'CIC Santa Cruz', department: 'Santa Cruz', abbreviation: 'SC' },
+    { id: 4, name: 'CIC Oruro', department: 'Oruro', abbreviation: 'OR' },
+    { id: 5, name: 'CIC Potosí', department: 'Potosí', abbreviation: 'PT' },
+    { id: 6, name: 'CIC Chuquisaca', department: 'Chuquisaca', abbreviation: 'CH' },
+    { id: 7, name: 'CIC Tarija', department: 'Tarija', abbreviation: 'TJ' },
+    { id: 8, name: 'CIC Beni', department: 'Beni', abbreviation: 'BE' },
+    { id: 9, name: 'CIC Pando', department: 'Pando', abbreviation: 'PA' },
+  ];
+
+  const nextSlide = () => {
+    setDirection(1);
+    setCurrentSlide((prev) => (prev + 1) % Math.ceil(departmentalColleges.length / 3));
+  };
+
+  const prevSlide = () => {
+    setDirection(-1);
+    setCurrentSlide((prev) => (prev - 1 + Math.ceil(departmentalColleges.length / 3)) % Math.ceil(departmentalColleges.length / 3));
+  };
+
+  const getVisibleColleges = () => {
+    const itemsPerSlide = 3;
+    const start = currentSlide * itemsPerSlide;
+    const end = start + itemsPerSlide;
+    return departmentalColleges.slice(start, end);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -58,7 +90,7 @@ export function HomePage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Button
-                onClick={() => navigate('/perfil')}
+                onClick={() => navigate('/login')}
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
               >
                 Iniciar Sesión
@@ -203,6 +235,109 @@ export function HomePage() {
                   Compromiso con la sociedad y el medio ambiente
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Colegios Departamentales Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="mb-3 text-foreground">Colegios Departamentales</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Presencia en los 9 departamentos de Bolivia
+            </p>
+          </div>
+
+          <div className="relative">
+            {/* Navigation Buttons */}
+            <motion.button
+              onClick={prevSlide}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:shadow-xl transition-all"
+              aria-label="Anterior"
+              whileHover={{ scale: 1.1, x: -5 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </motion.button>
+            
+            <motion.button
+              onClick={nextSlide}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:shadow-xl transition-all"
+              aria-label="Siguiente"
+              whileHover={{ scale: 1.1, x: 5 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ChevronRight className="w-6 h-6" />
+            </motion.button>
+
+            {/* Carousel Content */}
+            <div className="mx-12 overflow-hidden">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentSlide}
+                  custom={direction}
+                  initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    ease: [0.43, 0.13, 0.23, 0.96]
+                  }}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                >
+                  {getVisibleColleges().map((college, index) => (
+                    <motion.div
+                      key={college.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ 
+                        duration: 0.5, 
+                        delay: index * 0.1,
+                        ease: "easeOut"
+                      }}
+                    >
+                      <Card className="hover:shadow-lg transition-shadow">
+                        <CardContent className="p-6 text-center">
+                          <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="text-primary-foreground text-2xl">{college.abbreviation}</span>
+                          </div>
+                          <h3 className="text-foreground mb-2">{college.name}</h3>
+                          <div className="flex items-center justify-center text-muted-foreground mt-2">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            <span>{college.department}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Dots Indicator */}
+            <div className="flex justify-center gap-2 mt-6">
+              {Array.from({ length: Math.ceil(departmentalColleges.length / 3) }).map((_, index) => (
+                <motion.button
+                  key={index}
+                  onClick={() => {
+                    setDirection(index > currentSlide ? 1 : -1);
+                    setCurrentSlide(index);
+                  }}
+                  className={`rounded-full transition-all ${
+                    currentSlide === index ? 'bg-primary' : 'bg-muted-foreground/30'
+                  }`}
+                  animate={{
+                    width: currentSlide === index ? 32 : 12,
+                    height: 12,
+                  }}
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                  aria-label={`Ir a diapositiva ${index + 1}`}
+                />
+              ))}
             </div>
           </div>
         </div>
