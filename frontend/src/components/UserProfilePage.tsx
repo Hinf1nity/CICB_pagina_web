@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { User, Mail, Phone, MapPin, Calendar, Award, FileText, Edit, QrCode, CreditCard } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Award, Edit, QrCode, CreditCard } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface UserProfilePageProps {
