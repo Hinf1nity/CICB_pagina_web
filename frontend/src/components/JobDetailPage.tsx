@@ -97,12 +97,12 @@ export function JobDetailPage() {
                 <CardTitle>Requisitos</CardTitle>
               </CardHeader>
               <CardContent>
-                {job.requirements ? (
+                {Array.isArray(job.requirements) && job.requirements.length > 0 ? (
                   <ul className="space-y-2">
-                    {job.requirements.split(',').map((req, idx) => (
+                    {job.requirements.map((req, idx) => (
                       <li key={idx} className="flex items-start">
                         <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-1" />
-                        <span className="text-foreground">{req.trim()}</span>
+                        <span className="text-foreground">{req}</span>
                       </li>
                     ))}
                   </ul>

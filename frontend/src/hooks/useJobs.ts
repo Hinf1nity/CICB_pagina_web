@@ -10,7 +10,7 @@ interface Job {
   salary: string;
   date: string;
   description: string;
-  requirements: string;
+  requirements: string[];
 }
 
 interface JobDetail {
@@ -22,8 +22,8 @@ interface JobDetail {
   salary: string;
   date: string;
   description: string;
-  requirements: string;
-  responsibilities: string,
+  requirements: string[];
+  responsibilities: string;
   pdfUrl?: string;
 }
 
@@ -35,14 +35,26 @@ export function useJobs() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const data: Job[] = await api.get("jobs").json();
-        setJobs(data);
+        const data: any[] = await api.get("jobs").json();
+        const formattedData: Job[] = data.map((job) => ({
+          ...job,
+          requirements:
+            typeof job.requirements === "string"
+              ? job.requirements
+                  .split(",")
+                  .map((r: string) => r.trim())
+                  .filter((r: string) => r.length > 0)
+              : job.requirements || [],
+        }));
+
+        setJobs(formattedData);
       } catch (err) {
         setError("Error al cargar los empleos");
       } finally {
         setLoading(false);
       }
     };
+
     fetchJobs();
   }, []);
 
@@ -59,7 +71,7 @@ export function useJobDetail(id?: string) {
     salary: "",
     date: "",
     description: "",
-    requirements: "",
+    requirements: [],
     responsibilities: "",
     pdfUrl: "",
   });
@@ -70,15 +82,26 @@ export function useJobDetail(id?: string) {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const data: JobDetail = await api.get(`jobs/${id}`).json();
-        setJob(data);
-        console.log(data);
+        const data: any = await api.get(`jobs/${id}`).json();
+        const formattedJob: JobDetail = {
+          ...data,
+          requirements:
+            typeof data.requirements === "string"
+              ? data.requirements
+                  .split(",")
+                  .map((r: string) => r.trim())
+                  .filter((r: string) => r.length > 0)
+              : data.requirements || [],
+        };
+
+        setJob(formattedJob);
       } catch (err) {
         setError("Error al cargar los detalles del empleo");
       } finally {
         setLoading(false);
       }
     };
+
     fetchJob();
   }, [id]);
 

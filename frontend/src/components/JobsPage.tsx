@@ -104,26 +104,22 @@ export function JobsPage() {
                 <p className="text-sm text-foreground mb-2 line-clamp-2">
                   {job.description}
                 </p>
-
-                {job.requirements && (
+                {Array.isArray(job.requirements) && job.requirements.length > 0 && (
                   <div>
                     <p className="text-sm font-medium text-foreground">
-                      Requisitos principales:
+                     Requisitos principales:
                     </p>
                     <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
-                      {job.requirements
-                        .split(',')
-                        .slice(0, 3)
-                        .map((req, i) => (
-                          <li key={i} className="flex items-center">
-                            <span className="text-lg mr-2">•</span>
-                            {req.trim()}
-                          </li>
-
-                        ))}
+                      {job.requirements.slice(0, 3).map((req, i) => (
+                        <li key={i} className="flex items-center">
+                          <span className="text-lg mr-2">•</span>
+                          {req}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
+
               </div>
 
               {/* Botón derecho */}
