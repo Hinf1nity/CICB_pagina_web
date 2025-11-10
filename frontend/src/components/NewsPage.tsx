@@ -7,7 +7,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Search, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
-import { useNoticias } from '../Hooks/useNoticias';
+import { useNoticias } from '../hooks/useNoticias';
 
 export function NewsPage() {
   const [searchTerm, setSearchTerm] = useState('');

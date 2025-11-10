@@ -5,8 +5,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import { Separator } from './ui/separator';
-import { useNoticiaDetail} from '../Hooks/useNoticiaDetail';
-import { useNoticias } from '../Hooks/useNoticias';
+import { useNoticias, useNoticiaDetail } from '../hooks/useNoticias';
 
 export function NewsDetailPage() {
   const navigate = useNavigate();
