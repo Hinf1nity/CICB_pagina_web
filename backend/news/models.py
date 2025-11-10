@@ -5,11 +5,22 @@ from PDFs.models import PDF
 from django.utils import timezone
 
 class News(models.Model):
+
+    estados = [
+        ("Bor", "Borrador"),
+        ("Pub", "Publicado"),
+    ]
+
     titulo = models.CharField(max_length=255)
     fecha_publicacion = models.DateTimeField(auto_now_add=True)
     categoria = models.CharField(max_length=255, null=True, blank=True)
     resumen = models.TextField()
     descripcion = models.TextField()
+    estado = models.CharField(
+        max_length=16,
+        choices=estados,
+        default="Bor",
+    )
     imagen = models.ForeignKey(Img, on_delete=models.CASCADE, null=True, blank=True)
     pdf = models.ForeignKey(PDF, on_delete=models.CASCADE, null=True, blank=True)
 
