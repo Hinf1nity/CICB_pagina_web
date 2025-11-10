@@ -7,8 +7,8 @@ from django.utils import timezone
 class News(models.Model):
 
     estados = [
-        ("Bor", "Borrador"),
-        ("Pub", "Publicado"),
+        ("borrador", "Borrador"),
+        ("publicado", "Publicado"),
     ]
 
     titulo = models.CharField(max_length=255)
@@ -19,7 +19,7 @@ class News(models.Model):
     estado = models.CharField(
         max_length=16,
         choices=estados,
-        default="Bor",
+        default="borrador",
     )
     imagen = models.ForeignKey(Img, on_delete=models.CASCADE, null=True, blank=True)
     pdf = models.ForeignKey(PDF, on_delete=models.CASCADE, null=True, blank=True)
