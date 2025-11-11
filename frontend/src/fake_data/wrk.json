@@ -1,0 +1,26 @@
+{
+    "jobs": [{
+        "id": 1,
+        "title": "Programador FrontEnd",
+        "company": "Padoru S.A.",
+        "location": "La Paz",
+        "type": "Tiempo Completo", 
+        "salary": "Bs. 12,000 - 18,000",
+        "date": "07-11-2025",
+        "description": "Buscamos a un ingeniero con experiencia en web development que nos ayude a desarrollar distintos proyectos sin peros",
+        "requirements": ["5 - 6 anos en alguna empresa de desarrollo completo", "en web y que tenga distintos", "certificados al igual que una maestria en ciberseguridad"],
+        "responsibilities": ["5 - 6 anos en alguna empresa de desarrollo completo", "en web y que tenga distintos", "certificados al igual que una maestria en ciberseguridad"],
+        "informacion": "Somos una empresa de Programacion con un padoru de logo"
+    },
+{
+        "id": 2,
+        "title": "Programador BackEnd",
+        "company": "Padoru S.A.",
+        "location": "Sucre",
+        "type": "Tiempo Completo", 
+        "salary": "Bs. 22,000 - 28,000",
+        "date": "06-11-2025",
+        "description": "Buscamos a un ingeniero con experiencia en web development que nos ayude a desarrollar distintos proyectos sin preguntar",
+        "requirements":"Programador FullStack con especializacion en desarrollo de paginas web, con minimo 10 certificaciones IP"
+    }]
+}

@@ -83,7 +83,13 @@ export function HomePage() {
         </div>
         <div className="relative max-w-7xl mx-auto px-4 h-full flex items-center">
           <div className="text-primary-foreground max-w-2xl">
-            <h1 className="mb-4">Colegio de Ingenieros Civiles de Bolivia</h1>
+            <div className="mb-4 w-48 h-auto">
+              <img
+                src="/src/assets/LOGO CIC B sin fondo.png"
+                alt="Logo Colegio de Ingenieros Civiles de Bolivia"
+                className="w-full h-auto object-contain"
+              />
+            </div>
             <p className="mb-6">
               Comprometidos con la excelencia profesional y el desarrollo de la ingeniería civil en Bolivia. 
               Representamos a los profesionales más capacitados del país.
