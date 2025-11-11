@@ -29,17 +29,19 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo y título */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-              <span className="text-accent-foreground">CICB</span>
-            </div>
-            <div className="hidden md:block">
-              <h1 className="text-primary-foreground">Colegio de Ingenieros Civiles de Bolivia</h1>
-            </div>
-            <div className="md:hidden">
-              <h1 className="text-primary-foreground">CICB</h1>
-            </div>
+          <div className="flex items-center space-x-3 cursor-pointer select-none" onClick={()=>navigate('/')}>
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full bg-white">
+              <img src="/src/assets/LOGO CIC B sin fondo.png" alt="Logo CICB" className="w-full h-full object-contain"/>
           </div>
+          <div className="hidden md:block">
+            <h1 className="text-primary-foreground font-semibold text-lg">
+              Colegio de Ingenieros Civiles de Bolivia
+            </h1>
+          </div>
+          <div className="md:hidden">
+            <h1 className="text-primary-foreground font-semibold text-lg">CICB</h1>
+          </div>
+        </div>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
@@ -47,7 +49,7 @@ export function Navbar() {
               <Button
                 key={item.id}
                 onClick={() => navigate(`/${item.id}`)}
-                className={`px-4 py-2 rounded transition-colors ${
+                className={`px-4 py-2 rounded transition-colors cursor-pointer ${
                   currentPage === item.id
                     ? 'bg-accent text-accent-foreground'
                     : 'hover:bg-primary/80'
@@ -58,7 +60,7 @@ export function Navbar() {
             ))}
             <Button
               onClick={() => navigate('/perfil')}
-              className={`ml-2 px-4 py-2 rounded flex items-center space-x-2 transition-colors ${
+              className={`ml-2 px-4 py-2 rounded flex items-center space-x-2 transition-colors cursor-pointer ${
                 currentPage === 'perfil'
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-primary/80'

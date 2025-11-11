@@ -23,7 +23,8 @@ interface JobDetail {
   date: string;
   description: string;
   requirements: string[];
-  responsibilities: string;
+  responsibilities: string[];
+  informacion: string;
   pdfUrl?: string;
 }
 
@@ -72,7 +73,8 @@ export function useJobDetail(id?: string) {
     date: "",
     description: "",
     requirements: [],
-    responsibilities: "",
+    responsibilities: [],
+    informacion: "",
     pdfUrl: "",
   });
 

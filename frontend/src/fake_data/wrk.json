@@ -8,7 +8,9 @@
         "salary": "Bs. 12,000 - 18,000",
         "date": "07-11-2025",
         "description": "Buscamos a un ingeniero con experiencia en web development que nos ayude a desarrollar distintos proyectos sin peros",
-        "requirements": "5 - 6 anos en alguna empresa de desarrollo completo en web y que tenga distintos certificados al igual que una maestria en ciberseguridad"
+        "requirements": ["5 - 6 anos en alguna empresa de desarrollo completo", "en web y que tenga distintos", "certificados al igual que una maestria en ciberseguridad"],
+        "responsibilities": ["5 - 6 anos en alguna empresa de desarrollo completo", "en web y que tenga distintos", "certificados al igual que una maestria en ciberseguridad"],
+        "informacion": "Somos una empresa de Programacion con un padoru de logo"
     },
 {
         "id": 2,

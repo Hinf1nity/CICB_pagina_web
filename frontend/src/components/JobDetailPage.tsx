@@ -90,7 +90,15 @@ export function JobDetailPage() {
                 <p className="text-foreground leading-relaxed">{job.description}</p>
               </CardContent>
             </Card>
-
+            {/* Informacion de la Empresa */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Sobre la empresa</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-foreground leading-relaxed">{job.informacion}</p>
+              </CardContent>
+            </Card>
             {/* Requirements */}
             <Card className="mb-6">
               <CardHeader>
@@ -108,6 +116,28 @@ export function JobDetailPage() {
                   </ul>
                 ) : (
                   <p className="text-muted-foreground">No se especificaron requisitos.</p>
+                )}
+              </CardContent>
+            </Card>
+            {/* Responabilties */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Responsabilidades</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {Array.isArray(job.responsibilities) && job.responsibilities.length > 0 ? (
+                  <ul className="space-y-2">
+                    {job.responsibilities.map((resp, idx) => (
+                      <li key={idx} className="flex items-start">
+                        <CheckCircle className="w-4 h-4 text-blue-500 mr-2 mt-1" />
+                        <span className="text-foreground">{resp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted-foreground">
+                    No se especificaron responsabilidades.
+                  </p>
                 )}
               </CardContent>
             </Card>

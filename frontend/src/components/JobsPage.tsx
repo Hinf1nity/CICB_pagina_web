@@ -52,7 +52,7 @@ export function JobsPage() {
           </div>
 
           <Select value={type} onValueChange={setCategory}>
-            <SelectTrigger className="w-full md:w-[200px]">
+            <SelectTrigger className="w-full md:w-[200px] cursor-pointer">
               <SelectValue placeholder="Categoría" />
             </SelectTrigger>
             <SelectContent>
