@@ -18,6 +18,7 @@ export function Navbar() {
     { id: 'home', label: 'Inicio' },
     { id: 'trabajos', label: 'Trabajos' },
     { id: 'noticias', label: 'Noticias' },
+    { id: 'estadisticas', label: 'Estadísticas' },
     { id: 'tabla', label: 'Tabla' },
     { id: 'anuario', label: 'Anuario' },
     { id: 'reglamentos', label: 'Reglamentos' },
