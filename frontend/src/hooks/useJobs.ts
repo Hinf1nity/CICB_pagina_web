@@ -1,5 +1,32 @@
+import { useEffect, useState } from "react";
 import api from "../api/kyClient";
 
+interface Job {
+  id: number;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  salary: string;
+  date: string;
+  description: string;
+  requirements: string[];
+}
+
+interface JobDetail {
+  id: number;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  salary: string;
+  date: string;
+  description: string;
+  requirements: string[];
+  responsibilities: string[];
+  informacion: string;
+  pdfUrl?: string;
+}
 export interface JobPostData {
   title: string;
   company: string;
@@ -34,35 +61,6 @@ export function useJobsPost() {
   };
 
   return { postJob };
-}
-import { useEffect, useState } from "react";
-import api from "../api/kyClient";
-
-interface Job {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  salary: string;
-  date: string;
-  description: string;
-  requirements: string[];
-}
-
-interface JobDetail {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  salary: string;
-  date: string;
-  description: string;
-  requirements: string[];
-  responsibilities: string[];
-  informacion: string;
-  pdfUrl?: string;
 }
 
 export function useJobs() {
