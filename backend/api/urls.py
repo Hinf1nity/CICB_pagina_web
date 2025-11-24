@@ -9,6 +9,6 @@ urlpatterns = [
     path('yearbooks/', include('yearbooks.urls')),
     path('pdfs/', include('PDFs.urls')),
     path('imgs/', include('IMGs.urls')),
-    path('performance_chart/', include('performance_chart.urls')),
+    path('stats/', include('stats.urls')),
     path('resource_chart/', include('resource_chart.urls')),
 ]

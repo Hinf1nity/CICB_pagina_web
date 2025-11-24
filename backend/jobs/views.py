@@ -1,16 +1,19 @@
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny, IsAdminUser
 from .models import Job
-from .serializers import JobListSerializer, JobDetailSerializer
+from .serializers import JobListSerializer, JobDetailSerializer, JobAdminSerializer
 
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
 
     def get_serializer_class(self):
-        if self.action == 'list':
+
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return JobAdminSerializer
+    
+        elif self.action == 'list':
             return JobListSerializer
-        elif self.action == 'retrieve':
-            return JobDetailSerializer
+            
         return JobDetailSerializer
 
     def get_permissions(self):
