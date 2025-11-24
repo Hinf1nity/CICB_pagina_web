@@ -28,6 +28,10 @@ class UserStatisticsView(APIView):
                 count=Count('id')
             ).order_by('-count'))
 
+            state_data = list(User.objects.values('departamento').annotate(
+                count=Count('id')
+            ).order_by('-count'))
+
             employed_users = User.objects.exclude(
                 Q(registro_empleado__isnull=True) | Q(registro_empleado__exact='')
             ).count()
@@ -40,7 +44,8 @@ class UserStatisticsView(APIView):
                 "total_users": total_users,
                 "employed_users": employed_users,
                 "employment_rate": round(employment_rate, 2),
-                "specialties_breakdown": specialties_data
+                "specialties_breakdown": specialties_data,
+                "state_breakdown": state_data
             }
     
     def get(self, request):
@@ -54,7 +59,8 @@ class UserStatisticsView(APIView):
             total_users=data['total_users'],
             employed_users=data['employed_users'],
             employment_rate=data['employment_rate'],
-            specialties_breakdown=data['specialties_breakdown']
+            specialties_breakdown=data['specialties_breakdown'],
+            state_breakdown=data['state_breakdown']
         )
 
         serializer = StatsSerializer(stat_instance)
