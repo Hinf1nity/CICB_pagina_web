@@ -2,25 +2,46 @@
     "jobs": [{
         "id": 1,
         "title": "Programador FrontEnd",
-        "company": "Padoru S.A.",
+        "company": "Prueba S.A.",
         "location": "La Paz",
         "type": "Tiempo Completo", 
         "salary": "Bs. 12,000 - 18,000",
         "date": "07-11-2025",
-        "description": "Buscamos a un ingeniero con experiencia en web development que nos ayude a desarrollar distintos proyectos sin peros",
+        "description": "Buscamos a un ingeniero con experiencia en web development que nos ayude a desarrollar distintos proyectos",
         "requirements": ["5 - 6 anos en alguna empresa de desarrollo completo", "en web y que tenga distintos", "certificados al igual que una maestria en ciberseguridad"],
         "responsibilities": ["5 - 6 anos en alguna empresa de desarrollo completo", "en web y que tenga distintos", "certificados al igual que una maestria en ciberseguridad"],
-        "informacion": "Somos una empresa de Programacion con un padoru de logo"
+        "informacion": "Somos una empresa de Programacion"
     },
 {
         "id": 2,
         "title": "Programador BackEnd",
-        "company": "Padoru S.A.",
+        "company": "Prueba 2 S.A.",
         "location": "Sucre",
         "type": "Tiempo Completo", 
         "salary": "Bs. 22,000 - 28,000",
         "date": "06-11-2025",
-        "description": "Buscamos a un ingeniero con experiencia en web development que nos ayude a desarrollar distintos proyectos sin preguntar",
-        "requirements":"Programador FullStack con especializacion en desarrollo de paginas web, con minimo 10 certificaciones IP"
+        "description": "Buscamos a un ingeniero con experiencia en web development que nos ayude a desarrollar distintos proyectos",
+        "requirements":["Programador FullStack con especializacion en desarrollo de paginas web", "con minimo 10 certificaciones IP"],
+        "informacion": "Somos una empresa de Programacion 2"
+    }],
+    "noticias": [{
+       "id": 1,
+        "title": "Hola Buen Dia",
+        "excerpt": "Descripcion breve de la noticia 1",
+        "content": "<h2><strong>Noticia de prueba 1</strong></h2><p>Contenido completo de la noticia 1</p>",
+        "category": "Prueba",
+        "date": "2025-10-31",
+        "image": "https://images.unsplash.com/photo-1748345952129-3bdd7d39f155?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbmdpbmVlcmluZyUyMHRlYW0lMjBvZmZpY2V8ZW58MXx8fHwxNzYxMTYzNzQ3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+        "pdf": "lkansdjonapdmqp,da"  
+    },
+{
+       "id": 2,
+        "title": "Hola Buen Dia",
+        "excerpt": "Descripcion breve de la noticia 2",
+        "content": "<h1><strong>Noticia de prueba 2</strong></h1><p>Contenido completo de la noticia 2</p>",
+        "category": "Prueba 2",
+        "date": "2025-10-31",
+        "image": "https://images.unsplash.com/photo-1748345952129-3bdd7d39f155?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbmdpbmVlcmluZyUyMHRlYW0lMjBvZmZpY2V8ZW58MXx8fHwxNzYxMTYzNzQ3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+        "pdf": "lkansdjonapdmqp,da"  
     }]
 }

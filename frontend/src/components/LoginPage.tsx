@@ -48,13 +48,12 @@ export function LoginPage() {
             <CardContent>
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Correo Electrónico</Label>
+                  <Label htmlFor="rni">RNI</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="tu.email@ejemplo.com"
+                      id="rni"
+                      placeholder="XXXXXX"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10"
@@ -97,17 +96,6 @@ export function LoginPage() {
                   {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                 </Button>
 
-                <div className="text-center pt-4 border-t border-border">
-                  <p className="text-muted-foreground">
-                    ¿No tienes una cuenta?{' '}
-                    <button
-                      type="button"
-                      className="text-primary hover:underline"
-                    >
-                      Solicitar registro
-                    </button>
-                  </p>
-                </div>
               </form>
 
               <div className="mt-6 pt-6 border-t border-border">

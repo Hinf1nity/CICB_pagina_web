@@ -1,19 +1,19 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Badge } from '../ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, Image as ImageIcon, X } from 'lucide-react';
-import { RichTextEditor } from './RichTextEditor';
+import { RichTextEditor } from '../RichTextEditor';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { type NewsPostData, useNewsPost } from '../hooks/useNews';
+import { type NewsPostData, useNewsPost } from '../../hooks/useNoticias';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { newsSchema } from '../validations/newsSchema';
+import { newsSchema } from '../../validations/newsSchema';
 
 export function AdminNewsManager() {
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm<NewsPostData>({
@@ -141,6 +141,9 @@ export function AdminNewsManager() {
                     <div className="space-y-2">
                     <Label htmlFor="title">Título *</Label>
                     <Input id="title" placeholder="Título de la noticia" {...register('title')} />
+                    {errors.title && (
+                        <p className="text-red-500 text-sm">{errors.title.message}</p>
+                    )}
                     </div>
                     
                     <div className="space-y-2">

@@ -1,20 +1,20 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Badge } from '../ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, X } from 'lucide-react';
-import { DynamicList } from './DynamicList';
+import { DynamicList } from '../DynamicList';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { type JobPostData } from '../hooks/useJobs';
+import { type JobPostData } from '../../hooks/useJobs';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { jobSchema } from '../validations/jobsSchema';
+import { jobSchema } from '../../validations/jobsSchema';
 
 export function AdminJobsManager() {
   const { register, handleSubmit, formState: { errors }, control, reset } = useForm<JobPostData>(

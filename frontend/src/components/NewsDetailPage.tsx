@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import { Separator } from './ui/separator';
 import { useNoticias, useNoticiaDetail } from '../hooks/useNoticias';
+import { map } from 'zod';
 
 export function NewsDetailPage() {
   const navigate = useNavigate();
@@ -88,7 +89,6 @@ export function NewsDetailPage() {
               <span>{noticias.author}</span>
             </div> */}
           </div>
-
           <h1 className="text-foreground mb-4">{noticia.title}</h1>
         </div>
 
@@ -135,8 +135,10 @@ export function NewsDetailPage() {
         <div>
           <h3 className="text-foreground mb-4">Noticias Relacionadas</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].filter(id_filter => id_filter !== Number(id)).slice(0, 3).map((id_map) => {
-              const relatedNews = noticias[id_map];
+            {[1, 2].filter(id_filter => id_filter !== Number(id)).slice(0, 3).map((id_map) => {
+              const relatedNews = noticias[id_map-1];
+              console.log(id_map);
+              console.log(relatedNews);
               if (!relatedNews) return null;
               
               return (

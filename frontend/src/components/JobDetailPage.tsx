@@ -35,7 +35,7 @@ export function JobDetailPage() {
         <div className="max-w-6xl mx-auto px-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/empleos')}
+            onClick={() => navigate('/trabajos')}
             className="text-primary-foreground hover:bg-primary-foreground/10 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
