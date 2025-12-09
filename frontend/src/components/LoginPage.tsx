@@ -6,18 +6,28 @@ import { Label } from './ui/label';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Lock, Mail, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLogin } from '../Hooks/useLogin';
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { type LoginData } from '../validations/loginSchema';
 
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useLogin();
+  const { register, handleSubmit } = useForm<LoginData>();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
+  const handleLogin: SubmitHandler<LoginData> = async (data) => {
+    try {
+      await login(data);
+      navigate('/admin');
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert('Error al iniciar sesión. Por favor, verifica tus credenciales e intenta de nuevo.');
+    }
+    finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,7 +56,7 @@ export function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin} className="space-y-6">
+              <form onSubmit={handleSubmit(handleLogin)} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="rni">RNI</Label>
                   <div className="relative">
@@ -54,10 +64,9 @@ export function LoginPage() {
                     <Input
                       id="rni"
                       placeholder="XXXXXX"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
                       className="pl-10"
                       required
+                      {...register("username")}
                     />
                   </div>
                 </div>
@@ -70,8 +79,7 @@ export function LoginPage() {
                       id="password"
                       type="password"
                       placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      {...register("password")}
                       className="pl-10"
                       required
                     />

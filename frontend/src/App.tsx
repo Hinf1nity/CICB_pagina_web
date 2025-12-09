@@ -16,6 +16,7 @@ import { AdminUsersPage } from './components/admin/AdminUsersPage';
 import { AdminPerformancePage } from './components/admin/AdminPerformancePage';
 import { AdminJobsPage } from './components/admin/AdminJobsPage';
 import { AdminNewsPage } from './components/admin/AdminNewsPage';
+import PrivateRoute from './components/PrivateRoute';
 
 export default function App() {
   // const navigate = useNavigate();
@@ -50,10 +51,13 @@ function AppRoutes() {
         <Route path="/tarjeta_usuario/:id" element={<UserCardPage />} />
         <Route path="/tabla" element={<TablePage />} />
         <Route path="/estadisticas" element={<StatsPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/usuarios" element={<AdminUsersPage />} />
-        <Route path="/admin/noticias" element={<AdminNewsPage />} />
-        <Route path="/admin/trabajos" element={<AdminJobsPage />} />
+        <Route path="/admin" element={
+          <PrivateRoute><AdminDashboard /></PrivateRoute>} />
+        <Route path="/admin/usuarios" element={
+          <PrivateRoute><AdminUsersPage /></PrivateRoute>} />
+        <Route path="/admin/noticias" element={
+          <PrivateRoute><AdminNewsPage /></PrivateRoute>} />
+        <Route path="/admin/trabajos" element={<PrivateRoute><AdminJobsPage /></PrivateRoute>} />
         <Route path="/admin/rendimientos" element={<AdminPerformancePage />} />
         <Route path="/anuario" element={
           <GenericPage

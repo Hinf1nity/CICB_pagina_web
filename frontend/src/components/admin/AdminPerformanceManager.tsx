@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Plus, Edit, Trash2, Search, ChevronDown, ChevronRight, X } from 'lucide-react';
+import { useForm, type SubmitHandler, Controller } from 'react-hook-form';
+import { type PerformancePostData } from '../../validations/performanceSchema';
 
 interface Resource {
   id: string;
@@ -32,6 +34,7 @@ export function AdminPerformanceManager() {
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<Action | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<PerformancePostData>();
 
   const [actions, setActions] = useState<Action[]>([
     {
@@ -220,9 +223,10 @@ export function AdminPerformanceManager() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = (data: PerformancePostData) => {
     console.log('Guardando actividad');
     setIsActionDialogOpen(false);
+    console.log('Datos guardados: ', data);
     // Lógica para guardar
   };
 
@@ -404,145 +408,161 @@ export function AdminPerformanceManager() {
       {/* Create/Edit Dialog */}
       <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingAction ? 'Editar Actividad' : 'Nueva Actividad'}
-            </DialogTitle>
-            <DialogDescription>
-              Completa los datos de la actividad y sus recursos necesarios
-            </DialogDescription>
-          </DialogHeader>
+          <form onSubmit={handleSubmit(handleSave)}>
+            <DialogHeader>
+              <DialogTitle>
+                {editingAction ? 'Editar Actividad' : 'Nueva Actividad'}
+              </DialogTitle>
+              <DialogDescription>
+                Completa los datos de la actividad y sus recursos necesarios
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            {/* Basic Info */}
-            <div className="space-y-4">
-              <h3 className="font-semibold">Información Básica</h3>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-6 py-4">
+              {/* Basic Info */}
+              <div className="space-y-4">
+                <h3 className="font-semibold">Información Básica</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="code">Código</Label>
+                    <Input 
+                      id="code" 
+                      placeholder="XXX-000" 
+                      defaultValue={editingAction?.code} 
+                      {...register("codigo")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="unit">Unidad</Label>
+                    <Input 
+                      id="unit" 
+                      placeholder="m², m³, etc." 
+                      defaultValue={editingAction?.unit} 
+                      {...register("unidad")}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="code">Código</Label>
+                  <Label htmlFor="description">Descripción</Label>
                   <Input 
-                    id="code" 
-                    placeholder="XXX-000" 
-                    defaultValue={editingAction?.code} 
+                    id="description" 
+                    placeholder="Descripción de la actividad" 
+                    defaultValue={editingAction?.description} 
+                    {...register("descripcion")}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="unit">Unidad</Label>
-                  <Input 
-                    id="unit" 
-                    placeholder="m², m³, etc." 
-                    defaultValue={editingAction?.unit} 
+                  <Label htmlFor="category">Categoría</Label>
+                  <Controller 
+                    control={control}
+                    name="recursos"
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Albañilería">Albañilería</SelectItem>
+                          <SelectItem value="Hormigón Armado">Hormigón Armado</SelectItem>
+                          <SelectItem value="Revestimientos">Revestimientos</SelectItem>
+                          <SelectItem value="Cubiertas">Cubiertas</SelectItem>
+                          <SelectItem value="Pintura">Pintura</SelectItem>
+                          <SelectItem value="Movimiento de Tierras">Movimiento de Tierras</SelectItem>
+                          <SelectItem value="Pisos">Pisos</SelectItem>
+                          <SelectItem value="Instalaciones Sanitarias">Instalaciones Sanitarias</SelectItem>
+                          <SelectItem value="Carpintería">Carpintería</SelectItem>
+                          <SelectItem value="Instalaciones Eléctricas">Instalaciones Eléctricas</SelectItem>
+                          <SelectItem value="Otros">Otros</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Descripción</Label>
-                <Input 
-                  id="description" 
-                  placeholder="Descripción de la actividad" 
-                  defaultValue={editingAction?.description} 
-                />
-              </div>
+              {/* Resources */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">Recursos</h3>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAddResource}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Agregar Recurso
+                  </Button>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="category">Categoría</Label>
-                <Select defaultValue={editingAction?.category}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Albañilería">Albañilería</SelectItem>
-                    <SelectItem value="Hormigón Armado">Hormigón Armado</SelectItem>
-                    <SelectItem value="Revestimientos">Revestimientos</SelectItem>
-                    <SelectItem value="Cubiertas">Cubiertas</SelectItem>
-                    <SelectItem value="Pintura">Pintura</SelectItem>
-                    <SelectItem value="Movimiento de Tierras">Movimiento de Tierras</SelectItem>
-                    <SelectItem value="Pisos">Pisos</SelectItem>
-                    <SelectItem value="Instalaciones Sanitarias">Instalaciones Sanitarias</SelectItem>
-                    <SelectItem value="Carpintería">Carpintería</SelectItem>
-                    <SelectItem value="Instalaciones Eléctricas">Instalaciones Eléctricas</SelectItem>
-                    <SelectItem value="Otros">Otros</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-3">
+                  {resources.map((resource, index) => (
+                    <div key={resource.id} className="relative p-3 bg-muted/30 rounded-lg">
+                      <div className='grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3'>
+                        <div className="space-y-2">
+                          <Label htmlFor={`resource-name-${resource.id}`}>Nombre del Recurso</Label>
+                          <Input
+                            id={`resource-name-${resource.id}`}
+                            placeholder="Ej: Cemento, Ladrillo, Albañil"
+                            // value={resource.name}
+                            // onChange={(e) => handleResourceChange(resource.id, 'name', e.target.value)}
+                            {...register(`recursos.${index}.nombre`)}
+                          />
+                        </div>
+                        <div className="sm:w-32 space-y-2">
+                          <Label htmlFor={`resource-unit-${resource.id}`}>Unidad</Label>
+                          <Input
+                            id={`resource-unit-${resource.id}`}
+                            placeholder="kg, m³, hr"
+                            // value={resource.unit}
+                            // onChange={(e) => handleResourceChange(resource.id, 'unit', e.target.value)}
+                            {...register(`recursos.${index}.unidad`)}
+                          />
+                        </div>
+                        <div className="sm:w-32 space-y-2">
+                          <Label htmlFor={`resource-quantity-${resource.id}`}>Cantidad</Label>
+                          <Input
+                            id={`resource-quantity-${resource.id}`}
+                            type="number"
+                            step="0.01"
+                            placeholder="0"
+                            // value={resource.quantity}
+                            // onChange={(e) => handleResourceChange(resource.id, 'quantity', parseFloat(e.target.value) || 0)}
+                            {...register(`recursos.${index}.cantidad`)}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveResource(resource.id)}
+                          className="absolute top-2 right-2 text-destructive hover:text-destructive"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  {resources.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No hay recursos agregados. Haz clic en "Agregar Recurso" para añadir.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Resources */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Recursos</h3>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleAddResource}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Agregar Recurso
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {resources.map((resource, index) => (
-                  <div key={resource.id} className="flex gap-3 items-end p-3 bg-muted/30 rounded-lg">
-                    <div className="flex-1 space-y-2">
-                      <Label htmlFor={`resource-name-${resource.id}`}>Nombre del Recurso</Label>
-                      <Input
-                        id={`resource-name-${resource.id}`}
-                        placeholder="Ej: Cemento, Ladrillo, Albañil"
-                        value={resource.name}
-                        onChange={(e) => handleResourceChange(resource.id, 'name', e.target.value)}
-                      />
-                    </div>
-                    <div className="w-32 space-y-2">
-                      <Label htmlFor={`resource-unit-${resource.id}`}>Unidad</Label>
-                      <Input
-                        id={`resource-unit-${resource.id}`}
-                        placeholder="kg, m³, hr"
-                        value={resource.unit}
-                        onChange={(e) => handleResourceChange(resource.id, 'unit', e.target.value)}
-                      />
-                    </div>
-                    <div className="w-32 space-y-2">
-                      <Label htmlFor={`resource-quantity-${resource.id}`}>Cantidad</Label>
-                      <Input
-                        id={`resource-quantity-${resource.id}`}
-                        type="number"
-                        step="0.01"
-                        placeholder="0"
-                        value={resource.quantity}
-                        onChange={(e) => handleResourceChange(resource.id, 'quantity', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveResource(resource.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                {resources.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No hay recursos agregados. Haz clic en "Agregar Recurso" para añadir.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsActionDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} className="bg-primary text-primary-foreground">
-              Guardar
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsActionDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type='submit' className="bg-primary text-primary-foreground">
+                Guardar
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
