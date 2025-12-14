@@ -1,7 +1,20 @@
 from rest_framework import serializers
 from .models import News
 
-class NewsSerializer(serializers.ModelSerializer):
+class NewsListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        exclude = [
+            'descripcion',
+            'pdf',
+        ]
+
+class NewsDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        exclude = ['descripcion']
+
+class NewsAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = '__all__'

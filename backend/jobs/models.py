@@ -1,8 +1,26 @@
 from django.db import models
+from django.contrib.gis.db import models
+
 from PDFs.models import PDF
 
 class Job(models.Model):
-    titulo = models.CharField(max_length=200)
+
+    estados = [
+        ("borrador", "Borrador"),
+        ("publicado", "Publicado"),
+    ]
+
+    titulo = models.CharField(max_length=255)
+    nombre_empresa = models.CharField(max_length=255)
+    ubicacion = models.CharField(max_length=255)
+    salario = models.CharField(max_length=86)
+    requisitos = models.JSONField(blank=True, null=True, default=list)
+    responsabilidades = models.JSONField(blank=True, null=True, default=list)
+    estado = models.CharField(
+        max_length=16,
+        choices=estados,
+        default="borrador",
+    )
     descripcion = models.TextField()
     pdf = models.ForeignKey(PDF, on_delete=models.CASCADE, null=True, blank=True)
     disponibilidad = models.BooleanField(default=True)
