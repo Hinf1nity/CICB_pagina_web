@@ -11,8 +11,8 @@ export const jobSchema = z.object({
   location: z.string().min(2, { message: "La ubicación debe tener al menos 2 caracteres" }).max(100),
   type: z.enum(contractTypes, { message: `El tipo de contrato debe ser uno de los siguientes: ${contractTypes.join(", ")}` }),
   salary: z.string().min(1, { message: "El salario debe tener al menos 1 carácter" }).max(100),
-  requirements: z.array(z.string().min(2, { message: "El requisito debe tener al menos 2 caracteres" }).max(100)),
-  responsibilities: z.array(z.string().min(2, { message: "La responsabilidad debe tener al menos 2 caracteres" }).max(100)),
+  requirements: z.array(z.string().min(2, { message: "El requisito debe tener al menos 2 caracteres" }).max(100)).refine((arr) => arr.length > 0, { message: "Debe haber al menos un requisito" }),
+  responsibilities: z.array(z.string().min(2, { message: "La responsabilidad debe tener al menos 2 caracteres" }).max(100)).refine((arr) => arr.length > 0, { message: "Debe haber al menos una responsabilidad" }),
   pdf: z
     .instanceof(File)
     .refine((file) => file.type === "application/pdf", "Debe ser un PDF")
@@ -22,4 +22,4 @@ export const jobSchema = z.object({
   status: z.enum(status, { message: `El estado debe ser uno de los siguientes: ${status.join(", ")}` }),
 });
 
-export type Job = z.infer<typeof jobSchema>;
+export type JobPostData = z.infer<typeof jobSchema>;

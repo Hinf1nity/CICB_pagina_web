@@ -8,23 +8,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Plus, Edit, Trash2, Search, ChevronDown, ChevronRight, X } from 'lucide-react';
-import { useForm, type SubmitHandler, Controller } from 'react-hook-form';
-import { type PerformancePostData } from '../../validations/performanceSchema';
-
+import { useForm, Controller } from 'react-hook-form';
+import { type PerformancePostData, performanceSchema } from '../../validations/performanceSchema';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 interface Resource {
   id: string;
-  name: string;
-  unit: string;
-  quantity: number;
+  nombre: string;
+  unidad: string;
+  cantidad: string;
 }
 
 interface Action {
   id: string;
-  code: string;
-  description: string;
-  unit: string;
-  category: string;
-  resources: Resource[];
+  codigo: string;
+  descripcion: string;
+  unidad: string;
+  categoria: string;
+  recursos: Resource[];
 }
 
 export function AdminPerformanceManager() {
@@ -34,164 +35,173 @@ export function AdminPerformanceManager() {
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<Action | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<PerformancePostData>();
+  const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<PerformancePostData>({
+    resolver: zodResolver(performanceSchema),
+    defaultValues: {
+      codigo: '',
+      descripcion: '',
+      unidad: '',
+      categoria: '',
+      recursos: [],
+    },
+  });
 
   const [actions, setActions] = useState<Action[]>([
     {
       id: '1',
-      code: 'ALB-001',
-      description: 'Muro de ladrillo gambote e=18cm (incl. mortero)',
-      unit: 'm²',
-      category: 'Albañilería',
-      resources: [
-        { id: '1-1', name: 'Ladrillo gambote', unit: 'pza', quantity: 37 },
-        { id: '1-2', name: 'Cemento', unit: 'kg', quantity: 12.5 },
-        { id: '1-3', name: 'Arena', unit: 'm³', quantity: 0.04 },
-        { id: '1-4', name: 'Agua', unit: 'lt', quantity: 15 },
-        { id: '1-5', name: 'Albañil', unit: 'hr', quantity: 1.2 },
-        { id: '1-6', name: 'Ayudante', unit: 'hr', quantity: 1.2 },
+      codigo: 'ALB-001',
+      descripcion: 'Muro de ladrillo gambote e=18cm (incl. mortero)',
+      unidad: 'm²',
+      categoria: 'Albañilería',
+      recursos: [
+        { id: '1-1', nombre: 'Ladrillo gambote', unidad: 'pza', cantidad: '37' },
+        { id: '1-2', nombre: 'Cemento', unidad: 'kg', cantidad: '12.5' },
+        { id: '1-3', nombre: 'Arena', unidad: 'm³', cantidad: '0.04' },
+        { id: '1-4', nombre: 'Agua', unidad: 'lt', cantidad: '15' },
+        { id: '1-5', nombre: 'Albañil', unidad: 'hr', cantidad: '1.2' },
+        { id: '1-6', nombre: 'Ayudante', unidad: 'hr', cantidad: '1.2' },
       ],
     },
     {
       id: '2',
-      code: 'HOA-002',
-      description: 'Hormigón armado f\'c=210 kg/cm² (incl. encofrado)',
-      unit: 'm³',
-      category: 'Hormigón Armado',
-      resources: [
-        { id: '2-1', name: 'Cemento Portland', unit: 'kg', quantity: 350 },
-        { id: '2-2', name: 'Arena', unit: 'm³', quantity: 0.52 },
-        { id: '2-3', name: 'Grava', unit: 'm³', quantity: 0.76 },
-        { id: '2-4', name: 'Agua', unit: 'lt', quantity: 185 },
-        { id: '2-5', name: 'Fierro corrugado', unit: 'kg', quantity: 120 },
-        { id: '2-6', name: 'Alambre de amarre', unit: 'kg', quantity: 2.5 },
-        { id: '2-7', name: 'Madera de encofrado', unit: 'p²', quantity: 8 },
-        { id: '2-8', name: 'Clavos', unit: 'kg', quantity: 0.3 },
-        { id: '2-9', name: 'Albañil especializado', unit: 'hr', quantity: 8 },
-        { id: '2-10', name: 'Ayudante', unit: 'hr', quantity: 16 },
+      codigo: 'HOA-002',
+      descripcion: 'Hormigón armado f\'c=210 kg/cm² (incl. encofrado)',
+      unidad: 'm³',
+      categoria: 'Hormigón Armado',
+      recursos: [
+        { id: '2-1', nombre: 'Cemento Portland', unidad: 'kg', cantidad: '350' },
+        { id: '2-2', nombre: 'Arena', unidad: 'm³', cantidad: '0.52' },
+        { id: '2-3', nombre: 'Grava', unidad: 'm³', cantidad: '0.76' },
+        { id: '2-4', nombre: 'Agua', unidad: 'lt', cantidad: '185' },
+        { id: '2-5', nombre: 'Fierro corrugado', unidad: 'kg', cantidad: '120' },
+        { id: '2-6', nombre: 'Alambre de amarre', unidad: 'kg', cantidad: '2.5' },
+        { id: '2-7', nombre: 'Madera de encofrado', unidad: 'p²', cantidad: '8' },
+        { id: '2-8', nombre: 'Clavos', unidad: 'kg', cantidad: '0.3' },
+        { id: '2-9', nombre: 'Albañil especializado', unidad: 'hr', cantidad: '8' },
+        { id: '2-10', nombre: 'Ayudante', unidad: 'hr', cantidad: '16' },
       ],
     },
     {
       id: '3',
-      code: 'REV-003',
-      description: 'Revoque interior con yeso',
-      unit: 'm²',
-      category: 'Revestimientos',
-      resources: [
-        { id: '3-1', name: 'Yeso', unit: 'kg', quantity: 8 },
-        { id: '3-2', name: 'Agua', unit: 'lt', quantity: 6 },
-        { id: '3-3', name: 'Yesero', unit: 'hr', quantity: 0.4 },
-        { id: '3-4', name: 'Ayudante', unit: 'hr', quantity: 0.2 },
+      codigo: 'REV-003',
+      descripcion: 'Revoque interior con yeso',
+      unidad: 'm²',
+      categoria: 'Revestimientos',
+      recursos: [
+        { id: '3-1', nombre: 'Yeso', unidad: 'kg', cantidad: '8' },
+        { id: '3-2', nombre: 'Agua', unidad: 'lt', cantidad: '6' },
+        { id: '3-3', nombre: 'Yesero', unidad: 'hr', cantidad: '0.4' },
+        { id: '3-4', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.2' },
       ],
     },
     {
       id: '4',
-      code: 'CUB-004',
-      description: 'Cubierta de calamina galvanizada #28',
-      unit: 'm²',
-      category: 'Cubiertas',
-      resources: [
-        { id: '4-1', name: 'Calamina galvanizada #28', unit: 'm²', quantity: 1.1 },
-        { id: '4-2', name: 'Cumbrera galvanizada', unit: 'm', quantity: 0.15 },
-        { id: '4-3', name: 'Clavos para calamina', unit: 'pza', quantity: 18 },
-        { id: '4-4', name: 'Tijerales de madera', unit: 'pza', quantity: 0.5 },
-        { id: '4-5', name: 'Techador', unit: 'hr', quantity: 0.6 },
-        { id: '4-6', name: 'Ayudante', unit: 'hr', quantity: 0.6 },
+      codigo: 'CUB-004',
+      descripcion: 'Cubierta de calamina galvanizada #28',
+      unidad: 'm²',
+      categoria: 'Cubiertas',
+      recursos: [
+        { id: '4-1', nombre: 'Calamina galvanizada #28', unidad: 'm²', cantidad: '1.1' },
+        { id: '4-2', nombre: 'Cumbrera galvanizada', unidad: 'm', cantidad: '0.15' },
+        { id: '4-3', nombre: 'Clavos para calamina', unidad: 'pza', cantidad: '18' },
+        { id: '4-4', nombre: 'Tijerales de madera', unidad: 'pza', cantidad: '0.5' },
+        { id: '4-5', nombre: 'Techador', unidad: 'hr', cantidad: '0.6' },
+        { id: '4-6', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.6' },
       ],
     },
     {
       id: '5',
-      code: 'PIN-005',
-      description: 'Pintura látex interior (2 manos)',
-      unit: 'm²',
-      category: 'Pintura',
-      resources: [
-        { id: '5-1', name: 'Pintura látex', unit: 'lt', quantity: 0.25 },
-        { id: '5-2', name: 'Sellador', unit: 'lt', quantity: 0.15 },
-        { id: '5-3', name: 'Lija', unit: 'plg', quantity: 0.1 },
-        { id: '5-4', name: 'Pintor', unit: 'hr', quantity: 0.35 },
+      codigo: 'PIN-005',
+      descripcion: 'Pintura látex interior (2 manos)',
+      unidad: 'm²',
+      categoria: 'Pintura',
+      recursos: [
+        { id: '5-1', nombre: 'Pintura látex', unidad: 'lt', cantidad: '0.25' },
+        { id: '5-2', nombre: 'Sellador', unidad: 'lt', cantidad: '0.15' },
+        { id: '5-3', nombre: 'Lija', unidad: 'plg', cantidad: '0.1' },
+        { id: '5-4', nombre: 'Pintor', unidad: 'hr', cantidad: '0.35' },
       ],
     },
     {
       id: '6',
-      code: 'EXC-006',
-      description: 'Excavación manual en terreno semi-duro',
-      unit: 'm³',
-      category: 'Movimiento de Tierras',
-      resources: [
-        { id: '6-1', name: 'Pala', unit: 'hr', quantity: 0.1 },
-        { id: '6-2', name: 'Picota', unit: 'hr', quantity: 0.1 },
-        { id: '6-3', name: 'Peón', unit: 'hr', quantity: 4.5 },
+      codigo: 'EXC-006',
+      descripcion: 'Excavación manual en terreno semi-duro',
+      unidad: 'm³',
+      categoria: 'Movimiento de Tierras',
+      recursos: [
+        { id: '6-1', nombre: 'Pala', unidad: 'hr', cantidad: '0.1' },
+        { id: '6-2', nombre: 'Picota', unidad: 'hr', cantidad: '0.1' },
+        { id: '6-3', nombre: 'Peón', unidad: 'hr', cantidad: '4.5' },
       ],
     },
     {
       id: '7',
-      code: 'CER-007',
-      description: 'Cerámica para piso 40x40 cm',
-      unit: 'm²',
-      category: 'Pisos',
-      resources: [
-        { id: '7-1', name: 'Cerámica 40x40', unit: 'm²', quantity: 1.05 },
-        { id: '7-2', name: 'Cemento cola', unit: 'kg', quantity: 5 },
-        { id: '7-3', name: 'Fragua', unit: 'kg', quantity: 0.5 },
-        { id: '7-4', name: 'Ceramista', unit: 'hr', quantity: 0.8 },
-        { id: '7-5', name: 'Ayudante', unit: 'hr', quantity: 0.4 },
+      codigo: 'CER-007',
+      descripcion: 'Cerámica para piso 40x40 cm',
+      unidad: 'm²',
+      categoria: 'Pisos',
+      recursos: [
+        { id: '7-1', nombre: 'Cerámica 40x40', unidad: 'm²', cantidad: '1.05' },
+        { id: '7-2', nombre: 'Cemento cola', unidad: 'kg', cantidad: '5' },
+        { id: '7-3', nombre: 'Fragua', unidad: 'kg', cantidad: '0.5' },
+        { id: '7-4', nombre: 'Ceramista', unidad: 'hr', cantidad: '0.8' },
+        { id: '7-5', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.4' },
       ],
     },
     {
       id: '8',
-      code: 'CAN-008',
-      description: 'Cañería PVC agua potable Ø 1/2"',
-      unit: 'm',
-      category: 'Instalaciones Sanitarias',
-      resources: [
-        { id: '8-1', name: 'Tubo PVC 1/2"', unit: 'm', quantity: 1.05 },
-        { id: '8-2', name: 'Codos PVC 1/2"', unit: 'pza', quantity: 0.3 },
-        { id: '8-3', name: 'Tees PVC 1/2"', unit: 'pza', quantity: 0.2 },
-        { id: '8-4', name: 'Pegamento PVC', unit: 'lt', quantity: 0.05 },
-        { id: '8-5', name: 'Cinta teflón', unit: 'rollo', quantity: 0.1 },
-        { id: '8-6', name: 'Plomero', unit: 'hr', quantity: 0.4 },
-        { id: '8-7', name: 'Ayudante', unit: 'hr', quantity: 0.2 },
+      codigo: 'CAN-008',
+      descripcion: 'Cañería PVC agua potable Ø 1/2"',
+      unidad: 'm',
+      categoria: 'Instalaciones Sanitarias',
+      recursos: [
+        { id: '8-1', nombre: 'Tubo PVC 1/2"', unidad: 'm', cantidad: '1.05' },
+        { id: '8-2', nombre: 'Codos PVC 1/2"', unidad: 'pza', cantidad: '0.3' },
+        { id: '8-3', nombre: 'Tees PVC 1/2"', unidad: 'pza', cantidad: '0.2' },
+        { id: '8-4', nombre: 'Pegamento PVC', unidad: 'lt', cantidad: '0.05' },
+        { id: '8-5', nombre: 'Cinta teflón', unidad: 'rollo', cantidad: '0.1' },
+        { id: '8-6', nombre: 'Plomero', unidad: 'hr', cantidad: '0.4' },
+        { id: '8-7', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.2' },
       ],
     },
     {
       id: '9',
-      code: 'CAR-009',
-      description: 'Carpintería de madera - puerta tablero',
-      unit: 'm²',
-      category: 'Carpintería',
-      resources: [
-        { id: '9-1', name: 'Madera mara', unit: 'p²', quantity: 5.5 },
-        { id: '9-2', name: 'Triplay 4mm', unit: 'plg', quantity: 1.1 },
-        { id: '9-3', name: 'Cola carpintero', unit: 'kg', quantity: 0.3 },
-        { id: '9-4', name: 'Clavos', unit: 'kg', quantity: 0.2 },
-        { id: '9-5', name: 'Laca', unit: 'lt', quantity: 0.4 },
-        { id: '9-6', name: 'Carpintero', unit: 'hr', quantity: 3 },
+      codigo: 'CAR-009',
+      descripcion: 'Carpintería de madera - puerta tablero',
+      unidad: 'm²',
+      categoria: 'Carpintería',
+      recursos: [
+        { id: '9-1', nombre: 'Madera mara', unidad: 'p²', cantidad: '5.5' },
+        { id: '9-2', nombre: 'Triplay 4mm', unidad: 'plg', cantidad: '1.1' },
+        { id: '9-3', nombre: 'Cola carpintero', unidad: 'kg', cantidad: '0.3' },
+        { id: '9-4', nombre: 'Clavos', unidad: 'kg', cantidad: '0.2' },
+        { id: '9-5', nombre: 'Laca', unidad: 'lt', cantidad: '0.4' },
+        { id: '9-6', nombre: 'Carpintero', unidad: 'hr', cantidad: '3' },
       ],
     },
     {
       id: '10',
-      code: 'ILE-010',
-      description: 'Instalación eléctrica - punto de luz',
-      unit: 'pto',
-      category: 'Instalaciones Eléctricas',
-      resources: [
-        { id: '10-1', name: 'Cable THW #14', unit: 'm', quantity: 8 },
-        { id: '10-2', name: 'Tubo PVC eléctrico 3/4"', unit: 'm', quantity: 3 },
-        { id: '10-3', name: 'Caja octogonal', unit: 'pza', quantity: 1 },
-        { id: '10-4', name: 'Interruptor simple', unit: 'pza', quantity: 1 },
-        { id: '10-5', name: 'Cinta aislante', unit: 'rollo', quantity: 0.1 },
-        { id: '10-6', name: 'Electricista', unit: 'hr', quantity: 1.5 },
+      codigo: 'ILE-010',
+      descripcion: 'Instalación eléctrica - punto de luz',
+      unidad: 'pto',
+      categoria: 'Instalaciones Eléctricas',
+      recursos: [
+        { id: '10-1', nombre: 'Cable THW #14', unidad: 'm', cantidad: '8' },
+        { id: '10-2', nombre: 'Tubo PVC eléctrico 3/4"', unidad: 'm', cantidad: '3' },
+        { id: '10-3', nombre: 'Caja octogonal', unidad: 'pza', cantidad: '1' },
+        { id: '10-4', nombre: 'Interruptor simple', unidad: 'pza', cantidad: '1' },
+        { id: '10-5', nombre: 'Cinta aislante', unidad: 'rollo', cantidad: '0.1' },
+        { id: '10-6', nombre: 'Electricista', unidad: 'hr', cantidad: '1.5' },
       ],
     },
   ]);
 
   const filteredActions = actions.filter(action => {
     const matchesSearch = 
-      action.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.resources.some(r => r.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = filterCategory === 'all' || action.category === filterCategory;
+      action.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      action.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      action.recursos.some(r => r.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = filterCategory === 'all' || action.categoria === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -209,11 +219,22 @@ export function AdminPerformanceManager() {
     setEditingAction(null);
     setResources([]);
     setIsActionDialogOpen(true);
+    reset({
+      codigo: '',
+      descripcion: '',
+      unidad: '',
+      categoria: '',
+      recursos: [],
+    });
   };
 
-  const handleEdit = (action: Action) => {
+  const handleEdit = (action: any) => {
+    console.log('Editando actividad: ', action);
+    reset({
+      ...action,
+    });
     setEditingAction(action);
-    setResources([...action.resources]);
+    setResources([...action.recursos]);
     setIsActionDialogOpen(true);
   };
 
@@ -227,30 +248,27 @@ export function AdminPerformanceManager() {
     console.log('Guardando actividad');
     setIsActionDialogOpen(false);
     console.log('Datos guardados: ', data);
+    reset();
     // Lógica para guardar
   };
 
   const handleAddResource = () => {
     const newResource: Resource = {
       id: `${Date.now()}`,
-      name: '',
-      unit: '',
-      quantity: 0
+      nombre: '',
+      unidad: '',
+      cantidad: '',
     };
     setResources([...resources, newResource]);
+    setValue("recursos", [...resources, newResource], { shouldValidate: true });
   };
 
   const handleRemoveResource = (id: string) => {
     setResources(resources.filter(r => r.id !== id));
+    setValue("recursos", resources.filter(r => r.id !== id), { shouldValidate: true });
   };
 
-  const handleResourceChange = (id: string, field: keyof Resource, value: string | number) => {
-    setResources(resources.map(r => 
-      r.id === id ? { ...r, [field]: value } : r
-    ));
-  };
-
-  const categories = Array.from(new Set(actions.map(a => a.category)));
+  const categories = Array.from(new Set(actions.map(a => a.categoria)));
 
   return (
     <div className="space-y-6">
@@ -331,19 +349,19 @@ export function AdminPerformanceManager() {
                         </Button>
                       </TableCell>
                       <TableCell>
-                        <code className="text-primary">{action.code}</code>
+                        <code className="text-primary">{action.codigo}</code>
                       </TableCell>
-                      <TableCell>{action.description}</TableCell>
+                      <TableCell>{action.descripcion}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{action.unit}</Badge>
+                        <Badge variant="outline">{action.unidad}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-secondary text-secondary-foreground">
-                          {action.category}
+                          {action.categoria}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline">{action.resources.length}</Badge>
+                        <Badge variant="outline">{action.recursos.length}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -372,16 +390,16 @@ export function AdminPerformanceManager() {
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {action.resources.map((resource) => (
+                                {action.recursos.map((resource) => (
                                   <TableRow key={resource.id} className="border-b last:border-0">
-                                    <TableCell className="py-2">{resource.name}</TableCell>
+                                    <TableCell className="py-2">{resource.nombre}</TableCell>
                                     <TableCell className="py-2">
                                       <Badge variant="outline" className="bg-background">
-                                        {resource.unit}
+                                        {resource.unidad}
                                       </Badge>
                                     </TableCell>
                                     <TableCell className="py-2 text-right">
-                                      {resource.quantity}
+                                      {resource.cantidad}
                                     </TableCell>
                                   </TableRow>
                                 ))}
@@ -424,41 +442,57 @@ export function AdminPerformanceManager() {
                 <h3 className="font-semibold">Información Básica</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="code">Código</Label>
+                    <Label htmlFor="codigo">Código</Label>
                     <Input 
-                      id="code" 
+                      id="codigo" 
                       placeholder="XXX-000" 
-                      defaultValue={editingAction?.code} 
                       {...register("codigo")}
                     />
+                    {errors.codigo && (
+                      <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error en Código</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.codigo.message}</AlertDescription>
+                      </Alert>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="unit">Unidad</Label>
+                    <Label htmlFor="unidad">Unidad</Label>
                     <Input 
-                      id="unit" 
+                      id="unidad" 
                       placeholder="m², m³, etc." 
-                      defaultValue={editingAction?.unit} 
                       {...register("unidad")}
                     />
+                    {errors.unidad && (
+                      <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error en Unidad</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.unidad.message}</AlertDescription>
+                      </Alert>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descripción</Label>
+                  <Label htmlFor="descripcion">Descripción</Label>
                   <Input 
-                    id="description" 
+                    id="descripcion" 
                     placeholder="Descripción de la actividad" 
-                    defaultValue={editingAction?.description} 
                     {...register("descripcion")}
                   />
+                  {errors.descripcion && (
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en Descripción</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.descripcion.message}</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category">Categoría</Label>
+                  <Label htmlFor="categoria">Categoría</Label>
                   <Controller 
                     control={control}
-                    name="recursos"
+                    name="categoria"
                     render={({ field }) => (
+                      <>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecciona categoría" />
@@ -477,6 +511,13 @@ export function AdminPerformanceManager() {
                           <SelectItem value="Otros">Otros</SelectItem>
                         </SelectContent>
                       </Select>
+                      {errors.categoria && (
+                        <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                          <AlertTitle className='text-sm'>Error en Categoría</AlertTitle>
+                          <AlertDescription className='text-xs'>{errors.categoria.message}</AlertDescription>
+                        </Alert>
+                      )}
+                      </>
                     )}
                   />
                 </div>
@@ -498,40 +539,57 @@ export function AdminPerformanceManager() {
                 </div>
 
                 <div className="space-y-3">
+                  <input type="hidden" {...register("recursos")} />
+                  {errors.recursos && typeof errors.recursos.message === 'string' && (
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                      <AlertTitle className='text-sm'>Error en Recursos</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.recursos.message}</AlertDescription>
+                    </Alert>
+                  )}
                   {resources.map((resource, index) => (
                     <div key={resource.id} className="relative p-3 bg-muted/30 rounded-lg">
                       <div className='grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3'>
                         <div className="space-y-2">
-                          <Label htmlFor={`resource-name-${resource.id}`}>Nombre del Recurso</Label>
+                          <Label htmlFor={`resource-nombre-${resource.id}`}>Nombre del Recurso</Label>
                           <Input
-                            id={`resource-name-${resource.id}`}
+                            id={`resource-nombre-${resource.id}`}
                             placeholder="Ej: Cemento, Ladrillo, Albañil"
-                            // value={resource.name}
-                            // onChange={(e) => handleResourceChange(resource.id, 'name', e.target.value)}
                             {...register(`recursos.${index}.nombre`)}
                           />
+                        {errors.recursos && errors.recursos[index]?.nombre && (
+                          <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                            <AlertTitle className='text-sm'>Error en Nombre</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.recursos[index].nombre.message}</AlertDescription>
+                          </Alert>
+                        )}
                         </div>
                         <div className="sm:w-32 space-y-2">
-                          <Label htmlFor={`resource-unit-${resource.id}`}>Unidad</Label>
+                          <Label htmlFor={`resource-unidad-${resource.id}`}>Unidad</Label>
                           <Input
-                            id={`resource-unit-${resource.id}`}
+                            id={`resource-unidad-${resource.id}`}
                             placeholder="kg, m³, hr"
-                            // value={resource.unit}
-                            // onChange={(e) => handleResourceChange(resource.id, 'unit', e.target.value)}
                             {...register(`recursos.${index}.unidad`)}
                           />
+                        {errors.recursos && errors.recursos[index]?.unidad && (
+                          <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                            <AlertTitle className='text-sm'>Error en Unidad</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.recursos[index].unidad.message}</AlertDescription>
+                          </Alert>
+                        )}
                         </div>
                         <div className="sm:w-32 space-y-2">
-                          <Label htmlFor={`resource-quantity-${resource.id}`}>Cantidad</Label>
+                          <Label htmlFor={`resource-cantidad-${resource.id}`}>Cantidad</Label>
                           <Input
-                            id={`resource-quantity-${resource.id}`}
-                            type="number"
-                            step="0.01"
+                            id={`resource-cantidad-${resource.id}`}
                             placeholder="0"
-                            // value={resource.quantity}
-                            // onChange={(e) => handleResourceChange(resource.id, 'quantity', parseFloat(e.target.value) || 0)}
                             {...register(`recursos.${index}.cantidad`)}
                           />
+                        {errors.recursos && errors.recursos[index]?.cantidad && (
+                          <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                            <AlertTitle className='text-sm'>Error en Cantidad</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.recursos[index].cantidad.message}</AlertDescription>
+                          </Alert>
+                        )}
                         </div>
                         <Button
                           type="button"

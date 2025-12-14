@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react';
+import { Menu, X, User, LogIn } from 'lucide-react';
 import { Button } from './ui/button';
+import { isAuthenticated } from '../api/auth';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
   const navigate = useNavigate();
   const location = useLocation();
+  const authenticated = isAuthenticated();
 
   useEffect(() => {
     const path = location.pathname.split('/')[1];
@@ -24,6 +26,10 @@ export function Navbar() {
     { id: 'reglamentos', label: 'Reglamentos' },
     { id: 'convocatorias', label: 'Convocatorias' },
   ];
+
+  const profileLabel = authenticated ? "Mi Perfil" : "Iniciar sesión";
+  const profileRoute = authenticated ? "/perfil" : "/login";
+  const ProfileIcon = authenticated ? User : LogIn;
 
   return (
     <nav className="bg-primary text-primary-foreground shadow-lg sticky top-0 z-50">
@@ -60,15 +66,15 @@ export function Navbar() {
               </Button>
             ))}
             <Button
-              onClick={() => navigate('/perfil')}
+              onClick={() => navigate(profileRoute)}
               className={`ml-2 px-4 py-2 rounded flex items-center space-x-2 transition-colors cursor-pointer ${
-                currentPage === 'perfil'
+                currentPage === 'perfil' || currentPage === 'login'
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-primary/80'
               }`}
             >
-              <User className="w-4 h-4" />
-              <span>Mi Perfil</span>
+              <ProfileIcon className="w-4 h-4" />
+              <span>{profileLabel}</span>
             </Button>
           </div>
 
@@ -102,17 +108,17 @@ export function Navbar() {
             ))}
             <button
               onClick={() => {
-                navigate('/perfil');
+                navigate(profileRoute);
                 setIsMenuOpen(false);
               }}
               className={`block w-full text-left px-4 py-2 rounded flex items-center space-x-2 transition-colors ${
-                currentPage === 'perfil'
+                currentPage === 'perfil' || currentPage === 'login'
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-primary/80'
               }`}
             >
-              <User className="w-4 h-4" />
-              <span>Mi Perfil</span>
+              <ProfileIcon className="w-4 h-4" />
+              <span>{profileLabel}</span>
             </button>
           </div>
         )}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from '../api/kyClient';
-
+import { type NewsPostData } from "../validations/newsSchema";
 interface Noticia{
     id: number;
     title: string;
@@ -19,16 +19,6 @@ interface NoticiaDetail{
     image: string;
     content: string;
     pdf?: string;
-}
-
-export interface NewsPostData {
-  title: string;
-  category: string;
-  img?: File | null;
-  excerpt: string;
-  content: string;
-  pdf?: File | null;
-  status: string;
 }
 
 export function useNoticias(){

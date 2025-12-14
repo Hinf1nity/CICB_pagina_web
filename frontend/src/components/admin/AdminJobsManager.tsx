@@ -12,29 +12,60 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, X } from 'lucide-react';
 import { DynamicList } from '../DynamicList';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { type JobPostData } from '../../hooks/useJobs';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { jobSchema } from '../../validations/jobsSchema';
+import { type JobPostData,jobSchema } from '../../validations/jobsSchema';
+
 
 export function AdminJobsManager() {
   const { register, handleSubmit, formState: { errors }, control, reset } = useForm<JobPostData>(
-    { resolver: zodResolver(jobSchema) }
+    { resolver: zodResolver(jobSchema),
+      defaultValues: {
+        title: '',
+        description: '',
+        company: '',
+        location: '',
+        type: '',
+        salary: '',
+        requirements: [""],
+        responsibilities: [""],
+        pdf: null,
+        status: '',
+     }
+    }
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
   const jobsItems = [
-    { id: 1, title: 'Ingeniero Civil Senior', company: 'Constructora Andes', status: 'Activo', date: '2025-10-20' },
-    { id: 2, title: 'Ingeniero Estructural', company: 'Diseños Bolivia', status: 'Activo', date: '2025-10-18' },
-    { id: 3, title: 'Supervisor de Obra', company: 'Energía Limpia', status: 'Expirado', date: '2025-10-15' },
+    { id: 1, title: 'Ingeniero Civil Senior', company: 'Constructora Andes', status: 'Publicado', date: '2025-10-20' },
+    { id: 2, title: 'Ingeniero Estructural', company: 'Diseños Bolivia', status: 'Publicado', date: '2025-10-18' },
+    { id: 3, title: 'Supervisor de Obra', company: 'Energía Limpia', status: 'Borrador', date: '2025-10-15' },
   ];
 
   const handleCreate = () => {
+    reset({
+      title: '',
+      description: '',
+      company: '',
+      location: '',
+      type: '',
+      salary: '',
+      requirements: [""],
+      responsibilities: [""],
+      pdf: null,
+      status: '',
+    })
     setEditingItem(null);
     setIsDialogOpen(true);
   };
 
   const handleEdit = (item: any) => {
+    reset({
+      ...item,
+      requirements: item.requirements || [""],
+      responsibilities: item.responsibilities || [""],
+      pdf: null,
+    });
     setEditingItem(item);
     setIsDialogOpen(true);
   };
@@ -127,31 +158,43 @@ export function AdminJobsManager() {
                 <div className="space-y-2">
                   <Label htmlFor="jobTitle">Título del Puesto *</Label>
                   <Input id="jobTitle" placeholder="Título de la oferta laboral" {...register("title")} />
-                  {/* <Alert variant="destructive" className={`${errors.title ? 'block' : 'hidden'}`}>
-                    <AlertTitle>Error en el título</AlertTitle>
-                    <AlertDescription>
-                      {errors.title?.message}
-                    </AlertDescription>
-                  </Alert> */}
+                  {errors.title && (
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en el título</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.title?.message}</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="company">Empresa *</Label>
                   <Input id="company" placeholder="Nombre de la empresa" {...register("company")} />
+                  {errors.company && (
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en la empresa</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.company?.message}</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="location">Ubicación *</Label>
                     <Input id="location" placeholder="Ciudad" {...register("location")} />
+                    {errors.location && (
+                      <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error en la ubicación</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.location?.message}</AlertDescription>
+                      </Alert>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="type">Tipo *</Label>
                     <Controller
                       name="type"
                       control={control}
-                      defaultValue=""
                       render={({ field }) => (
+                        <>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
                             <SelectValue placeholder="Tipo de trabajo" />
@@ -162,6 +205,13 @@ export function AdminJobsManager() {
                             <SelectItem value="freelance">Freelance</SelectItem>
                           </SelectContent>
                         </Select>
+                        {errors.type && (
+                          <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                            <AlertTitle className='text-sm'>Error en el tipo</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.type?.message}</AlertDescription>
+                          </Alert>
+                        )}
+                        </>
                       )}
                     />
                   </div>
@@ -170,46 +220,68 @@ export function AdminJobsManager() {
                 <div className="space-y-2">
                   <Label htmlFor="salary">Salario</Label>
                   <Input type="number" id="salary" placeholder="Rango salarial (opcional)" {...register("salary")} />
-                  <Alert variant="destructive" className={`${errors.salary ? 'block' : 'hidden'}`}>
-                    <AlertTitle>Error en el salario</AlertTitle>
-                    <AlertDescription>
-                      {errors.salary?.message}
-                    </AlertDescription>
-                  </Alert>
+                  {errors.salary && (
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en el salario</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.salary?.message}</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="description">Descripción *</Label>
                   <Textarea id="description" placeholder="Descripción del puesto" rows={4} {...register("description")} />
+                  {errors.description && (
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en la descripción</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.description?.message}</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
                 
                 <Controller
                   name="requirements"
                   control={control}
-                  defaultValue={[""]}
                   render={({field}) => (
+                    <>
                     <DynamicList
                       label="Requisito"
                       placeholder="Ingrese un requisito"
                       items={field.value}
                       onChange={field.onChange}
                       required
+                      error={errors.requirements}
                     />
+                    {errors.requirements && typeof errors.requirements.message === 'string' && (
+                      <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error en los requisitos</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.requirements?.message}</AlertDescription>
+                      </Alert>
+                    )}
+                    </>
                   )}
                 />
 
                 <Controller
                   name="responsibilities"
                   control={control}
-                  defaultValue={[""]}
                   render={({field}) => (
+                    <>
                     <DynamicList
                       label="Responsabilidad"
                       placeholder="Ingrese una responsabilidad"
                       items={field.value}
                       onChange={field.onChange}
                       required
+                      error={errors.responsibilities}
                     />
+                    {errors.responsibilities && typeof errors.responsibilities.message === 'string' && (
+                      <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error en las responsabilidades</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.responsibilities?.message}</AlertDescription>
+                      </Alert>
+                    )}
+                    </>
                   )}
                 />
 
@@ -273,7 +345,10 @@ export function AdminJobsManager() {
                           </div>
                         )}
                         {errors.pdf && (
-                          <p className="text-red-500 text-sm">{errors.pdf.message}</p>
+                          <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                            <AlertTitle className='text-sm'>Error en el PDF</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.pdf?.message}</AlertDescription>
+                          </Alert>
                         )}
                       </div>
                     );
@@ -285,17 +360,24 @@ export function AdminJobsManager() {
                   <Controller
                     name="status"
                     control={control}
-                    defaultValue=""
                     render={({ field }) => (
+                      <>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecciona el estado" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="borrador">Borrador</SelectItem>
-                          <SelectItem value="publicado">Publicado</SelectItem>
+                          <SelectItem value="Borrador">Borrador</SelectItem>
+                          <SelectItem value="Publicado">Publicado</SelectItem>
                         </SelectContent>
                       </Select>
+                      {errors.status && (
+                        <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                          <AlertTitle className='text-sm'>Error en el estado</AlertTitle>
+                          <AlertDescription className='text-xs'>{errors.status?.message}</AlertDescription>
+                        </Alert>
+                      )}
+                    </>
                     )}
                   />
                 </div>

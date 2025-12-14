@@ -11,9 +11,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Plus, Edit, Trash2, Eye, Upload, FileText, Image as ImageIcon, X } from 'lucide-react';
 import { RichTextEditor } from '../RichTextEditor';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { type NewsPostData, useNewsPost } from '../../hooks/useNoticias';
+import { useNewsPost } from '../../hooks/useNoticias';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { newsSchema } from '../../validations/newsSchema';
+import { type NewsPostData, newsSchema } from '../../validations/newsSchema';
+import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 export function AdminNewsManager() {
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm<NewsPostData>({
@@ -21,9 +22,11 @@ export function AdminNewsManager() {
     defaultValues: {
         title: '',
         excerpt: '',
-        img: null,
-        pdf: null,
+        img: undefined,
+        pdf: undefined,
         content: '',
+        category: '',
+        status: '',
     },
     });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -38,12 +41,24 @@ export function AdminNewsManager() {
   ];
 
   const handleCreate = () => {
+    reset({
+      title: '',
+      excerpt: '',
+      img: undefined,
+      pdf: undefined,
+      content: '',
+      category: '',
+      status: '',
+    });
     setEditingItem(null);
     setNewsImagePreview('');
     setIsDialogOpen(true);
   };
 
   const handleEdit = (item: any) => {
+    reset({
+      ...item,
+    });
     setEditingItem(item);
     setIsDialogOpen(true);
   };
@@ -142,7 +157,10 @@ export function AdminNewsManager() {
                     <Label htmlFor="title">Título *</Label>
                     <Input id="title" placeholder="Título de la noticia" {...register('title')} />
                     {errors.title && (
-                        <p className="text-red-500 text-sm">{errors.title.message}</p>
+                        <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.title.message}</AlertDescription>
+                        </Alert>
                     )}
                     </div>
                     
@@ -151,20 +169,27 @@ export function AdminNewsManager() {
                     <Controller
                         name="category"
                         control={control}
-                        defaultValue=''
                         render={({ field }) => (
+                        <>
                         <Select onValueChange={field.onChange} value={field.value}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Selecciona una categoría" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="institucional">Institucional</SelectItem>
-                                <SelectItem value="normativa">Normativa</SelectItem>
-                                <SelectItem value="eventos">Eventos</SelectItem>
-                                <SelectItem value="premios">Premios</SelectItem>
-                                <SelectItem value="capacitacion">Capacitación</SelectItem>
+                                <SelectItem value="Institucional">Institucional</SelectItem>
+                                <SelectItem value="Normativa">Normativa</SelectItem>
+                                <SelectItem value="Eventos">Eventos</SelectItem>
+                                <SelectItem value="Premios">Premios</SelectItem>
+                                <SelectItem value="Capacitación">Capacitación</SelectItem>
                             </SelectContent>
                         </Select>
+                        {errors.category && (
+                            <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                            <AlertTitle className='text-sm'>Error</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.category.message}</AlertDescription>
+                            </Alert>
+                        )}
+                        </>
                         )}
                     />
                     </div>
@@ -238,7 +263,10 @@ export function AdminNewsManager() {
                                 )}
 
                                 {errors.img && (
-                                <p className="text-red-500 text-sm">{errors.img.message}</p>
+                                <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                                <AlertTitle className='text-sm'>Error</AlertTitle>
+                                <AlertDescription className='text-xs'>{errors.img.message}</AlertDescription>
+                                </Alert>
                                 )}
                             </div>
                             );
@@ -248,6 +276,12 @@ export function AdminNewsManager() {
                     <div className="space-y-2">
                     <Label htmlFor="excerpt">Extracto *</Label>
                     <Textarea id="excerpt" placeholder="Breve descripción para la vista previa" rows={3} {...register('excerpt')} />
+                    {errors.excerpt && (
+                        <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.excerpt.message}</AlertDescription>
+                        </Alert>
+                    )}
                     </div>
                     
                     <Controller
@@ -262,7 +296,10 @@ export function AdminNewsManager() {
                             placeholder="Escribe el contenido completo de la noticia aquí. Usa las herramientas para dar formato al texto."
                         />
                         {errors.content && (
-                            <p className="text-red-500 text-sm">{errors.content.message}</p>
+                            <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                            <AlertTitle className='text-sm'>Error</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.content.message}</AlertDescription>
+                            </Alert>
                         )}
                         </div>
                     )}
@@ -341,17 +378,24 @@ export function AdminNewsManager() {
                       <Controller
                           control={control}
                           name="status"
-                          defaultValue=""
                           render={({ field }) => (
+                            <>
                               <Select onValueChange={field.onChange} value={field.value}>
                                   <SelectTrigger>
                                       <SelectValue placeholder="Selecciona el estado" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                  <SelectItem value="borrador">Borrador</SelectItem>
-                                  <SelectItem value="publicado">Publicado</SelectItem>
+                                  <SelectItem value="Borrador">Borrador</SelectItem>
+                                  <SelectItem value="Publicado">Publicado</SelectItem>
                                   </SelectContent>
                               </Select>
+                              {errors.status && (
+                                <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                                <AlertTitle className='text-sm'>Error</AlertTitle>
+                                <AlertDescription className='text-xs'>{errors.status.message}</AlertDescription>
+                                </Alert>
+                              )}
+                              </>
                           )}
                       />
                     </div>

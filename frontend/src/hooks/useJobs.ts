@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/kyClient";
-
+import { type JobPostData } from "../validations/jobsSchema";
 interface Job {
   id: number;
   title: string;
@@ -26,18 +26,6 @@ interface JobDetail {
   responsibilities: string[];
   informacion: string;
   pdfUrl?: string;
-}
-export interface JobPostData {
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  salary: string;
-  description: string;
-  requirements: string[];
-  responsibilities: string[];
-  pdf?: File | null;
-  status: string;
 }
 
 export function useJobsPost() {

@@ -47,7 +47,7 @@ function AppRoutes() {
         <Route path="/trabajos" element={<JobsPage />} />
         <Route path="/trabajos/:id" element={<JobDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/perfil" element={<UserProfilePage />} />
+        <Route path="/perfil" element={<PrivateRoute><UserProfilePage /></PrivateRoute>} />
         <Route path="/tarjeta_usuario/:id" element={<UserCardPage />} />
         <Route path="/tabla" element={<TablePage />} />
         <Route path="/estadisticas" element={<StatsPage />} />
@@ -57,8 +57,8 @@ function AppRoutes() {
           <PrivateRoute><AdminUsersPage /></PrivateRoute>} />
         <Route path="/admin/noticias" element={
           <PrivateRoute><AdminNewsPage /></PrivateRoute>} />
-        <Route path="/admin/trabajos" element={<PrivateRoute><AdminJobsPage /></PrivateRoute>} />
-        <Route path="/admin/rendimientos" element={<AdminPerformancePage />} />
+        <Route path="/admin/trabajos" element={<AdminJobsPage />} />
+        <Route path="/admin/rendimientos" element={<PrivateRoute><AdminPerformancePage /></PrivateRoute>} />
         <Route path="/anuario" element={
           <GenericPage
             title="Anuario"
