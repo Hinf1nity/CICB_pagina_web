@@ -57,7 +57,7 @@ function AppRoutes() {
           <PrivateRoute><AdminUsersPage /></PrivateRoute>} />
         <Route path="/admin/noticias" element={
           <PrivateRoute><AdminNewsPage /></PrivateRoute>} />
-        <Route path="/admin/trabajos" element={<AdminJobsPage />} />
+        <Route path="/admin/trabajos" element={<PrivateRoute><AdminJobsPage /></PrivateRoute>} />
         <Route path="/admin/rendimientos" element={<PrivateRoute><AdminPerformancePage /></PrivateRoute>} />
         <Route path="/anuario" element={
           <GenericPage

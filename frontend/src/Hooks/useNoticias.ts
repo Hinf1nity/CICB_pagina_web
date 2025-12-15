@@ -1,35 +1,16 @@
 import { useEffect, useState } from "react";
 import api from '../api/kyClient';
 import { type NewsPostData } from "../validations/newsSchema";
-interface Noticia{
-    id: number;
-    title: string;
-    excerpt: string;
-    category: string;
-    date: string;
-    image: string;
-    pdf?: string;
-}
-
-interface NoticiaDetail{
-    id: number;
-    title: string;
-    category: string;
-    date: string;
-    image: string;
-    content: string;
-    pdf?: string;
-}
 
 export function useNoticias(){
-    const [noticias, setNoticias]=useState<Noticia[]>([]);
+    const [noticias, setNoticias] = useState< NewsPostData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchNoticias = async () => {
         try{
-            const data: Noticia[] = await api.get("noticias").json();
+            const data: NewsPostData[] = await api.get("news").json();
             setNoticias(data);
         }catch(err) {
             setError("Error al cargar las noticias");
@@ -44,15 +25,7 @@ export function useNoticias(){
 }
 
 export function useNoticiaDetail(id?: string){
-    const [noticia, setNoticias] = useState<NoticiaDetail>({
-  id: 0,
-  title: "",
-  category: "",
-  date: "",
-  image: "",
-  content: "",
-  pdf: ""
-});
+    const [noticia, setNoticias] = useState<NewsPostData>({} as NewsPostData);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -60,7 +33,7 @@ export function useNoticiaDetail(id?: string){
     useEffect(() => {
         const fetchNoticias = async () => {
         try{
-            const data: NoticiaDetail = await api.get(`noticias/${id}`).json();
+            const data: NewsPostData = await api.get(`news/${id}`).json();
             setNoticias(data);
             console.log(data);
         }catch(err) {
@@ -79,21 +52,20 @@ export function useNewsPost() {
   const postNews = async (data: NewsPostData) => {
     // Crear FormData
     const formData = new FormData();
-    formData.append("title", data.title);
-    formData.append("category", data.category);
-    formData.append("excerpt", data.excerpt);
-    formData.append("content", data.content);
-    formData.append("status", data.status);
-
+    formData.append("titulo", data.titulo);
+    formData.append("categoria", data.categoria);
+    formData.append("resumen", data.resumen);
+    formData.append("descripcion", data.descripcion);
+    formData.append("estado", data.estado);
     // Archivos opcionales
-    if (data.img) {
-      formData.append("img", data.img);
+    if (data.imagen) {
+      formData.append("imagen", data.imagen);
     }
     if (data.pdf) {
       formData.append("pdf", data.pdf);
     }
 
-    const response = await api.post("public/news/", {
+    const response = await api.post("news/", {
       body: formData,
     });
 

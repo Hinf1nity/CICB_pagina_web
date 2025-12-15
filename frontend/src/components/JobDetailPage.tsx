@@ -10,15 +10,16 @@ export function JobDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { job, loading, error } = useJobDetail(id);
+  console.log(job);
   const getTypeColor = (jobType: string) => {
     
     const colors: Record<string, string> = {
-      'Tiempo Completo': 'bg-primary text-primary-foreground',
-      'Contrato': 'bg-secondary text-secondary-foreground',
-      'Freelance': 'bg-accent text-accent-foreground',
-      'Ingeniería Civil': 'bg-primary text-primary-foreground',
-      'Arquitectura': 'bg-secondary text-secondary-foreground',
-      'Construcción': 'bg-accent text-accent-foreground',
+      'completo': 'bg-primary text-primary-foreground',
+      'contrato': 'bg-secondary text-secondary-foreground',
+      'freelance': 'bg-accent text-accent-foreground',
+      'ingeniería civil': 'bg-primary text-primary-foreground',
+      'arquitectura': 'bg-secondary text-secondary-foreground',
+      'construcción': 'bg-accent text-accent-foreground',
       'Educación': 'bg-chart-4 text-primary',
     };
     return colors[jobType] || 'bg-muted text-foreground';
@@ -51,30 +52,30 @@ export function JobDetailPage() {
           <div className="lg:col-span-2">
             {/* Job Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-4">{job.title}</h1>
+              <h1 className="text-3xl font-bold text-foreground mb-4">{job.titulo}</h1>
               <div className="flex items-center gap-2 mb-4">
                 <Building2 className="w-5 h-5 text-primary" />
-                <span className="text-foreground">{job.company}</span>
+                <span className="text-foreground">{job.nombre_empresa}</span>
               </div>
 
               <div className="flex flex-wrap gap-4 text-muted-foreground">
                 <div className="flex items-center">
                   <MapPin className="w-4 h-4 mr-2" />
-                  <span>{job.location}</span>
+                  <span>{job.ubicacion}</span>
                 </div>
                 <div className="flex items-center">
                   <Briefcase className="w-4 h-4 mr-2" />
-                  <Badge className={getTypeColor(job.type)}>
-                    {job.type}
+                  <Badge className={getTypeColor(job.tipo_contrato)}>
+                    <p className="capitalize">{job.tipo_contrato}</p>
                   </Badge>
                 </div>
                  <div className="flex items-center">
                   {/* <DollarSign className="w-4 h-4 mr-2" /> */}
-                  <span>{job.salary}</span>
+                  <span>{job.salario}</span>
                 </div>
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
-                  <span>Publicado: {new Date(job.date).toLocaleDateString('es-BO')}</span>
+                  <span>Publicado: {new Date(job.fecha_publicacion).toLocaleDateString('es-BO')}</span>
                 </div>
               </div>
             </div>
@@ -87,27 +88,27 @@ export function JobDetailPage() {
                 <CardTitle>Descripción del Puesto</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground leading-relaxed">{job.description}</p>
+                <p className="text-foreground leading-relaxed">{job.descripcion}</p>
               </CardContent>
             </Card>
             {/* Informacion de la Empresa */}
-            <Card className="mb-6">
+            {/* <Card className="mb-6">
               <CardHeader>
                 <CardTitle>Sobre la empresa</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-foreground leading-relaxed">{job.informacion}</p>
               </CardContent>
-            </Card>
+            </Card> */}
             {/* Requirements */}
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle>Requisitos</CardTitle>
               </CardHeader>
               <CardContent>
-                {Array.isArray(job.requirements) && job.requirements.length > 0 ? (
+                {Array.isArray(job.requisitos) && job.requisitos.length > 0 ? (
                   <ul className="space-y-2">
-                    {job.requirements.map((req, idx) => (
+                    {job.requisitos.map((req, idx) => (
                       <li key={idx} className="flex items-start">
                         <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-1" />
                         <span className="text-foreground">{req}</span>
@@ -125,9 +126,9 @@ export function JobDetailPage() {
                 <CardTitle>Responsabilidades</CardTitle>
               </CardHeader>
               <CardContent>
-                {Array.isArray(job.responsibilities) && job.responsibilities.length > 0 ? (
+                {Array.isArray(job.responsabilidades) && job.responsabilidades.length > 0 ? (
                   <ul className="space-y-2">
-                    {job.responsibilities.map((resp, idx) => (
+                    {job.responsabilidades.map((resp, idx) => (
                       <li key={idx} className="flex items-start">
                         <CheckCircle className="w-4 h-4 text-blue-500 mr-2 mt-1" />
                         <span className="text-foreground">{resp}</span>
@@ -143,7 +144,7 @@ export function JobDetailPage() {
             </Card>
 
             {/* PDF (si existe) */}
-            {job.pdfUrl && (
+            {job.pdf_url && (
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -155,7 +156,7 @@ export function JobDetailPage() {
                       </div>
                     </div>
                     <Button
-                      onClick={() => window.open(job.pdfUrl, '_blank')}
+                      onClick={() => window.open(job.pdf_url, '_blank')}
                       className="bg-accent text-accent-foreground hover:bg-accent/90"
                     >
                       <Download className="w-4 h-4 mr-2" />
@@ -165,7 +166,7 @@ export function JobDetailPage() {
 
                   <div className="border rounded-lg overflow-hidden bg-muted">
                     <iframe
-                      src={job.pdfUrl}
+                      src={job.pdf_url}
                       className="w-full h-[500px]"
                       title="Términos de Referencia"
                     />
@@ -186,21 +187,21 @@ export function JobDetailPage() {
                     <MapPin className="w-5 h-5 text-primary mt-1" />
                     <div>
                       <p className="text-muted-foreground">Ubicación</p>
-                      <p className="text-foreground">{job.location}</p>
+                      <p className="text-foreground">{job.ubicacion}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Briefcase className="w-5 h-5 text-primary mt-1" />
                     <div>
                       <p className="text-muted-foreground">Tipo</p>
-                      <p className="text-foreground">{job.type}</p>
+                      <p className="text-foreground">{job.tipo_contrato}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     {/* <DollarSign className="w-5 h-5 text-primary mt-1" /> */}
                     <div>
                       <p className="text-muted-foreground">Salario</p>
-                      <p className="text-foreground">{job.salary}</p>
+                      <p className="text-foreground">{job.salario}</p>
                     </div>
                   </div>
                 </div>

@@ -11,7 +11,7 @@ export function useLogin() {
     const formData = new FormData();
     formData.append("username", data.username);
     formData.append("password", data.password);
-    const response = await api.post('/auth/login', { body: formData }).json<LoginResponse>();
+    const response = await api.post('token/', { body: formData }).json<LoginResponse>();
     localStorage.setItem('access', response.access);
     localStorage.setItem('refresh', response.refresh);
     return response;

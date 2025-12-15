@@ -1,50 +1,25 @@
 import { useEffect, useState } from "react";
 import api from "../api/kyClient";
 import { type JobPostData } from "../validations/jobsSchema";
-interface Job {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  salary: string;
-  date: string;
-  description: string;
-  requirements: string[];
-}
-
-interface JobDetail {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  salary: string;
-  date: string;
-  description: string;
-  requirements: string[];
-  responsibilities: string[];
-  informacion: string;
-  pdfUrl?: string;
-}
 
 export function useJobsPost() {
   const postJob = async (data: JobPostData) => {
     const formData = new FormData();
-    formData.append("title", data.title);
-    formData.append("company", data.company);
-    formData.append("location", data.location);
-    formData.append("type", data.type);
-    formData.append("salary", data.salary);
-    formData.append("description", data.description);
-    formData.append("status", data.status);
-    data.requirements.forEach((req, index) => {
-      formData.append(`requirements[${index}]`, req);
+    formData.append("titulo", data.titulo);
+    formData.append("nombre_empresa", data.nombre_empresa);
+    formData.append("ubicacion", data.ubicacion);
+    formData.append("tipo_contrato", data.tipo_contrato);
+    formData.append("salario", data.salario);
+    formData.append("descripcion", data.descripcion);
+    formData.append("estado", data.estado);
+    data.requisitos.forEach((req, index) => {
+      formData.append(`requisitos[${index}]`, req);
     });
-    data.responsibilities.forEach((res, index) => {
-      formData.append(`responsibilities[${index}]`, res);
+    data.responsabilidades.forEach((res, index) => {
+      formData.append(`responsabilidades[${index}]`, res);
     });
-    const response = await api.post('/jobs', { body: formData });
+    console.log("PDF file to upload:", data);
+    const response = await api.post('jobs/', { body: formData });
     return response.json();
   };
 
@@ -52,7 +27,7 @@ export function useJobsPost() {
 }
 
 export function useJobs() {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<JobPostData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,15 +35,15 @@ export function useJobs() {
     const fetchJobs = async () => {
       try {
         const data: any[] = await api.get("jobs").json();
-        const formattedData: Job[] = data.map((job) => ({
+        const formattedData: JobPostData[] = data.map((job) => ({
           ...job,
-          requirements:
-            typeof job.requirements === "string"
-              ? job.requirements
+          requisitos:
+            typeof job.requisitos === "string"
+              ? job.requisitos
                   .split(",")
                   .map((r: string) => r.trim())
                   .filter((r: string) => r.length > 0)
-              : job.requirements || [],
+              : job.requisitos || [],
         }));
 
         setJobs(formattedData);
@@ -86,20 +61,7 @@ export function useJobs() {
 }
 
 export function useJobDetail(id?: string) {
-  const [job, setJob] = useState<JobDetail>({
-    id: 0,
-    title: "",
-    company: "",
-    location: "",
-    type: "",
-    salary: "",
-    date: "",
-    description: "",
-    requirements: [],
-    responsibilities: [],
-    informacion: "",
-    pdfUrl: "",
-  });
+  const [job, setJob] = useState<JobPostData>({} as JobPostData);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +70,7 @@ export function useJobDetail(id?: string) {
     const fetchJob = async () => {
       try {
         const data: any = await api.get(`jobs/${id}`).json();
-        const formattedJob: JobDetail = {
+        const formattedJob: JobPostData = {
           ...data,
           requirements:
             typeof data.requirements === "string"

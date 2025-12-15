@@ -13,12 +13,11 @@ export function JobsPage() {
   const [type, setCategory] = useState('all');
   const navigate = useNavigate();
   const { jobs, loading, error } = useJobs();
-
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = type === 'all' || job.type === type;
+      job.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = type === 'all' || job.tipo_contrato === type;
     return matchesSearch && matchesType;
   });
 
@@ -78,39 +77,39 @@ export function JobsPage() {
               {/* Contenido principal */}
               <div className="flex-1">
                 <CardTitle className="text-lg font-semibold text-foreground">
-                  {job.title}
+                  {job.titulo}
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground mb-2">
-                  {job.company}
+                  {job.nombre_empresa}
                 </CardDescription>
 
                 <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-3">
                   <span className="flex items-center gap-1">
-                    <MapPin size={16} /> {job.location}
+                    <MapPin size={16} /> {job.ubicacion}
                   </span>
                   <Badge className="flex items-center gap-1 bg-primary text-primary-foreground">
-                    <Briefcase size={14} /> {job.type}
+                    <Briefcase size={14} /> <p className="capitalize">{job.tipo_contrato}</p>
                   </Badge>
                   <span className="flex items-center gap-1">
                     {/* <DollarSign size={16} />  */}
-                    {job.salary}
+                    {job.salario}
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar size={16} />{' '}
-                    {new Date(job.date).toLocaleDateString('es-BO')}
+                    {new Date(job.fecha_publicacion).toLocaleDateString('es-BO')}
                   </span>
                 </div>
 
                 <p className="text-sm text-foreground mb-2 line-clamp-2">
-                  {job.description}
+                  {job.descripcion}
                 </p>
-                {Array.isArray(job.requirements) && job.requirements.length > 0 && (
+                {Array.isArray(job.requisitos) && job.requisitos.length > 0 && (
                   <div>
                     <p className="text-sm font-medium text-foreground">
                      Requisitos principales:
                     </p>
                     <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
-                      {job.requirements.slice(0, 3).map((req, i) => (
+                      {job.requisitos.slice(0, 3).map((req, i) => (
                         <li key={i} className="flex items-center">
                           <span className="text-lg mr-2">•</span>
                           {req}

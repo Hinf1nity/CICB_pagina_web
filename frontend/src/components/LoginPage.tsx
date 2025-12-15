@@ -6,20 +6,20 @@ import { Label } from './ui/label';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Lock, Mail, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useLogin } from '../Hooks/useLogin';
+// import { useLogin } from '../hooks/useLogin';
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { type LoginData } from '../validations/loginSchema';
-
+import { useAuth } from '../auth/useAuth';
 
 export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useLogin();
+  const { login } = useAuth();
   const { register, handleSubmit } = useForm<LoginData>();
 
   const handleLogin: SubmitHandler<LoginData> = async (data) => {
     try {
-      await login(data);
+      await login(data.password, data.username);
       navigate('/admin');
     } catch (error) {
       console.error('Error during login:', error);

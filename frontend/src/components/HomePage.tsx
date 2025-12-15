@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '../auth/useAuth';
 
 export function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const stats = [
     { icon: Users, label: 'Miembros Activos', value: '2,500+' },
@@ -95,12 +97,21 @@ export function HomePage() {
               Representamos a los profesionales más capacitados del país.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button
-                onClick={() => navigate('/login')}
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                Iniciar Sesión
-              </Button>
+              {isAuthenticated ? (
+                <Button
+                  onClick={() => navigate('/perfil')}
+                  className="bg-accent text-accent-foreground hover:bg-accent/90"
+                >
+                  Mi Perfil
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate('/login')}
+                  className="bg-accent text-accent-foreground hover:bg-accent/90"
+                >
+                  Iniciar Sesión
+                </Button>
+              )}
               <Button
                 onClick={() => navigate('/noticias')}
                 variant="outline"

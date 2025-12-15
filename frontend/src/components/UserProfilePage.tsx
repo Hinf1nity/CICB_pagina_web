@@ -6,8 +6,9 @@ import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { User, Mail, Phone, MapPin, Calendar, Award, Edit, QrCode, CreditCard } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Award, Edit, QrCode, CreditCard, LogOut, Download } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useAuth } from '../auth/useAuth';
 
 interface UserProfilePageProps {
   onNavigate?: (page: string, id?: number) => void;
@@ -15,8 +16,9 @@ interface UserProfilePageProps {
 
 export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const { logout } = useAuth();
   const [userData, setUserData] = useState({
-    name: 'Ing. Juan Carlos Pérez Gutiérrez',
+    name: 'Juan Carlos Pérez Gutiérrez',
     email: 'juan.perez@email.com',
     phone: '+591 70123456',
     registration: 'CICB-LP-1234',
@@ -37,13 +39,69 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     // Aquí iría la lógica para guardar los datos
   };
 
+  const handleDownloadQR = () => {
+    // Obtener el elemento SVG del código QR
+    const svg = document.querySelector('#qr-code-svg') as SVGElement;
+    if (!svg) return;
+
+    // Crear un canvas para convertir el SVG a imagen
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Configurar el tamaño del canvas
+    const svgSize = 180;
+    const padding = 40; // Padding adicional
+    canvas.width = svgSize + padding * 2;
+    canvas.height = svgSize + padding * 2;
+
+    // Fondo blanco
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Convertir SVG a data URL
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    // Crear imagen y dibujar en canvas
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, padding, padding, svgSize, svgSize);
+      
+      // Convertir canvas a blob y descargar
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const link = document.createElement('a');
+          link.download = `QR_${userData.registration}.png`;
+          link.href = URL.createObjectURL(blob);
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }
+      });
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="mb-3">Mi Perfil Profesional</h1>
-          <p>Gestiona tu información profesional y credenciales del CICB</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="mb-3">Mi Perfil Profesional</h1>
+              <p>Gestiona tu información profesional y credenciales del CICB</p>
+            </div>
+            <Button
+              onClick={logout}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Cerrar Sesión
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -111,21 +169,32 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               <CardContent className="flex flex-col items-center space-y-4">
                 <div className="bg-white p-4 rounded-lg shadow-sm">
                   <QRCodeSVG
-                    value={`https://cicb.org.bo/profile/${userData.registration}`}
+                    id="qr-code-svg"
+                    value={`https://localhost:5173/tarjeta_usuario/${userData.registration}`}
                     size={180}
                     level="H"
                     includeMargin={true}
                   />
                 </div>
-                {onNavigate && (
-                  <Button 
-                    onClick={() => onNavigate('user-card', 1)}
-                    className="w-full bg-primary text-primary-foreground"
-                  >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Ver Tarjeta
-                  </Button>
-                )}
+                <div className='w-full space-y-2'>
+                  {onNavigate && (
+                    <Button 
+                      onClick={() => onNavigate('user-card', 1)}
+                      className="w-full bg-primary text-primary-foreground"
+                    >
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Ver Tarjeta
+                    </Button>
+                  )}
+                  <Button
+                    onClick={handleDownloadQR}
+                    variant='outline'
+                    className='w-full'
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Descargar QR
+                </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -195,7 +264,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                             <Label htmlFor="name">Nombre Completo</Label>
                             <Input
                               id="name"
-                              value={userData.name}
+                              value={`Ing. ${userData.name}`}
                               disabled={!isEditing}
                               onChange={(e) => setUserData({...userData, name: e.target.value})}
                             />

@@ -20,13 +20,13 @@ export function AdminNewsManager() {
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm<NewsPostData>({
     resolver: zodResolver(newsSchema),
     defaultValues: {
-        title: '',
-        excerpt: '',
-        img: undefined,
+        titulo: '',
+        resumen: '',
+        imagen: undefined,
         pdf: undefined,
-        content: '',
-        category: '',
-        status: '',
+        descripcion: '',
+        categoria: '',
+        estado: '',
     },
     });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -35,20 +35,20 @@ export function AdminNewsManager() {
   const { postNews } = useNewsPost();
 
   const newsItems = [
-    { id: 1, title: 'Convocatoria Asamblea General', category: 'Institucional', status: 'Publicado', date: '2025-10-22' },
-    { id: 2, title: 'Nuevo Reglamento de Proyectos', category: 'Normativa', status: 'Publicado', date: '2025-10-18' },
-    { id: 3, title: 'Seminario Internacional', category: 'Eventos', status: 'Borrador', date: '2025-10-15' },
+    { id: 1, title: 'Convocatoria Asamblea General', category: 'institucional', status: 'publicado', date: '2025-10-22' },
+    { id: 2, title: 'Nuevo Reglamento de Proyectos', category: 'normativa', status: 'publicado', date: '2025-10-18' },
+    { id: 3, title: 'Seminario Internacional', category: 'eventos', status: 'borrador', date: '2025-10-15' },
   ];
 
   const handleCreate = () => {
     reset({
-      title: '',
-      excerpt: '',
-      img: undefined,
+      titulo: '',
+      resumen: '',
+      imagen: undefined,
       pdf: undefined,
-      content: '',
-      category: '',
-      status: '',
+      descripcion: '',
+      categoria: '',
+      estado: '',
     });
     setEditingItem(null);
     setNewsImagePreview('');
@@ -69,11 +69,11 @@ export function AdminNewsManager() {
     }
   };
 
-  const handleSave: SubmitHandler<NewsPostData> = (data) => {
+  const handleSave: SubmitHandler<NewsPostData> = async (data) => {
       setIsDialogOpen(false);
-      console.log('Guardando oferta:', data);
-      // const res = await postNews(data);
-      // console.log('Respuesta del servidor:', res);
+      console.log('Guardando noticias:', data);
+      const res = await postNews(data);
+      console.log('Respuesta del servidor:', res);
       reset();
     };
 
@@ -110,11 +110,11 @@ export function AdminNewsManager() {
                   <TableRow key={item.id}>
                     <TableCell>{item.title}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{item.category}</Badge>
+                      <Badge variant="outline"><p className='capitalize'>{item.category}</p></Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={item.status === 'Publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
-                        {item.status}
+                      <Badge className={item.status === 'publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
+                        <p className='capitalize'>{item.status}</p>
                       </Badge>
                     </TableCell>
                     <TableCell>{new Date(item.date).toLocaleDateString('es-BO')}</TableCell>
@@ -154,20 +154,20 @@ export function AdminNewsManager() {
 
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                    <Label htmlFor="title">Título *</Label>
-                    <Input id="title" placeholder="Título de la noticia" {...register('title')} />
-                    {errors.title && (
+                    <Label htmlFor="titulo">Título *</Label>
+                    <Input id="titulo" placeholder="Título de la noticia" {...register('titulo')} />
+                    {errors.titulo && (
                         <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.title.message}</AlertDescription>
+                        <AlertDescription className='text-xs'>{errors.titulo.message}</AlertDescription>
                         </Alert>
                     )}
                     </div>
                     
                     <div className="space-y-2">
-                    <Label htmlFor="category">Categoría *</Label>
+                    <Label htmlFor="categoria">Categoría *</Label>
                     <Controller
-                        name="category"
+                        name="categoria"
                         control={control}
                         render={({ field }) => (
                         <>
@@ -176,17 +176,17 @@ export function AdminNewsManager() {
                                 <SelectValue placeholder="Selecciona una categoría" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Institucional">Institucional</SelectItem>
-                                <SelectItem value="Normativa">Normativa</SelectItem>
-                                <SelectItem value="Eventos">Eventos</SelectItem>
-                                <SelectItem value="Premios">Premios</SelectItem>
-                                <SelectItem value="Capacitación">Capacitación</SelectItem>
+                                <SelectItem value="institucional">Institucional</SelectItem>
+                                <SelectItem value="normativa">Normativa</SelectItem>
+                                <SelectItem value="eventos">Eventos</SelectItem>
+                                <SelectItem value="premios">Premios</SelectItem>
+                                <SelectItem value="capacitacion">Capacitación</SelectItem>
                             </SelectContent>
                         </Select>
-                        {errors.category && (
+                        {errors.categoria && (
                             <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                             <AlertTitle className='text-sm'>Error</AlertTitle>
-                            <AlertDescription className='text-xs'>{errors.category.message}</AlertDescription>
+                            <AlertDescription className='text-xs'>{errors.categoria?.message}</AlertDescription>
                             </Alert>
                         )}
                         </>
@@ -195,7 +195,7 @@ export function AdminNewsManager() {
                     </div>
 
                     <Controller
-                        name="img"
+                        name="imagen"
                         control={control}
                         render={({ field }) => {
 
@@ -226,7 +226,7 @@ export function AdminNewsManager() {
 
                             return (
                             <div className="space-y-2">
-                                <Label htmlFor="newsImage">Imagen Principal *</Label>
+                                <Label htmlFor="newsImagen">Imagen Principal *</Label>
 
                                 {newsImagePreview ? (
                                 <div className="relative">
@@ -262,10 +262,10 @@ export function AdminNewsManager() {
                                 </div>
                                 )}
 
-                                {errors.img && (
+                                {errors.imagen && (
                                 <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                                 <AlertTitle className='text-sm'>Error</AlertTitle>
-                                <AlertDescription className='text-xs'>{errors.img.message}</AlertDescription>
+                                <AlertDescription className='text-xs'>{errors.imagen?.message}</AlertDescription>
                                 </Alert>
                                 )}
                             </div>
@@ -274,18 +274,18 @@ export function AdminNewsManager() {
                         />
                     
                     <div className="space-y-2">
-                    <Label htmlFor="excerpt">Extracto *</Label>
-                    <Textarea id="excerpt" placeholder="Breve descripción para la vista previa" rows={3} {...register('excerpt')} />
-                    {errors.excerpt && (
+                    <Label htmlFor="resumen">Extracto *</Label>
+                    <Textarea id="resumen" placeholder="Breve descripción para la vista previa" rows={3} {...register('resumen')} />
+                    {errors.resumen && (
                         <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.excerpt.message}</AlertDescription>
+                        <AlertDescription className='text-xs'>{errors.resumen?.message}</AlertDescription>
                         </Alert>
                     )}
                     </div>
                     
                     <Controller
-                    name="content"
+                    name="descripcion"
                     control={control}
                     render={({ field }) => (
                         <div className="space-y-2">
@@ -295,10 +295,10 @@ export function AdminNewsManager() {
                             onChange={field.onChange}
                             placeholder="Escribe el contenido completo de la noticia aquí. Usa las herramientas para dar formato al texto."
                         />
-                        {errors.content && (
+                        {errors.descripcion && (
                             <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                             <AlertTitle className='text-sm'>Error</AlertTitle>
-                            <AlertDescription className='text-xs'>{errors.content.message}</AlertDescription>
+                            <AlertDescription className='text-xs'>{errors.descripcion?.message}</AlertDescription>
                             </Alert>
                         )}
                         </div>
@@ -377,7 +377,7 @@ export function AdminNewsManager() {
                       <Label htmlFor="status">Estado *</Label>
                       <Controller
                           control={control}
-                          name="status"
+                          name="estado"
                           render={({ field }) => (
                             <>
                               <Select onValueChange={field.onChange} value={field.value}>
@@ -385,14 +385,14 @@ export function AdminNewsManager() {
                                       <SelectValue placeholder="Selecciona el estado" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                  <SelectItem value="Borrador">Borrador</SelectItem>
-                                  <SelectItem value="Publicado">Publicado</SelectItem>
+                                  <SelectItem value="borrador">Borrador</SelectItem>
+                                  <SelectItem value="publicado">Publicado</SelectItem>
                                   </SelectContent>
                               </Select>
-                              {errors.status && (
+                              {errors.estado && (
                                 <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                                 <AlertTitle className='text-sm'>Error</AlertTitle>
-                                <AlertDescription className='text-xs'>{errors.status.message}</AlertDescription>
+                                <AlertDescription className='text-xs'>{errors.estado?.message}</AlertDescription>
                                 </Alert>
                               )}
                               </>

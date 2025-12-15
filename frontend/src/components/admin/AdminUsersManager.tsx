@@ -11,7 +11,7 @@ import { Plus, Edit, Trash2, Search, UserCheck, UserX, Upload } from 'lucide-rea
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { userSchema, type UserPostData } from '../../validations/userSchema';
-import { useUsersPost} from '../../Hooks/useUsers';
+import { useUsersPost} from '../../hooks/useUsers';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 export function AdminUsersManager() {

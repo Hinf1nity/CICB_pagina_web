@@ -6,7 +6,7 @@ interface UserCardPageProps {
   userId?: number;
 }
 
-export function UserCardPage({ userId = 1 }: UserCardPageProps) {
+export function UserCardPage({ userId = 'CICB-LP-1234' }: UserCardPageProps) {
   // Datos simulados del usuario
   const userData = {
     name: 'Ing. Juan Carlos Pérez Gutiérrez',

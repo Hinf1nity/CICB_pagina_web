@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, X } from 'lucide-react';
 import { DynamicList } from '../DynamicList';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
+import { useJobsPost } from '../../hooks/useJobs';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type JobPostData,jobSchema } from '../../validations/jobsSchema';
 
@@ -20,40 +21,41 @@ export function AdminJobsManager() {
   const { register, handleSubmit, formState: { errors }, control, reset } = useForm<JobPostData>(
     { resolver: zodResolver(jobSchema),
       defaultValues: {
-        title: '',
-        description: '',
-        company: '',
-        location: '',
-        type: '',
-        salary: '',
-        requirements: [""],
-        responsibilities: [""],
+        titulo: '',
+        descripcion: '',
+        nombre_empresa: '',
+        ubicacion: '',
+        tipo_contrato: '',
+        salario: '',
+        requisitos: [""],
+        responsabilidades: [""],
         pdf: null,
-        status: '',
+        estado: '',
      }
     }
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const { postJob } = useJobsPost();
 
   const jobsItems = [
-    { id: 1, title: 'Ingeniero Civil Senior', company: 'Constructora Andes', status: 'Publicado', date: '2025-10-20' },
-    { id: 2, title: 'Ingeniero Estructural', company: 'Diseños Bolivia', status: 'Publicado', date: '2025-10-18' },
-    { id: 3, title: 'Supervisor de Obra', company: 'Energía Limpia', status: 'Borrador', date: '2025-10-15' },
+    { id: 1, title: 'Ingeniero Civil Senior', company: 'Constructora Andes', status: 'publicado', date: '2025-10-20' },
+    { id: 2, title: 'Ingeniero Estructural', company: 'Diseños Bolivia', status: 'publicado', date: '2025-10-18' },
+    { id: 3, title: 'Supervisor de Obra', company: 'Energía Limpia', status: 'borrador', date: '2025-10-15' },
   ];
 
   const handleCreate = () => {
     reset({
-      title: '',
-      description: '',
-      company: '',
-      location: '',
-      type: '',
-      salary: '',
-      requirements: [""],
-      responsibilities: [""],
+      titulo: '',
+      descripcion: '',
+      nombre_empresa: '',
+      ubicacion: '',
+      tipo_contrato: '',
+      salario: '',
+      requisitos: [""],
+      responsabilidades: [""],
       pdf: null,
-      status: '',
+      estado: '',
     })
     setEditingItem(null);
     setIsDialogOpen(true);
@@ -62,8 +64,8 @@ export function AdminJobsManager() {
   const handleEdit = (item: any) => {
     reset({
       ...item,
-      requirements: item.requirements || [""],
-      responsibilities: item.responsibilities || [""],
+      requisitos: item.requisitos || [""],
+      responsabilidades: item.responsabilidades || [""],
       pdf: null,
     });
     setEditingItem(item);
@@ -76,9 +78,11 @@ export function AdminJobsManager() {
     }
   };
 
-  const handleSave: SubmitHandler<JobPostData> = (data) => {
+  const handleSave: SubmitHandler<JobPostData> = async (data) => {
     setIsDialogOpen(false);
     console.log('Guardando oferta:', data);
+    const res = await postJob(data);
+    console.log('Respuesta del servidor:', res);
     reset();
   };
 
@@ -115,8 +119,8 @@ export function AdminJobsManager() {
                     <TableCell>{item.title}</TableCell>
                     <TableCell>{item.company}</TableCell>
                     <TableCell>
-                      <Badge className={item.status === 'Activo' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
-                        {item.status}
+                      <Badge className={item.status === 'publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
+                        <p className="capitalize">{item.status}</p>
                       </Badge>
                     </TableCell>
                     <TableCell>{new Date(item.date).toLocaleDateString('es-BO')}</TableCell>
@@ -157,22 +161,22 @@ export function AdminJobsManager() {
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="jobTitle">Título del Puesto *</Label>
-                  <Input id="jobTitle" placeholder="Título de la oferta laboral" {...register("title")} />
-                  {errors.title && (
+                  <Input id="jobTitle" placeholder="Título de la oferta laboral" {...register("titulo")} />
+                  {errors.titulo && (
                     <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                       <AlertTitle className='text-sm'>Error en el título</AlertTitle>
-                      <AlertDescription className='text-xs'>{errors.title?.message}</AlertDescription>
+                      <AlertDescription className='text-xs'>{errors.titulo?.message}</AlertDescription>
                     </Alert>
                   )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="company">Empresa *</Label>
-                  <Input id="company" placeholder="Nombre de la empresa" {...register("company")} />
-                  {errors.company && (
+                  <Input id="company" placeholder="Nombre de la empresa" {...register("nombre_empresa")} />
+                  {errors.nombre_empresa && (
                     <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                       <AlertTitle className='text-sm'>Error en la empresa</AlertTitle>
-                      <AlertDescription className='text-xs'>{errors.company?.message}</AlertDescription>
+                      <AlertDescription className='text-xs'>{errors.nombre_empresa?.message}</AlertDescription>
                     </Alert>
                   )}
                 </div>
@@ -180,18 +184,18 @@ export function AdminJobsManager() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="location">Ubicación *</Label>
-                    <Input id="location" placeholder="Ciudad" {...register("location")} />
-                    {errors.location && (
+                    <Input id="location" placeholder="Ciudad" {...register("ubicacion")} />
+                    {errors.ubicacion && (
                       <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error en la ubicación</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.location?.message}</AlertDescription>
+                        <AlertDescription className='text-xs'>{errors.ubicacion?.message}</AlertDescription>
                       </Alert>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="type">Tipo *</Label>
+                    <Label htmlFor="tipo_contrato">Tipo *</Label>
                     <Controller
-                      name="type"
+                      name="tipo_contrato"
                       control={control}
                       render={({ field }) => (
                         <>
@@ -205,10 +209,10 @@ export function AdminJobsManager() {
                             <SelectItem value="freelance">Freelance</SelectItem>
                           </SelectContent>
                         </Select>
-                        {errors.type && (
+                        {errors.tipo_contrato && (
                           <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                             <AlertTitle className='text-sm'>Error en el tipo</AlertTitle>
-                            <AlertDescription className='text-xs'>{errors.type?.message}</AlertDescription>
+                            <AlertDescription className='text-xs'>{errors.tipo_contrato?.message}</AlertDescription>
                           </Alert>
                         )}
                         </>
@@ -218,29 +222,29 @@ export function AdminJobsManager() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="salary">Salario</Label>
-                  <Input type="number" id="salary" placeholder="Rango salarial (opcional)" {...register("salary")} />
-                  {errors.salary && (
+                  <Label htmlFor="salario">Salario</Label>
+                  <Input type="number" id="salario" placeholder="Rango salarial (opcional)" {...register("salario")} />
+                  {errors.salario && (
                     <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                       <AlertTitle className='text-sm'>Error en el salario</AlertTitle>
-                      <AlertDescription className='text-xs'>{errors.salary?.message}</AlertDescription>
+                      <AlertDescription className='text-xs'>{errors.salario?.message}</AlertDescription>
                     </Alert>
                   )}
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descripción *</Label>
-                  <Textarea id="description" placeholder="Descripción del puesto" rows={4} {...register("description")} />
-                  {errors.description && (
+                  <Label htmlFor="descripcion">Descripción *</Label>
+                  <Textarea id="descripcion" placeholder="Descripción del puesto" rows={4} {...register("descripcion")} />
+                  {errors.descripcion && (
                     <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                       <AlertTitle className='text-sm'>Error en la descripción</AlertTitle>
-                      <AlertDescription className='text-xs'>{errors.description?.message}</AlertDescription>
+                      <AlertDescription className='text-xs'>{errors.descripcion?.message}</AlertDescription>
                     </Alert>
                   )}
                 </div>
                 
                 <Controller
-                  name="requirements"
+                  name="requisitos"
                   control={control}
                   render={({field}) => (
                     <>
@@ -250,12 +254,12 @@ export function AdminJobsManager() {
                       items={field.value}
                       onChange={field.onChange}
                       required
-                      error={errors.requirements}
+                      error={errors.requisitos}
                     />
-                    {errors.requirements && typeof errors.requirements.message === 'string' && (
+                    {errors.requisitos && typeof errors.requisitos.message === 'string' && (
                       <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error en los requisitos</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.requirements?.message}</AlertDescription>
+                        <AlertDescription className='text-xs'>{errors.requisitos?.message}</AlertDescription>
                       </Alert>
                     )}
                     </>
@@ -263,7 +267,7 @@ export function AdminJobsManager() {
                 />
 
                 <Controller
-                  name="responsibilities"
+                  name="responsabilidades"
                   control={control}
                   render={({field}) => (
                     <>
@@ -273,12 +277,12 @@ export function AdminJobsManager() {
                       items={field.value}
                       onChange={field.onChange}
                       required
-                      error={errors.responsibilities}
+                      error={errors.responsabilidades}
                     />
-                    {errors.responsibilities && typeof errors.responsibilities.message === 'string' && (
+                    {errors.responsabilidades && typeof errors.responsabilidades.message === 'string' && (
                       <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error en las responsabilidades</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.responsibilities?.message}</AlertDescription>
+                        <AlertDescription className='text-xs'>{errors.responsabilidades?.message}</AlertDescription>
                       </Alert>
                     )}
                     </>
@@ -313,7 +317,7 @@ export function AdminJobsManager() {
 
                     return (
                       <div className="space-y-2">
-                        <Label htmlFor="jobPdf">Documento PDF (Opcional)</Label>
+                        <Label htmlFor="pdf">Documento PDF (Opcional)</Label>
                         {file ? (
                           <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
                             <div className="flex items-center gap-2">
@@ -331,12 +335,12 @@ export function AdminJobsManager() {
                           <div className="border-2 border-dashed border-input rounded-md p-4 text-center hover:border-primary transition-colors">
                             <input
                               type="file"
-                              id="jobPdf"
+                              id="pdf"
                               accept=".pdf"
                               onChange={handlePdfChange}
                               className="hidden"
                             />
-                            <label htmlFor="jobPdf" className="cursor-pointer">
+                            <label htmlFor="pdf" className="cursor-pointer">
                               <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                               <p className="text-muted-foreground">
                                 Sube un PDF con detalles adicionales (máx. 10MB)
@@ -356,9 +360,9 @@ export function AdminJobsManager() {
                 />
 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Estado *</Label>
+                  <Label htmlFor="estado">Estado *</Label>
                   <Controller
-                    name="status"
+                    name="estado"
                     control={control}
                     render={({ field }) => (
                       <>
@@ -367,14 +371,14 @@ export function AdminJobsManager() {
                           <SelectValue placeholder="Selecciona el estado" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Borrador">Borrador</SelectItem>
-                          <SelectItem value="Publicado">Publicado</SelectItem>
+                          <SelectItem value="borrador">Borrador</SelectItem>
+                          <SelectItem value="publicado">Publicado</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.status && (
+                      {errors.estado && (
                         <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                           <AlertTitle className='text-sm'>Error en el estado</AlertTitle>
-                          <AlertDescription className='text-xs'>{errors.status?.message}</AlertDescription>
+                          <AlertDescription className='text-xs'>{errors.estado?.message}</AlertDescription>
                         </Alert>
                       )}
                     </>

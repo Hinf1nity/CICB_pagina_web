@@ -19,9 +19,9 @@ export function NewsPage() {
     const filteredNews = useMemo(() => {
     return noticias.filter((item) => {
       const matchesSearch =
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = category === 'all' || item.category === category;
+        item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.resumen.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = category === 'all' || item.categoria === category;
       return matchesSearch && matchesCategory;
     });
   }, [noticias, searchTerm, category]);
@@ -97,53 +97,54 @@ export function NewsPage() {
       {/* News Grid */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNews.map((item) => (
-            <Card 
-              key={item.id} 
-              className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => navigate(`/noticias/${item.id}`)}
-            >
-              <div className="h-48 overflow-hidden bg-muted">
-                <ImageWithFallback
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                  <Badge className={getCategoryColor(item.category)}>
-                    {item.category}
-                  </Badge>
-                  <div className="flex items-center text-muted-foreground">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    <span>{new Date(item.date).toLocaleDateString('es-BO')}</span>
+          {filteredNews.map((item) => {
+            return (
+              <Card
+                key={item.id}
+                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(`/noticias/${item.id}`)}
+              >
+                <div className="h-48 overflow-hidden bg-muted">
+                  <ImageWithFallback
+                    src={item.imagen_url}
+                    alt={item.titulo}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                </div>
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge className={getCategoryColor(item.categoria)}>
+                      {item.categoria}
+                    </Badge>
+                    <div className="flex items-center text-muted-foreground">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      <span>{new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</span>
+                    </div>
                   </div>
-                </div>
-                <CardTitle>{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="mb-4">{item.excerpt}</CardDescription>
-                <div className="flex items-center justify-between">
-                  {/* <div className="flex items-center text-muted-foreground">
-                    <UserIcon className="w-4 h-4 mr-2" />
-                    <span>{item.author}</span>
-                  </div> */}
-                  <Button 
-                    variant="ghost" 
-                    className="text-primary hover:text-primary/80"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/noticias/${item.id}`);
-                    }}
-                  >
-                    Leer más
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <CardTitle>{item.titulo}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="mb-4">{item.resumen}</CardDescription>
+                  <div className="flex items-center justify-between">
+                    {/* <div className="flex items-center text-muted-foreground">
+              <UserIcon className="w-4 h-4 mr-2" />
+              <span>{item.author}</span>
+            </div> */}
+                    <Button
+                      variant="ghost"
+                      className="text-primary hover:text-primary/80"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/noticias/${item.id}`);
+                      } }
+                    >
+                      Leer más
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {filteredNews.length === 0 && (
