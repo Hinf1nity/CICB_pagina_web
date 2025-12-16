@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Plus, Edit, Trash2, Search, UserCheck, UserX, Upload } from 'lucide-react';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
-import { userSchema, type UserPostData } from '../../validations/userSchema';
-import { useUsersPost} from '../../hooks/useUsers';
+import { userSchema, type UserData } from '../../validations/userSchema';
+import { useUsersPost, useUsers } from '../../hooks/useUsers';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 export function AdminUsersManager() {
@@ -21,144 +21,28 @@ export function AdminUsersManager() {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
   const { postUser } = useUsersPost();
-  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<UserPostData>({
+  const { users, refetchUsers } = useUsers();
+  console.log(users);
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<UserData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
       nombre: "",
-      email: "",
       rni: "",
-      rol: "miembro",
-      especialidad: "estructuras",
+      especialidad: "estructural",
       celular: "",
       departamento: "La Paz",
-      empleado: "",
+      registro_empleado: "",
       estado: "pendiente",
-      fecha_inscripcion: new Date(),
+      fecha_inscripcion: "",
       imagen: undefined,
     },
   });
-
-  const users = [
-    { 
-      id: 1, 
-      nombre: 'Juan Carlos Pérez', 
-      rni: 'CICB-LP-1234', 
-      rnic: 'ING-123456',
-      fecha_inscripcion: '2018-03-15',
-      email: 'juan.perez@email.com', 
-      especialidad: 'estructural', 
-      departamento: 'La Paz',
-      celular: '+591 70123456',
-      empleado: 'empleado',
-      estado: 'activo', 
-      rol: 'miembro',
-      imagen: null
-    },
-    { 
-      id: 2, 
-      nombre: 'María Elena Torres', 
-      rni: 'CICB-SC-2345', 
-      rnic: 'ING-234567',
-      fecha_inscripcion: '2019-07-22',
-      email: 'maria.torres@email.com', 
-      especialidad: 'hidráulica', 
-      departamento: 'Santa Cruz',
-      celular: '+591 71234567',
-      empleado: 'empleado',
-      estado: 'activo', 
-      rol: 'miembro'
-    },
-    { 
-      id: 3, 
-      nombre: 'Roberto Sánchez', 
-      rni: 'CICB-CB-3456', 
-      rnic: 'ING-345678',
-      fecha_inscripcion: '2020-01-10',
-      email: 'roberto.sanchez@email.com', 
-      especialidad: 'vial', 
-      departamento: 'Cochabamba',
-      celular: '+591 72345678',
-      empleado: 'desempleado',
-      estado: 'pendiente', 
-      rol: 'miembro'
-    },
-    { 
-      id: 4, 
-      nombre: 'Ana Gabriela Morales', 
-      rni: 'CICB-LP-4567', 
-      rnic: 'ING-654321',
-      fecha_inscripcion: '2017-09-05',
-      email: 'ana.morales@email.com', 
-      especialidad: 'geotecnia', 
-      departamento: 'La Paz',
-      celular: '+591 73456789',
-      empleado: 'empleado',
-      estado: 'activo', 
-      rol: 'admin'
-    },
-    { 
-      id: 5, 
-      nombre: 'Luis Fernando Ramos', 
-      rni: 'CICB-TJ-5678', 
-      rnic: 'ING-345678',
-      fecha_inscripcion: '2021-02-18',
-      email: 'luis.ramos@email.com', 
-      especialidad: 'estructural', 
-      departamento: 'Tarija',
-      celular: '+591 74567890',
-      empleado: 'desempleado',
-      estado: 'suspendido', 
-      rol: 'miembro'
-    },
-    { 
-      id: 6, 
-      nombre: 'Patricia Guzmán', 
-      rni: 'CICB-SC-6789', 
-      rnic: 'ING-789012',
-      fecha_inscripcion: '2019-11-30',
-      email: 'patricia.guzman@email.com', 
-      especialidad: 'ambiental', 
-      departamento: 'Santa Cruz',
-      celular: '+591 75678901',
-      empleado: 'empleado',
-      estado: 'activo', 
-      rol: 'miembro'
-    },
-    { 
-      id: 7, 
-      nombre: 'Diego Alvarado', 
-      rni: 'CICB-LP-7890', 
-      rnic: 'ING-123456',
-      fecha_inscripcion: '2022-05-12',
-      email: 'diego.alvarado@email.com', 
-      especialidad: 'construcción', 
-      departamento: 'La Paz',
-      celular: '+591 76789012',
-      empleado: 'empleado',
-      estado: 'activo', 
-      rol: 'miembro'
-    },
-    { 
-      id: 8, 
-      nombre: 'Carmen Flores', 
-      rni: 'CICB-OR-8901', 
-      rnic: 'ING-456789',
-      fecha_inscripcion: '2023-08-25',
-      email: 'carmen.flores@email.com', 
-      especialidad: 'vial', 
-      departamento: 'Oruro',
-      celular: '+591 77890123',
-      empleado: 'desempleado',
-      estado: 'pendiente', 
-      rol: 'miembro'
-    },
-  ];
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.rni.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      user.celular.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || user.estado === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -167,15 +51,13 @@ export function AdminUsersManager() {
     setEditingUser(null);
     setIsDialogOpen(true);
     reset({
-      email: "",
       rni: "",
-      rol: "miembro",
-      especialidad: "estructuras",
+      especialidad: "estructural",
       celular: "",
       departamento: "La Paz",
-      empleado: "",
+      registro_empleado: "",
       estado: "pendiente",
-      fecha_inscripcion: new Date(),
+      fecha_inscripcion: "",
       imagen: undefined,
     });
   };
@@ -200,7 +82,7 @@ export function AdminUsersManager() {
     console.log('Cambiando estado del usuario', id, 'a', newStatus);
   };
 
-  const handleSave: SubmitHandler<UserPostData> = (data) => {
+  const handleSave: SubmitHandler<UserData> = (data) => {
         setIsDialogOpen(false);
         console.log('Guardando oferta:', data);
         // const res = await postNews(data);
@@ -211,9 +93,8 @@ export function AdminUsersManager() {
 
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {
-      'Activo': 'bg-secondary text-secondary-foreground',
-      'Pendiente': 'bg-accent text-accent-foreground',
-      'Suspendido': 'bg-destructive text-destructive-foreground',
+      'activo': 'bg-secondary text-secondary-foreground',
+      'inactivo': 'bg-destructive text-destructive-foreground',
     };
     return colors[status] || 'bg-muted text-foreground';
   };
@@ -239,7 +120,7 @@ export function AdminUsersManager() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 <Input
                   type="text"
-                  placeholder="Buscar por nombre, registro o email..."
+                  placeholder="Buscar por nombre, registro o celular..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -251,9 +132,8 @@ export function AdminUsersManager() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los estados</SelectItem>
-                  <SelectItem value="Activo">Activo</SelectItem>
-                  <SelectItem value="Pendiente">Pendiente</SelectItem>
-                  <SelectItem value="Suspendido">Suspendido</SelectItem>
+                  <SelectItem value="activo">Activo</SelectItem>
+                  <SelectItem value="inactivo">Inactivo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -272,12 +152,10 @@ export function AdminUsersManager() {
                     <TableHead>Registro CICB</TableHead>
                     <TableHead>Registro Ingeniero</TableHead>
                     <TableHead>Fecha Inscripción</TableHead>
-                    <TableHead>Email</TableHead>
                     <TableHead>Celular</TableHead>
                     <TableHead>Especialidad</TableHead>
                     <TableHead>Departamento</TableHead>
                     <TableHead>Estado Laboral</TableHead>
-                    <TableHead>Rol</TableHead>
                     <TableHead>Estado Cuenta</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
@@ -289,23 +167,19 @@ export function AdminUsersManager() {
                       <TableCell>{user.rni}</TableCell>
                       <TableCell>{user.rnic}</TableCell>
                       <TableCell>{new Date(user.fecha_inscripcion).toLocaleDateString('es-BO')}</TableCell>
-                      <TableCell>{user.email}</TableCell>
                       <TableCell>{user.celular}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{user.especialidad}</Badge>
                       </TableCell>
                       <TableCell>{user.departamento}</TableCell>
                       <TableCell>
-                        <Badge variant={user.empleado === 'Empleado' ? 'default' : 'secondary'}>
-                          {user.empleado}
+                        <Badge variant={user.registro_empleado === 'desempleado' ? 'default' : 'secondary'}>
+                          <p className='capitalize'>{user.registro_empleado}</p>
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{user.rol}</Badge>
-                      </TableCell>
-                      <TableCell>
                         <Badge className={getStatusColor(user.estado)}>
-                          {user.estado}
+                          <p className='capitalize'>{user.estado}</p>
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -313,10 +187,10 @@ export function AdminUsersManager() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleToggleStatus(user.id, user.estado)}
-                            title={user.estado === 'Activo' ? 'Suspender' : 'Activar'}
+                            onClick={() => user.id !== undefined && handleToggleStatus(user.id, user.estado)}
+                            title={user.estado === 'activo' ? 'Suspender' : 'Activar'}
                           >
-                            {user.estado === 'Activo' ? (
+                            {user.estado === 'activo' ? (
                               <UserX className="w-4 h-4" />
                             ) : (
                               <UserCheck className="w-4 h-4" />
@@ -325,7 +199,7 @@ export function AdminUsersManager() {
                           <Button variant="ghost" size="sm" onClick={() => handleEdit(user)}>
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(user.id)}>
+                          <Button variant="ghost" size="sm" onClick={() => user.id !== undefined && handleDelete(user.id)}>
                             <Trash2 className="w-4 h-4 text-destructive" />
                           </Button>
                         </div>
@@ -425,10 +299,6 @@ export function AdminUsersManager() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Correo Electrónico</Label>
-                    <Input id="email" type="email" placeholder="correo@email.com" {...register("email")} />
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="phone">Celular</Label>
                     <Input id="phone" placeholder="+591 XXXXXXXX" {...register("celular")} />
                     {errors.celular && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -436,13 +306,39 @@ export function AdminUsersManager() {
                         <AlertDescription className='text-xs'>{errors.celular.message}</AlertDescription>
                       </Alert>)}
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Estado de Cuenta</Label>
+                    <Controller
+                      name="estado"
+                      control={control}
+                      render={({ field }) => (
+                        <>
+                      <Select onValueChange={field.onChange}
+                          value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona estado de cuenta" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="activo">Activo</SelectItem>
+                          <SelectItem value="pendiente">Pendiente</SelectItem>
+                          <SelectItem value="suspendido">Suspendido</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.estado && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error en Estado de Cuenta</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.estado.message}</AlertDescription>
+                      </Alert>)}
+                      </>
+                    )}
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="employmentStatus">Estado Laboral</Label>
                     <Controller
-                      name="empleado"
+                      name="registro_empleado"
                       control={control}
                       render={({ field }) => (
                         <>
@@ -456,9 +352,9 @@ export function AdminUsersManager() {
                           <SelectItem value="desempleado">Desempleado</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.empleado && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      {errors.registro_empleado && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error en Estado Laboral</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.empleado.message}</AlertDescription>
+                        <AlertDescription className='text-xs'>{errors.registro_empleado.message}</AlertDescription>
                       </Alert>)}
                       </>
                       )}
@@ -491,61 +387,6 @@ export function AdminUsersManager() {
                     {errors.departamento && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error en Departamento</AlertTitle>
                         <AlertDescription className='text-xs'>{errors.departamento.message}</AlertDescription>
-                      </Alert>)}
-                      </>
-                    )}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Estado de Cuenta</Label>
-                    <Controller
-                      name="estado"
-                      control={control}
-                      render={({ field }) => (
-                        <>
-                      <Select onValueChange={field.onChange}
-                          value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona estado de cuenta" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="activo">Activo</SelectItem>
-                          <SelectItem value="pendiente">Pendiente</SelectItem>
-                          <SelectItem value="suspendido">Suspendido</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {errors.estado && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
-                        <AlertTitle className='text-sm'>Error en Estado de Cuenta</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.estado.message}</AlertDescription>
-                      </Alert>)}
-                      </>
-                    )}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Rol</Label>
-                    <Controller
-                      name="rol"
-                      control={control}
-                      render={({ field }) => (
-                        <>
-                      <Select onValueChange={field.onChange}
-                          value={field.value}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona rol" />
-                          </SelectTrigger>
-                          <SelectContent>
-                          <SelectItem value="miembro">Miembro</SelectItem>
-                          <SelectItem value="admin">Administrador</SelectItem>
-                          <SelectItem value="moderador">Moderador</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {errors.rol && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
-                        <AlertTitle className='text-sm'>Error en Rol</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.rol.message}</AlertDescription>
                       </Alert>)}
                       </>
                     )}

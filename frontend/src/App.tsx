@@ -16,6 +16,9 @@ import { AdminUsersPage } from './components/admin/AdminUsersPage';
 import { AdminPerformancePage } from './components/admin/AdminPerformancePage';
 import { AdminJobsPage } from './components/admin/AdminJobsPage';
 import { AdminNewsPage } from './components/admin/AdminNewsPage';
+import { AdminAnnouncementsPage } from './components/admin/AdminAnnouncementsPage';
+import { AdminRegulationsPage } from './components/admin/AdminRegulationsPage';
+import { AdminYearbookPage } from './components/admin/AdminYearbookPage';
 import PrivateRoute from './components/PrivateRoute';
 
 export default function App() {
@@ -59,6 +62,9 @@ function AppRoutes() {
           <PrivateRoute><AdminNewsPage /></PrivateRoute>} />
         <Route path="/admin/trabajos" element={<PrivateRoute><AdminJobsPage /></PrivateRoute>} />
         <Route path="/admin/rendimientos" element={<PrivateRoute><AdminPerformancePage /></PrivateRoute>} />
+        <Route path="/admin/convocatorias" element={<PrivateRoute><AdminAnnouncementsPage /></PrivateRoute>} />
+        <Route path="/admin/regulaciones" element={<PrivateRoute><AdminRegulationsPage /></PrivateRoute>} />
+        <Route path="/admin/anuario" element={<PrivateRoute><AdminYearbookPage /></PrivateRoute>} />
         <Route path="/anuario" element={
           <GenericPage
             title="Anuario"

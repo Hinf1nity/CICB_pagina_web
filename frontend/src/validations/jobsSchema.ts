@@ -25,4 +25,4 @@ export const jobSchema = z.object({
   estado: z.enum(status, { message: `El estado debe ser uno de los siguientes: ${status.join(", ")}` }),
 });
 
-export type JobPostData = z.infer<typeof jobSchema>;
+export type JobData = z.infer<typeof jobSchema>;

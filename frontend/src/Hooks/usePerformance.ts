@@ -1,8 +1,8 @@
 import api from "../api/kyClient";
-import { type PerformancePostData } from "../validations/performanceSchema";
+import { type PerformanceData } from "../validations/performanceSchema";
 
 export function usePerformancePost() {
-    const postPerformance = async (data: PerformancePostData) => {
+    const postPerformance = async (data: PerformanceData) => {
         const formData = new FormData();
         formData.append("codigo", data.codigo);
         formData.append("unidad", data.unidad);

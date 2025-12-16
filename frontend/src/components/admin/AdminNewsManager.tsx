@@ -11,13 +11,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Plus, Edit, Trash2, Eye, Upload, FileText, Image as ImageIcon, X } from 'lucide-react';
 import { RichTextEditor } from '../RichTextEditor';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { useNewsPost } from '../../hooks/useNoticias';
+import { useNewsPost, useNoticias, useNewsPatch } from '../../hooks/useNoticias';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type NewsPostData, newsSchema } from '../../validations/newsSchema';
+import { type NewsData, newsSchema } from '../../validations/newsSchema';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 export function AdminNewsManager() {
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<NewsPostData>({
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<NewsData>({
     resolver: zodResolver(newsSchema),
     defaultValues: {
         titulo: '',
@@ -33,12 +33,8 @@ export function AdminNewsManager() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
   const { postNews } = useNewsPost();
-
-  const newsItems = [
-    { id: 1, title: 'Convocatoria Asamblea General', category: 'institucional', status: 'publicado', date: '2025-10-22' },
-    { id: 2, title: 'Nuevo Reglamento de Proyectos', category: 'normativa', status: 'publicado', date: '2025-10-18' },
-    { id: 3, title: 'Seminario Internacional', category: 'eventos', status: 'borrador', date: '2025-10-15' },
-  ];
+  const { noticias, refetchNoticias } = useNoticias();
+  const { patchNews } = useNewsPatch();
 
   const handleCreate = () => {
     reset({
@@ -69,12 +65,19 @@ export function AdminNewsManager() {
     }
   };
 
-  const handleSave: SubmitHandler<NewsPostData> = async (data) => {
+  const handleSave: SubmitHandler<NewsData> = async (data) => {
       setIsDialogOpen(false);
       console.log('Guardando noticias:', data);
-      const res = await postNews(data);
-      console.log('Respuesta del servidor:', res);
+      if (editingItem) {
+        const res = await patchNews(editingItem.id, data, editingItem);
+        console.log('Respuesta del servidor:', res);
+        setEditingItem(null);
+      } else {
+        const res = await postNews(data);
+        console.log('Respuesta del servidor:', res);
+      }
       reset();
+      refetchNoticias();
     };
 
 
@@ -106,18 +109,18 @@ export function AdminNewsManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {newsItems.map((item) => (
+                {noticias.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.title}</TableCell>
+                    <TableCell>{item.titulo}</TableCell>
                     <TableCell>
-                      <Badge variant="outline"><p className='capitalize'>{item.category}</p></Badge>
+                      <Badge variant="outline"><p className='capitalize'>{item.categoria}</p></Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={item.status === 'publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
-                        <p className='capitalize'>{item.status}</p>
+                      <Badge className={item.estado === 'publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
+                        <p className='capitalize'>{item.estado}</p>
                       </Badge>
                     </TableCell>
-                    <TableCell>{new Date(item.date).toLocaleDateString('es-BO')}</TableCell>
+                    <TableCell>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm">
@@ -126,7 +129,7 @@ export function AdminNewsManager() {
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => item.id !== undefined && handleDelete(item.id)}>
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>

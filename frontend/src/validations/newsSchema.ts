@@ -24,4 +24,4 @@ export const newsSchema = z.object({
   fecha_publicacion: z.string().refine((date) => !isNaN(Date.parse(date)), "Fecha inválida").optional(),
 });
 
-export type NewsPostData = z.infer<typeof newsSchema>;
+export type NewsData = z.infer<typeof newsSchema>;

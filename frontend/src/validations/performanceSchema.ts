@@ -12,4 +12,4 @@ export const performanceSchema = z.object({
     })).min(1, 'Debe haber al menos un recurso').refine((data) => data.length > 0, 'Debe haber al menos un recurso'),
 });
 
-export type PerformancePostData = z.infer<typeof performanceSchema>;
+export type PerformanceData = z.infer<typeof performanceSchema>;

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, BarChart3, Settings } from 'lucide-react';
+import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, Settings, FileText, BookOpen, Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function AdminDashboard() {
@@ -41,7 +41,37 @@ export function AdminDashboard() {
       color: 'text-[#3A5A78]',
       bgColor: 'bg-[#3A5A78]/10',
       stats: '142 actividades registradas'
-    }
+    },
+    {
+      id: "/admin/anuario",
+      title: "Gestión de Anuario",
+      description:
+        "Administra el anuario anual de ingenieros colegiados y eventos",
+      icon: BookOpen,
+      color: "text-[#0B3D2E]",
+      bgColor: "bg-[#0B3D2E]/10",
+      stats: "3 anuarios publicados",
+    },
+    {
+      id: "/admin/regulaciones",
+      title: "Gestión de Reglamentos",
+      description:
+        "Publica y actualiza reglamentos, normativas y documentos oficiales",
+      icon: FileText,
+      color: "text-[#1B5E3A]",
+      bgColor: "bg-[#1B5E3A]/10",
+      stats: "15 reglamentos vigentes",
+    },
+    {
+      id: "/admin/convocatorias",
+      title: "Gestión de Convocatorias",
+      description:
+        "Administra convocatorias, licitaciones y llamados oficiales",
+      icon: Megaphone,
+      color: "text-[#3C8D50]",
+      bgColor: "bg-[#3C8D50]/10",
+      stats: "8 convocatorias activas",
+    },
   ];
 
   return (
@@ -100,10 +130,12 @@ export function AdminDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground mb-1">Rendimientos</p>
-                  <p className="text-3xl">142</p>
+                  <p className="text-muted-foreground mb-1">
+                    Reglamentos
+                  </p>
+                  <p className="text-3xl">8</p>
                 </div>
-                <BarChart3 className="w-8 h-8 text-[#3A5A78]" />
+                <FileText className="w-8 h-8 text-[#3A5A78]" />
               </div>
             </CardContent>
           </Card>
@@ -112,7 +144,7 @@ export function AdminDashboard() {
         {/* Admin Sections */}
         <div className="pb-12">
           <h2 className="mb-8">Secciones Administrativas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {adminSections.map((section) => {
               const Icon = section.icon;
               return (

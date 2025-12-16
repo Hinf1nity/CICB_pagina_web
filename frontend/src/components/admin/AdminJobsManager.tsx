@@ -12,13 +12,13 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, X } from 'lucide-react';
 import { DynamicList } from '../DynamicList';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { useJobsPost } from '../../hooks/useJobs';
+import { useJobsPost, useJobPatch, useJobs } from '../../hooks/useJobs';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type JobPostData,jobSchema } from '../../validations/jobsSchema';
+import { type JobData,jobSchema } from '../../validations/jobsSchema';
 
 
 export function AdminJobsManager() {
-  const { register, handleSubmit, formState: { errors }, control, reset } = useForm<JobPostData>(
+  const { register, handleSubmit, formState: { errors }, control, reset } = useForm<JobData>(
     { resolver: zodResolver(jobSchema),
       defaultValues: {
         titulo: '',
@@ -35,14 +35,10 @@ export function AdminJobsManager() {
     }
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<JobData | null>(null);
   const { postJob } = useJobsPost();
-
-  const jobsItems = [
-    { id: 1, title: 'Ingeniero Civil Senior', company: 'Constructora Andes', status: 'publicado', date: '2025-10-20' },
-    { id: 2, title: 'Ingeniero Estructural', company: 'Diseños Bolivia', status: 'publicado', date: '2025-10-18' },
-    { id: 3, title: 'Supervisor de Obra', company: 'Energía Limpia', status: 'borrador', date: '2025-10-15' },
-  ];
+  const { jobs, refetchJobs } = useJobs();
+  const { patchJob } = useJobPatch();
 
   const handleCreate = () => {
     reset({
@@ -61,7 +57,7 @@ export function AdminJobsManager() {
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: JobData) => {
     reset({
       ...item,
       requisitos: item.requisitos || [""],
@@ -78,11 +74,18 @@ export function AdminJobsManager() {
     }
   };
 
-  const handleSave: SubmitHandler<JobPostData> = async (data) => {
+  const handleSave: SubmitHandler<JobData> = async (data) => {
     setIsDialogOpen(false);
     console.log('Guardando oferta:', data);
-    const res = await postJob(data);
-    console.log('Respuesta del servidor:', res);
+    if (editingItem && editingItem.id !== undefined) {
+      const res = await patchJob(editingItem.id, data, editingItem);
+      console.log('Respuesta del servidor:', res);
+      setEditingItem(null);
+    } else {
+      const res = await postJob(data);
+      console.log('Respuesta del servidor:', res);
+    }
+    refetchJobs();
     reset();
   };
 
@@ -114,16 +117,16 @@ export function AdminJobsManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {jobsItems.map((item) => (
+                {jobs.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.title}</TableCell>
-                    <TableCell>{item.company}</TableCell>
+                    <TableCell>{item.titulo}</TableCell>
+                    <TableCell>{item.nombre_empresa}</TableCell>
                     <TableCell>
-                      <Badge className={item.status === 'publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
-                        <p className="capitalize">{item.status}</p>
+                      <Badge className={item.estado === 'publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
+                        <p className="capitalize">{item.estado}</p>
                       </Badge>
                     </TableCell>
-                    <TableCell>{new Date(item.date).toLocaleDateString('es-BO')}</TableCell>
+                    <TableCell>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm">
@@ -132,7 +135,7 @@ export function AdminJobsManager() {
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => item.id !== undefined && handleDelete(item.id)}>
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>

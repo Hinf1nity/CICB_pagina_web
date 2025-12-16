@@ -15,6 +15,7 @@ export function NewsPage() {
   const navigate = useNavigate();
 
   const { noticias, loading, error } = useNoticias();
+  console.log(noticias);
 
     const filteredNews = useMemo(() => {
     return noticias.filter((item) => {
@@ -44,11 +45,11 @@ export function NewsPage() {
 
   const getCategoryColor = (cat: string) => {
     const colors: { [key: string]: string } = {
-      'Institucional': 'bg-primary text-primary-foreground',
-      'Normativa': 'bg-secondary text-secondary-foreground',
-      'Eventos': 'bg-accent text-accent-foreground',
-      'Premios': 'bg-chart-4 text-primary',
-      'Capacitación': 'bg-chart-3 text-primary-foreground',
+      'institucional': 'bg-primary text-primary-foreground',
+      'normativa': 'bg-secondary text-secondary-foreground',
+      'eventos': 'bg-accent text-accent-foreground',
+      'premios': 'bg-chart-4 text-primary',
+      'capacitación': 'bg-chart-3 text-primary-foreground',
     };
     return colors[cat] || 'bg-muted text-foreground';
   };
@@ -83,11 +84,11 @@ export function NewsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas las categorías</SelectItem>
-                <SelectItem value="Institucional">Institucional</SelectItem>
-                <SelectItem value="Normativa">Normativa</SelectItem>
-                <SelectItem value="Eventos">Eventos</SelectItem>
-                <SelectItem value="Premios">Premios</SelectItem>
-                <SelectItem value="Capacitación">Capacitación</SelectItem>
+                <SelectItem value="institucional">Institucional</SelectItem>
+                <SelectItem value="normativa">Normativa</SelectItem>
+                <SelectItem value="eventos">Eventos</SelectItem>
+                <SelectItem value="premios">Premios</SelectItem>
+                <SelectItem value="capacitación">Capacitación</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -113,11 +114,11 @@ export function NewsPage() {
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
                     <Badge className={getCategoryColor(item.categoria)}>
-                      {item.categoria}
+                      <p className='capitalize'>{item.categoria}</p>
                     </Badge>
                     <div className="flex items-center text-muted-foreground">
                       <Calendar className="w-4 h-4 mr-1" />
-                      <span>{new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</span>
+                      <span>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</span>
                     </div>
                   </div>
                   <CardTitle>{item.titulo}</CardTitle>

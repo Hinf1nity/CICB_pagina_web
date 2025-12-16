@@ -9,7 +9,7 @@ import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Plus, Edit, Trash2, Search, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
-import { type PerformancePostData, performanceSchema } from '../../validations/performanceSchema';
+import { type PerformanceData, performanceSchema } from '../../validations/performanceSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 interface Resource {
@@ -35,7 +35,7 @@ export function AdminPerformanceManager() {
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<Action | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
-  const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<PerformancePostData>({
+  const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<PerformanceData>({
     resolver: zodResolver(performanceSchema),
     defaultValues: {
       codigo: '',
@@ -244,7 +244,7 @@ export function AdminPerformanceManager() {
     }
   };
 
-  const handleSave = (data: PerformancePostData) => {
+  const handleSave = (data: PerformanceData) => {
     console.log('Guardando actividad');
     setIsActionDialogOpen(false);
     console.log('Datos guardados: ', data);

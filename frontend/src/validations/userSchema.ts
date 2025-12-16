@@ -1,21 +1,21 @@
 import { z } from "zod";
 
-const roles = ["admin", "moderador", "miembro"];
 const departamentos = ["La Paz", "Cochabamba", "Santa Cruz", "Oruro", "Potosí", "Tarija", "Chuquisaca", "Beni", "Pando"];
 const especialidades = ["estructural", "hidráulica", "geotecnia", "vial", "ambiental", "construcción", "sanitaria", "transporte"];
-const estados = ["activo", "pendiente", "suspendido"];
+const estados = ["activo", "inactivo"];
+const employeeStatuses = ["empleado", "desempleado"];
 export const userSchema = z.object({
+  id: z.number().optional(),
   nombre: z.string().min(2, { message: "Nombre demasiado corto" }).max(100, { message: "Nombre demasiado largo" }),
-  email: z.email().optional(),
   rni: z.string().refine((val) => /^\d{6,10}$/.test(val), { message: "RNI inválido" }),
-  rol: z.enum(roles, { message: "Rol inválido" }),
+  rnic: z.string().refine((val) => /^\d{6,10}$/.test(val), { message: "RNIC inválido" }).optional(),
   especialidad: z.enum(especialidades, { message: "Especialidad inválida" }),
   celular: z.string().refine((val) => /^\+?\d{7,15}$/.test(val), { message: "Número de celular inválido" }),
   departamento: z.enum(departamentos, { message: "Departamento inválido" }),
-  empleado: z.string().optional(),
+  registro_empleado: z.enum(employeeStatuses).optional(),
   estado: z.enum(estados, { message: "Estado inválido" }),
-  fecha_inscripcion: z.coerce.date({ message: "Fecha de inscripción inválida" }),
+  fecha_inscripcion: z.string().refine((date) => !isNaN(Date.parse(date)), { message: "Fecha de inscripción inválida" }),
   imagen: z.instanceof(File).optional(),
 });
 
-export type UserPostData = z.infer<typeof userSchema>;
+export type UserData = z.infer<typeof userSchema>;
