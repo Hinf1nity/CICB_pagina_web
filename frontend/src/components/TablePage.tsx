@@ -6,14 +6,14 @@ import { Badge } from './ui/badge';
 import { Search, Download, ChevronDown, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Card, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { useActions } from "../hooks/useTable";
+import { usePerformance } from '../hooks/usePerformance';
 
 export function TablePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
-  const {actions, loading, error}=useActions();
+  const {actions, loading, error}=usePerformance();
   
   if (loading) {
   return (
@@ -34,14 +34,14 @@ if (error) {
 
   const filteredActions = actions.filter(action => {
     const matchesSearch = 
-      action.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.resources.some(r => r.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = filterCategory === 'all' || action.category === filterCategory;
+      action.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      action.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      action.recursos.some(r => r.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = filterCategory === 'all' || action.categoria === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const toggleRow = (id: string) => {
+  const toggleRow = (id: number) => {
     const newExpanded = new Set(expandedRows);
     if (newExpanded.has(id)) {
       newExpanded.delete(id);
@@ -55,7 +55,7 @@ if (error) {
     console.log('Exportando tabla de rendimientos...');
   };
 
-  const categories = Array.from(new Set(actions.map(a => a.category)));
+  const categories = Array.from(new Set(actions.map(a => a.categoria)));
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,7 +86,7 @@ if (error) {
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Recursos Totales</CardDescription>
-                <CardTitle>{actions.reduce((sum, a) => sum + a.resources.length, 0)}</CardTitle>
+                <CardTitle>{actions.reduce((sum, a) => sum + a.recursos.length, 0)}</CardTitle>
               </CardHeader>
             </Card>
           </div>
@@ -114,10 +114,10 @@ if (error) {
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={handleExport} variant="outline" className="whitespace-nowrap">
+            {/* <Button onClick={handleExport} variant="outline" className="whitespace-nowrap">
               <Download className="w-4 h-4 mr-2" />
               Exportar
-            </Button>
+            </Button> */}
           </div>
           <div className="text-muted-foreground">
             Mostrando {filteredActions.length} de {actions.length} actividades
@@ -146,7 +146,7 @@ if (error) {
                     {/* Main Row */}
                     <TableRow 
                       className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => toggleRow(action.id)}
+                      onClick={() => action.id !== undefined && toggleRow(action.id)}
                     >
                       <TableCell>
                         <Button 
@@ -154,7 +154,7 @@ if (error) {
                           size="sm"
                           className="h-8 w-8 p-0"
                         >
-                          {expandedRows.has(action.id) ? (
+                          {action.id !== undefined && expandedRows.has(action.id) ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
                             <ChevronRight className="h-4 w-4" />
@@ -162,24 +162,24 @@ if (error) {
                         </Button>
                       </TableCell>
                       <TableCell>
-                        <code className="text-primary">{action.code}</code>
+                        <code className="text-primary">{action.codigo}</code>
                       </TableCell>
-                      <TableCell>{action.description}</TableCell>
+                      <TableCell>{action.descripcion}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{action.unit}</Badge>
+                        <Badge variant="outline">{action.unidad}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-secondary text-secondary-foreground">
-                          {action.category}
+                          {action.categoria}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline">{action.resources.length}</Badge>
+                        <Badge variant="outline">{action.recursos.length}</Badge>
                       </TableCell>
                     </TableRow>
 
                     {/* Expanded Resources */}
-                    {expandedRows.has(action.id) && (
+                    {action.id !== undefined && expandedRows.has(action.id) && (
                       <TableRow>
                         <TableCell colSpan={6} className="bg-muted/30 p-0">
                           <div className="px-12 py-4">
@@ -193,16 +193,16 @@ if (error) {
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {action.resources.map((resource) => (
+                                {action.recursos.map((resource) => (
                                   <TableRow key={resource.id} className="border-b last:border-0">
-                                    <TableCell className="py-2">{resource.name}</TableCell>
+                                    <TableCell className="py-2">{resource.nombre}</TableCell>
                                     <TableCell className="py-2">
                                       <Badge variant="outline" className="bg-background">
-                                        {resource.unit}
+                                        {resource.unidad}
                                       </Badge>
                                     </TableCell>
                                     <TableCell className="py-2 text-right">
-                                      {resource.quantity}
+                                      {resource.cantidad}
                                     </TableCell>
                                   </TableRow>
                                 ))}

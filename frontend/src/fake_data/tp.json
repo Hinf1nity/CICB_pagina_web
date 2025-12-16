@@ -1,149 +1,149 @@
 {
-    "actions":[{
+    "rendimientos":[{
         "id": "1",
-        "code": "ALB-001",
-        "description": "Muro de ladrillo gambote e=18cm (incl. mortero)",
-        "unit": "m²",
-        "category": "Albañilería",
-        "resources": [
-            { "id": "1-1", "name": "Ladrillo gambote", "unit": "pza", "quantity": 37 },
-            { "id": "1-2", "name": "Cemento", "unit": "kg", "quantity": 12.5 },
-            { "id": "1-3", "name": "Arena", "unit": "m³", "quantity": 0.04 },
-            { "id": "1-4", "name": "Agua", "unit": "lt", "quantity": 15 },
-            { "id": "1-5", "name": "Albañil", "unit": "hr", "quantity": 1.2 },
-            { "id": "1-6", "name": "Ayudante", "unit": "hr", "quantity": 1.2 }
+        "codigo": "ALB-001",
+        "descripcion": "Muro de ladrillo gambote e=18cm (incl. mortero)",
+        "unidad": "m²",
+        "categoria": "Albañilería",
+        "recursos": [
+            { "id": "1-1", "nombre": "Ladrillo gambote", "unidad": "pza", "cantidad": 37 },
+            { "id": "1-2", "nombre": "Cemento", "unidad": "kg", "cantidad": 12.5 },
+            { "id": "1-3", "nombre": "Arena", "unidad": "m³", "cantidad": 0.04 },
+            { "id": "1-4", "nombre": "Agua", "unidad": "lt", "cantidad": 15 },
+            { "id": "1-5", "nombre": "Albañil", "unidad": "hr", "cantidad": 1.2 },
+            { "id": "1-6", "nombre": "Ayudante", "unidad": "hr", "cantidad": 1.2 }
             ]
         },
         {
         "id":"2",
-        "code": "HOA-002",
-        "description": "Hormigón armado f'c=210 kg/cm² (incl. encofrado)",
-        "unit": "m³",
-        "category": "Hormigón Armado",
-        "resources": [
-            { "id": "2-1", "name": "Cemento Portland", "unit": "kg", "quantity": 350 },
-            { "id": "2-2", "name": "Arena","unit": "m³", "quantity": 0.52 },
-            { "id": "2-3", "name": "Grava", "unit": "m³", "quantity": 0.76 },
-            { "id": "2-4", "name": "Agua", "unit": "lt", "quantity": 185 },
-            { "id": "2-5", "name": "Fierro corrugado", "unit": "kg", "quantity": 120 },
-            { "id": "2-6", "name": "Alambre de amarre", "unit": "kg", "quantity": 2.5 },
-            { "id": "2-7", "name": "Madera de encofrado", "unit": "p²", "quantity": 8 },
-            { "id": "2-8", "name": "Clavos", "unit": "kg", "quantity": 0.3 },
-            { "id": "2-9", "name": "Albañil especializado", "unit": "hr", "quantity": 8 },
-            { "id": "2-10", "name": "Ayudante", "unit": "hr", "quantity": 16 }
+        "codigo": "HOA-002",
+        "descripcion": "Hormigón armado f'c=210 kg/cm² (incl. encofrado)",
+        "unidad": "m³",
+        "categoria": "Hormigón Armado",
+        "recursos": [
+            { "id": "2-1", "nombre": "Cemento Portland", "unidad": "kg", "cantidad": 350 },
+            { "id": "2-2", "nombre": "Arena","unidad": "m³", "cantidad": 0.52 },
+            { "id": "2-3", "nombre": "Grava", "unidad": "m³", "cantidad": 0.76 },
+            { "id": "2-4", "nombre": "Agua", "unidad": "lt", "cantidad": 185 },
+            { "id": "2-5", "nombre": "Fierro corrugado", "unidad": "kg", "cantidad": 120 },
+            { "id": "2-6", "nombre": "Alambre de amarre", "unidad": "kg", "cantidad": 2.5 },
+            { "id": "2-7", "nombre": "Madera de encofrado", "unidad": "p²", "cantidad": 8 },
+            { "id": "2-8", "nombre": "Clavos", "unidad": "kg", "cantidad": 0.3 },
+            { "id": "2-9", "nombre": "Albañil especializado", "unidad": "hr", "cantidad": 8 },
+            { "id": "2-10", "nombre": "Ayudante", "unidad": "hr", "cantidad": 16 }
             ]
         },
         {
         "id":"3",
-        "code": "HOA-003",
-        "description": "Revoque interior con yeso",
-        "unit": "m²",
-        "category": "Revestimientos",
-        "resources": [
-            { "id": "3-1", "name": "Yeso", "unit": "kg", "quantity": 8 },
-            { "id": "3-2", "name": "Agua", "unit": "lt", "quantity": 6 },
-            { "id": "3-3", "name": "Yesero", "unit": "hr", "quantity": 0.4 },
-            { "id": "3-4", "name": "Ayudante", "unit": "hr", "quantity": 0.2 }
+        "codigo": "HOA-003",
+        "descripcion": "Revoque interior con yeso",
+        "unidad": "m²",
+        "categoria": "Revestimientos",
+        "recursos": [
+            { "id": "3-1", "nombre": "Yeso", "unidad": "kg", "cantidad": 8 },
+            { "id": "3-2", "nombre": "Agua", "unidad": "lt", "cantidad": 6 },
+            { "id": "3-3", "nombre": "Yesero", "unidad": "hr", "cantidad": 0.4 },
+            { "id": "3-4", "nombre": "Ayudante", "unidad": "hr", "cantidad": 0.2 }
             ]
         },
         {
         "id":"4",
-        "code": "HOA-004",
-        "description": "Cubierta de calamina galvanizada #28",
-        "unit": "m²",
-        "category": "Cubiertas",
-        "resources": [
-            { "id": "4-1", "name": "Calamina galvanizada #28", "unit": "m²", "quantity": 1.1 },
-            { "id": "4-2", "name": "Cumbrera galvanizada", "unit": "m", "quantity": 0.15 },
-            { "id": "4-3", "name": "Clavos para calamina", "unit": "pza", "quantity": 0.18 },
-            { "id": "4-4", "name": "Tijerales de madera", "unit": "pza", "quantity": 0.5 },
-            { "id": "4-5", "name": "Techador", "unit": "hr", "quantity": 0.6 },
-            { "id": "4-6", "name": "Ayudante", "unit": "hr", "quantity": 0.6 }
+        "codigo": "HOA-004",
+        "descripcion": "Cubierta de calamina galvanizada #28",
+        "unidad": "m²",
+        "categoria": "Cubiertas",
+        "recursos": [
+            { "id": "4-1", "nombre": "Calamina galvanizada #28", "unidad": "m²", "cantidad": 1.1 },
+            { "id": "4-2", "nombre": "Cumbrera galvanizada", "unidad": "m", "cantidad": 0.15 },
+            { "id": "4-3", "nombre": "Clavos para calamina", "unidad": "pza", "cantidad": 0.18 },
+            { "id": "4-4", "nombre": "Tijerales de madera", "unidad": "pza", "cantidad": 0.5 },
+            { "id": "4-5", "nombre": "Techador", "unidad": "hr", "cantidad": 0.6 },
+            { "id": "4-6", "nombre": "Ayudante", "unidad": "hr", "cantidad": 0.6 }
             ]
         },
         {
         "id":"5",
-        "code": "HOA-005",
-        "description": "Pintura látex interior (2 manos)",
-        "unit": "m²",
-        "category": "Pintura",
-        "resources": [
-            { "id": "5-1", "name": "Pintura látex", "unit": "lt", "quantity": 0.25 },
-            { "id": "5-2", "name": "Sellador", "unit": "lt", "quantity": 0.15 },
-            { "id": "5-3", "name": "Lija", "unit": "plg", "quantity": 0.1 },
-            { "id": "5-4", "name": "Pintor", "unit": "hr", "quantity": 0.35 }
+        "codigo": "HOA-005",
+        "descripcion": "Pintura látex interior (2 manos)",
+        "unidad": "m²",
+        "categoria": "Pintura",
+        "recursos": [
+            { "id": "5-1", "nombre": "Pintura látex", "unidad": "lt", "cantidad": 0.25 },
+            { "id": "5-2", "nombre": "Sellador", "unidad": "lt", "cantidad": 0.15 },
+            { "id": "5-3", "nombre": "Lija", "unidad": "plg", "cantidad": 0.1 },
+            { "id": "5-4", "nombre": "Pintor", "unidad": "hr", "cantidad": 0.35 }
             ]
         },
         {
         "id":"6",
-        "code": "HOA-006",
-        "description": "Excavación manual en terreno semi-duro",
-        "unit": "m³",
-        "category": "Movimiento de Tierras",
-        "resources": [
-            { "id": "6-1", "name": "Pala", "unit": "hr", "quantity": 0.1 },
-            { "id": "6-2", "name": "Picota", "unit": "hr", "quantity": 0.1 },
-            { "id": "6-3", "name": "Peón", "unit": "hr", "quantity": 4.5 }
+        "codigo": "HOA-006",
+        "descripcion": "Excavación manual en terreno semi-duro",
+        "unidad": "m³",
+        "categoria": "Movimiento de Tierras",
+        "recursos": [
+            { "id": "6-1", "nombre": "Pala", "unidad": "hr", "cantidad": 0.1 },
+            { "id": "6-2", "nombre": "Picota", "unidad": "hr", "cantidad": 0.1 },
+            { "id": "6-3", "nombre": "Peón", "unidad": "hr", "cantidad": 4.5 }
             ]
         },
         {
         "id":"7",
-        "code": "HOA-007",
-        "description": "Cerámica para piso 40x40 cm",
-        "unit": "m²",
-        "category": "Pisos",
-        "resources": [
-            { "id": "7-1", "name": "Cerámica 40x40", "unit": "m²", "quantity": 1.05 },
-            { "id": "7-2", "name": "Cemento cola", "unit": "kg", "quantity": 5 },
-            { "id": "7-3", "name": "Fragua", "unit": "kg", "quantity": 0.5 },
-            { "id": "7-4", "name": "Ceramista", "unit": "hr", "quantity": 0.8 },
-            { "id": "7-5", "name": "Ayudante", "unit": "hr", "quantity": 0.4 }
+        "codigo": "HOA-007",
+        "descripcion": "Cerámica para piso 40x40 cm",
+        "unidad": "m²",
+        "categoria": "Pisos",
+        "recursos": [
+            { "id": "7-1", "nombre": "Cerámica 40x40", "unidad": "m²", "cantidad": 1.05 },
+            { "id": "7-2", "nombre": "Cemento cola", "unidad": "kg", "cantidad": 5 },
+            { "id": "7-3", "nombre": "Fragua", "unidad": "kg", "cantidad": 0.5 },
+            { "id": "7-4", "nombre": "Ceramista", "unidad": "hr", "cantidad": 0.8 },
+            { "id": "7-5", "nombre": "Ayudante", "unidad": "hr", "cantidad": 0.4 }
             ]
         },
         {
         "id": "8",
-        "code": "CAN-008",
-        "description": "Cañería PVC agua potable Ø 1/2\"",
-        "unit": "m",
-        "category": "Instalaciones Sanitarias",
-        "resources": [
-            { "id": "8-1", "name": "Tubo PVC 1/2\"", "unit": "m", "quantity": 1.05 },
-            { "id": "8-2", "name": "Codos PVC 1/2\"", "unit": "pza", "quantity": 0.3 },
-            { "id": "8-3", "name": "Tees PVC 1/2\"", "unit": "pza", "quantity": 0.2 },
-            { "id": "8-4", "name": "Pegamento PVC", "unit": "lt", "quantity": 0.05 },
-            { "id": "8-5", "name": "Cinta teflón", "unit": "rollo", "quantity": 0.1 },
-            { "id": "8-6", "name": "Plomero", "unit": "hr", "quantity": 0.4 },
-            { "id": "8-7", "name": "Ayudante", "unit": "hr", "quantity": 0.2 }
+        "codigo": "CAN-008",
+        "descripcion": "Cañería PVC agua potable Ø 1/2\"",
+        "unidad": "m",
+        "categoria": "Instalaciones Sanitarias",
+        "recursos": [
+            { "id": "8-1", "nombre": "Tubo PVC 1/2\"", "unidad": "m", "cantidad": 1.05 },
+            { "id": "8-2", "nombre": "Codos PVC 1/2\"", "unidad": "pza", "cantidad": 0.3 },
+            { "id": "8-3", "nombre": "Tees PVC 1/2\"", "unidad": "pza", "cantidad": 0.2 },
+            { "id": "8-4", "nombre": "Pegamento PVC", "unidad": "lt", "cantidad": 0.05 },
+            { "id": "8-5", "nombre": "Cinta teflón", "unidad": "rollo", "cantidad": 0.1 },
+            { "id": "8-6", "nombre": "Plomero", "unidad": "hr", "cantidad": 0.4 },
+            { "id": "8-7", "nombre": "Ayudante", "unidad": "hr", "cantidad": 0.2 }
             ]
         },
         {
         "id": "9",
-        "code": "CAR-009",
-        "description": "Carpintería de madera - puerta tablero",
-        "unit": "m²",
-        "category": "Carpintería",
-        "resources": [
-            { "id": "9-1", "name": "Madera mara", "unit": "p²", "quantity": 5.5 },
-            { "id": "9-2", "name": "Triplay 4mm", "unit": "plg", "quantity": 1.1 },
-            { "id": "9-3", "name": "Cola carpintero", "unit": "kg", "quantity": 0.3 },
-            { "id": "9-4", "name": "Clavos", "unit": "kg", "quantity": 0.2 },
-            { "id": "9-5", "name": "Laca", "unit": "lt", "quantity": 0.4 },
-            { "id": "9-6", "name": "Carpintero", "unit": "hr", "quantity": 3 }
+        "codigo": "CAR-009",
+        "descripcion": "Carpintería de madera - puerta tablero",
+        "unidad": "m²",
+        "categoria": "Carpintería",
+        "recursos": [
+            { "id": "9-1", "nombre": "Madera mara", "unidad": "p²", "cantidad": 5.5 },
+            { "id": "9-2", "nombre": "Triplay 4mm", "unidad": "plg", "cantidad": 1.1 },
+            { "id": "9-3", "nombre": "Cola carpintero", "unidad": "kg", "cantidad": 0.3 },
+            { "id": "9-4", "nombre": "Clavos", "unidad": "kg", "cantidad": 0.2 },
+            { "id": "9-5", "nombre": "Laca", "unidad": "lt", "cantidad": 0.4 },
+            { "id": "9-6", "nombre": "Carpintero", "unidad": "hr", "cantidad": 3 }
             ]
         },
         {
         "id": "10",
-        "code": "ILE-010",
-        "description": "Instalación eléctrica - punto de luz",
-        "unit": "pto",
-        "category": "Instalaciones Eléctricas",
-        "resources": [
-            { "id": "10-1", "name": "Cable THW #14", "unit": "m", "quantity": 8 },
-            { "id": "10-2", "name": "Tubo PVC eléctrico 3/4\"", "unit": "m", "quantity": 3 },
-            { "id": "10-3", "name": "Caja octogonal", "unit": "pza", "quantity": 1 },
-            { "id": "10-4", "name": "Interruptor simple", "unit": "pza", "quantity": 1 },
-            { "id": "10-5", "name": "Cinta aislante", "unit": "rollo", "quantity": 0.1 },
-            { "id": "10-6", "name": "Electricista", "unit": "hr", "quantity": 1.5 }
+        "codigo": "ILE-010",
+        "descripcion": "Instalación eléctrica - punto de luz",
+        "unidad": "pto",
+        "categoria": "Instalaciones Eléctricas",
+        "recursos": [
+            { "id": "10-1", "nombre": "Cable THW #14", "unidad": "m", "cantidad": 8 },
+            { "id": "10-2", "nombre": "Tubo PVC eléctrico 3/4\"", "unidad": "m", "cantidad": 3 },
+            { "id": "10-3", "nombre": "Caja octogonal", "unidad": "pza", "cantidad": 1 },
+            { "id": "10-4", "nombre": "Interruptor simple", "unidad": "pza", "cantidad": 1 },
+            { "id": "10-5", "nombre": "Cinta aislante", "unidad": "rollo", "cantidad": 0.1 },
+            { "id": "10-6", "nombre": "Electricista", "unidad": "hr", "cantidad": 1.5 }
             ]
         }
     ]

@@ -169,7 +169,7 @@ export function AdminUsersManager() {
                       <TableCell>{new Date(user.fecha_inscripcion).toLocaleDateString('es-BO')}</TableCell>
                       <TableCell>{user.celular}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{user.especialidad}</Badge>
+                        <Badge variant="outline"><p className='capitalize'>{user.especialidad}</p></Badge>
                       </TableCell>
                       <TableCell>{user.departamento}</TableCell>
                       <TableCell>
