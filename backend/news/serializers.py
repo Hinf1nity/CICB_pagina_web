@@ -14,7 +14,17 @@ class NewsDetailSerializer(serializers.ModelSerializer):
         model = News
         exclude = ['descripcion']
 
-class NewsAdminSerializer(serializers.ModelSerializer):
+class NewsAdminGeneralSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = '__all__'
+
+class NewsAdminListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        fields = ['imagen'] 
+
+class NewsAdminDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        exclude = ['imagen']

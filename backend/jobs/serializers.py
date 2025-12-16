@@ -14,7 +14,17 @@ class JobDetailSerializer(serializers.ModelSerializer):
         model = Job
         exclude = ['descripcion']
 
-class JobAdminSerializer(serializers.ModelSerializer):
+class JobAdminGeneralSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = '__all__'
+
+class JobAdminListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = ['imagen'] 
+
+class JobAdminDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        exclude = ['imagen']

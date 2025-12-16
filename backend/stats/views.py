@@ -9,6 +9,7 @@ from .serializers import StatsSerializer
 from users.models import User
 from news.models import News
 from jobs.models import Job
+from regulation.models import Regulation
 
 from django.db.models import Count, Q, Case, When, IntegerField
 from django.utils import timezone
@@ -139,6 +140,7 @@ class OverallStatsView(APIView):
             "total_users": User.objects.count(),
             "total_news": News.objects.count(),
             "total_jobs": Job.objects.count(),
+            "total_rulebooks": Regulation.objects.count(),
         }
         return Response(data)
 
