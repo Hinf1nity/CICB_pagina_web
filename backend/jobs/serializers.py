@@ -7,6 +7,7 @@ class JobListSerializer(serializers.ModelSerializer):
         model = Job
         exclude = [
             'descripcion',
+            'spobre_empresa',
             'pdf',
         ]
 
@@ -17,15 +18,17 @@ class JobDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class JobAdminSerializer(serializers.ModelSerializer):
+class JobAdminGeneralSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = '__all__'
 
+
 class JobAdminListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
-        fields = ['imagen'] 
+        fields = ['imagen']
+
 
 class JobAdminDetailSerializer(serializers.ModelSerializer):
     class Meta:

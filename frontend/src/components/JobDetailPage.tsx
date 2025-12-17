@@ -75,7 +75,7 @@ export function JobDetailPage() {
                 </div>
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
-                  <span>Publicado: {new Date(job.fecha_publicacion).toLocaleDateString('es-BO')}</span>
+                  <span>Publicado: {job.fecha_publicacion !== undefined && new Date(job.fecha_publicacion).toLocaleDateString('es-BO')}</span>
                 </div>
               </div>
             </div>
@@ -92,14 +92,14 @@ export function JobDetailPage() {
               </CardContent>
             </Card>
             {/* Informacion de la Empresa */}
-            {/* <Card className="mb-6">
+            <Card className="mb-6">
               <CardHeader>
                 <CardTitle>Sobre la empresa</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground leading-relaxed">{job.informacion}</p>
+                <p className="text-foreground leading-relaxed">{job.sobre_empresa}</p>
               </CardContent>
-            </Card> */}
+            </Card>
             {/* Requirements */}
             <Card className="mb-6">
               <CardHeader>

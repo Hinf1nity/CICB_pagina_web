@@ -9,6 +9,7 @@ export const jobSchema = z.object({
   titulo: z.string().min(2, { message: "El título debe tener al menos 2 caracteres" }).max(100),
   descripcion: z.string().min(10, { message: "La descripción debe tener al menos 10 caracteres" }).max(1000),
   nombre_empresa: z.string().min(2, { message: "La empresa debe tener al menos 2 caracteres" }).max(100),
+  sobre_empresa: z.string().min(10, { message: "La información sobre la empresa debe tener al menos 10 caracteres" }).max(1000),
   ubicacion: z.string().min(2, { message: "La ubicación debe tener al menos 2 caracteres" }).max(100),
   fecha_publicacion: z.string().refine((date) => !isNaN(Date.parse(date)), { message: "Fecha inválida" }).optional(),
   tipo_contrato: z.enum(contractTypes, { message: `El tipo de contrato debe ser uno de los siguientes: ${contractTypes.join(", ")}` }),

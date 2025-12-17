@@ -183,6 +183,17 @@ export function AdminJobsManager() {
                     </Alert>
                   )}
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sobre_empresa">Información sobre la empresa *</Label>
+                  <Textarea id="sobre_empresa" placeholder="Información sobre la empresa" rows={4} {...register("sobre_empresa")} />
+                  {errors.sobre_empresa && (
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en la información sobre la empresa</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.sobre_empresa?.message}</AlertDescription>
+                    </Alert>
+                  )}
+                </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -225,7 +236,7 @@ export function AdminJobsManager() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="salario">Salario</Label>
+                  <Label htmlFor="salario">Salario *</Label>
                   <Input type="number" id="salario" placeholder="Rango salarial (opcional)" {...register("salario")} />
                   {errors.salario && (
                     <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
