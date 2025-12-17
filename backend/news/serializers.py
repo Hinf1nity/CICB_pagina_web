@@ -9,12 +9,14 @@ class NewsListSerializer(serializers.ModelSerializer):
             'pdf',
         ]
 
+
 class NewsDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
-        exclude = ['descripcion']
+        exclude = ['resumen']
 
-class NewsAdminGeneralSerializer(serializers.ModelSerializer):
+
+class NewsAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = '__all__'

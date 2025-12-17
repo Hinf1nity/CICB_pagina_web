@@ -1,11 +1,12 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
 
+
 class User(models.Model):
     nombre = models.CharField(max_length=255)
     contrasena = models.CharField(max_length=255)
-    RNI = models.CharField(max_length=50)
-    RNIC = models.CharField(max_length=50)
+    rni = models.CharField(max_length=50)
+    rnic = models.CharField(max_length=50)
     fecha_inscripcion = models.DateField()
     departamento = models.CharField(max_length=100)
     especialidad = models.CharField(max_length=100)

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Job
 
+
 class JobListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
@@ -9,12 +10,14 @@ class JobListSerializer(serializers.ModelSerializer):
             'pdf',
         ]
 
+
 class JobDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
-        exclude = ['descripcion']
+        fields = '__all__'
 
-class JobAdminGeneralSerializer(serializers.ModelSerializer):
+
+class JobAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = '__all__'

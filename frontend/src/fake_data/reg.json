@@ -1,0 +1,63 @@
+{
+  "yearbooks": [
+    {
+      "id": 1,
+      "type": "yearbooks",
+      "title": "Anuario 2025",
+      "description": "Registro completo de miembros activos durante el año 2025",
+      "file": "https://example.com/anuario_2025.pdf"
+    },
+    {
+      "id": 2,
+      "type": "yearbooks",
+      "title": "Anuario 2024",
+      "description": "Registro completo de miembros activos durante el año 2024",
+      "file": "https://example.com/anuario_2024.pdf"
+    },
+    {
+      "id": 3,
+      "type": "regulations",
+      "title": "Reglamento General del CICB",
+      "description": "Normativa principal que rige las actividades del colegio",
+      "file": "https://example.com/reglamento_general.pdf"
+    },
+    {
+      "id": 4,
+      "type": "regulations",
+      "title": "Código de Ética Profesional",
+      "description": "Principios éticos que deben seguir todos los colegiados",
+      "file": "https://example.com/codigo_etica.pdf"
+    },
+    {
+      "id": 5,
+      "type": "announcements",
+      "title": "Convocatoria Asamblea General Ordinaria",
+      "description": "Se convoca a asamblea el 15 de noviembre de 2025",
+      "file": "https://example.com/asamblea_2025.pdf"
+    },
+    {
+      "id": 6,
+      "type": "announcements",
+      "title": "Concurso de Proyectos Innovadores",
+      "description": "Participa en el concurso anual de innovación en ingeniería",
+      "file": "https://example.com/concurso_proyectos.pdf"
+    }
+  ], 
+  "announcements":[
+    {
+      "id": 5,
+      "type": "announcements",
+      "title": "Convocatoria Asamblea General Ordinaria",
+      "description": "Se convoca a asamblea el 15 de noviembre de 2025",
+      "file": "https://example.com/asamblea_2025.pdf"
+    },
+  {
+      "id": 6,
+      "type": "announcements",
+      "title": "Concurso de Proyectos Innovadores",
+      "description": "Participa en el concurso anual de innovación en ingeniería",
+      "file": "https://example.com/concurso_proyectos.pdf"
+    }
+
+  ]
+}
