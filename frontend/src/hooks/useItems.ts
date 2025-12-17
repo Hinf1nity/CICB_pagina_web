@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import api from "../api/kyClient";
 import type { GenericData } from "../validations/genericSchema";
 
-export function useItems(type: "yearbook" | "regulations" | "announcements") {
+export function useItems(type: "yearbooks" | "regulation" | "announcements") {
   const [items, setItems] = useState<GenericData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchItems = async (type: "yearbook" | "regulations" | "announcements") => {
+  const fetchItems = async (type: "yearbooks" | "regulation" | "announcements") => {
       try {
         setLoading(true);
 
@@ -30,7 +30,7 @@ export function useItems(type: "yearbook" | "regulations" | "announcements") {
 }
 
 export function useItemPost() {
-  const postItem = async (data: GenericData, type: "yearbook" | "regulations" | "announcements") => {
+  const postItem = async (data: GenericData, type: "yearbooks" | "regulation" | "announcements") => {
     // Crear FormData
     const formData = new FormData();
     formData.append("titulo", data.titulo);
@@ -53,7 +53,7 @@ export function useItemPost() {
 }
 
 export function useItemPatch() {
-  const patchItem = async (id: number, data: GenericData, old_data: GenericData, type: "yearbook" | "regulations" | "announcements") => {
+  const patchItem = async (id: number, data: GenericData, old_data: GenericData, type: "yearbooks" | "regulation" | "announcements") => {
     // Crear FormData
     const formData = new FormData();
     if (data.titulo !== old_data.titulo){
@@ -81,7 +81,7 @@ export function useItemPatch() {
 }
 
 export function useItemDelete() {
-  const deleteItem = async (id: number, type: "yearbook" | "regulations" | "announcements") => {
+  const deleteItem = async (id: number, type: "yearbooks" | "regulation" | "announcements") => {
     // Enviar solicitud DELETE
     const response = await api.delete(`${type}/${id}/`);
     return response;

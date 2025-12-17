@@ -69,14 +69,14 @@ function AppRoutes() {
           <GenericPage
             title="Anuario"
             description="Consulta los anuarios de miembros del Colegio de Ingenieros Civiles"
-            type="yearbook"
+            type="yearbooks"
           />
         } />
         <Route path="/reglamentos" element={
           <GenericPage
             title="Reglamentos"
             description="Accede a los reglamentos y normativas del CICB"
-            type="regulations"
+            type="regulation"
           />
         } />
         <Route path="/convocatorias" element={

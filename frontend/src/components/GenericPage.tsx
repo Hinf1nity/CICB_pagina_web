@@ -6,7 +6,7 @@ import type { GenericData } from "../validations/genericSchema";
 interface GenericPageProps {
   title: string;
   description: string;
-  type: 'yearbook' | 'regulations' | 'announcements';
+  type: 'yearbooks' | 'regulation' | 'announcements';
 }
 
 export function GenericPage({ title, description, type }: GenericPageProps) {
@@ -14,9 +14,9 @@ export function GenericPage({ title, description, type }: GenericPageProps) {
 
   const getIcon = () => {
     switch (type) {
-      case 'yearbook':
+      case 'yearbooks':
         return BookOpen;
-      case 'regulations':
+      case 'regulation':
         return FileText;
       case 'announcements':
         return Bell;

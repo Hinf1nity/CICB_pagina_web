@@ -131,12 +131,11 @@ export function NewsPage() {
               <span>{item.author}</span>
             </div> */}
                     <Button
-                      variant="ghost"
-                      className="text-primary hover:text-primary/80"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
                       onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/noticias/${item.id}`);
-                      } }
+                      e.stopPropagation();
+                      navigate(`/noticias/${item.id}`);
+                      }}
                     >
                       Leer más
                       <ArrowRight className="w-4 h-4 ml-1" />

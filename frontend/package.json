@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "mock": "json-server --watch src/fake_data/wrk.json --port 4000",
+    "mock": "json-server --watch src/fake_data/wrk.json --port 4000", 
     "mock_2": "json-server --watch src/fake_data/db.json --port 4001"
   },
   "dependencies": {

@@ -7,6 +7,15 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../auth/useAuth';
 
+interface DepartmentalCollege {
+  id: number;
+  name: string;
+  department: string;
+  abbreviation: string;
+  image?: string;
+  url?: string;
+}
+
 export function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -43,15 +52,15 @@ export function HomePage() {
     },
   ];
 
-  const departmentalColleges = [
-    { id: 1, name: 'CIC La Paz', department: 'La Paz', abbreviation: 'LP' },
+  const departmentalColleges: DepartmentalCollege[] = [
+    { id: 1, name: 'CIC La Paz', department: 'La Paz', abbreviation: 'LP', image: '/cicImages/cicLaPaz.png', url: ''},
     { id: 2, name: 'CIC Cochabamba', department: 'Cochabamba', abbreviation: 'CB' },
     { id: 3, name: 'CIC Santa Cruz', department: 'Santa Cruz', abbreviation: 'SC' },
     { id: 4, name: 'CIC Oruro', department: 'Oruro', abbreviation: 'OR' },
     { id: 5, name: 'CIC Potosí', department: 'Potosí', abbreviation: 'PT' },
-    { id: 6, name: 'CIC Chuquisaca', department: 'Chuquisaca', abbreviation: 'CH' },
+    { id: 6, name: 'CIC Chuquisaca', department: 'Chuquisaca', abbreviation: 'CH', image: '/cicImages/cicChuquisaca.png', url: '' },
     { id: 7, name: 'CIC Tarija', department: 'Tarija', abbreviation: 'TJ' },
-    { id: 8, name: 'CIC Beni', department: 'Beni', abbreviation: 'BE' },
+    { id: 8, name: 'CIC Beni', department: 'Beni', abbreviation: 'BE', image: '/cicImages/cicBeni.png', url: ''},
     { id: 9, name: 'CIC Pando', department: 'Pando', abbreviation: 'PA' },
   ];
 
@@ -317,9 +326,26 @@ export function HomePage() {
                     >
                       <Card className="hover:shadow-lg transition-shadow">
                         <CardContent className="p-6 text-center">
-                          <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-primary-foreground text-2xl">{college.abbreviation}</span>
+                          <div
+                            onClick={() => college.url && window.open(college.url, '_blank')}
+                            className={`relative w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 
+                              ${college.url ? 'cursor-pointer' : ''} bg-primary`}
+                          >
+                            {college.image ? (
+                              <ImageWithFallback
+                                src={college.image}
+                                alt={college.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-primary-foreground text-2xl">
+                                  {college.abbreviation}
+                                </span>
+                              </div>
+                            )}
                           </div>
+
                           <h3 className="text-foreground mb-2">{college.name}</h3>
                           <div className="flex items-center justify-center text-muted-foreground mt-2">
                             <MapPin className="w-4 h-4 mr-1" />

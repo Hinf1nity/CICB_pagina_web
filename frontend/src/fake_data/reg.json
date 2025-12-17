@@ -1,15 +1,15 @@
 {
-  "yearbook": [
+  "yearbooks": [
     {
       "id": 1,
-      "type": "yearbook",
+      "type": "yearbooks",
       "title": "Anuario 2025",
       "description": "Registro completo de miembros activos durante el año 2025",
       "file": "https://example.com/anuario_2025.pdf"
     },
     {
       "id": 2,
-      "type": "yearbook",
+      "type": "yearbooks",
       "title": "Anuario 2024",
       "description": "Registro completo de miembros activos durante el año 2024",
       "file": "https://example.com/anuario_2024.pdf"
@@ -61,6 +61,3 @@
 
   ]
 }
-
-
-//Verificar que sea responsive, darle un boton de descarga al QR del usuario, generar el qr del perfil del ususario que de a la URL/arjeta de usuarip/ID del usuario 
