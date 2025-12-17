@@ -6,14 +6,19 @@ interface UserCardPageProps {
   userId?: number;
 }
 
-export function UserCardPage({ userId = 'CICB-LP-1234' }: UserCardPageProps) {
+export function UserCardPage({ userId = 1 }: UserCardPageProps) {
   // Datos simulados del usuario
   const userData = {
     name: 'Ing. Juan Carlos Pérez Gutiérrez',
     specialty: 'Ingeniería Estructural',
     registration: 'CICB-LP-1234',
     phone: '+591 70123456',
-    photo: '' // Se usará el fallback
+    photo: '', // Se usará el fallback
+    certifications: [
+      { id: 1, name: 'Diseño Sismorresistente Avanzado', institution: 'CICB', year: 2024 },
+      { id: 2, name: 'BIM para Ingeniería Civil', institution: 'Autodesk', year: 2023 },
+      { id: 3, name: 'Gestión de Proyectos PMI', institution: 'PMI Bolivia', year: 2022 },
+    ]
   };
 
   return (
@@ -69,6 +74,30 @@ export function UserCardPage({ userId = 'CICB-LP-1234' }: UserCardPageProps) {
               <span className="text-foreground">{userData.phone}</span>
             </div>
           </div>
+
+          {/* Certificaciones */}
+          {userData.certifications.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Award className="w-5 h-5 text-primary" />
+                <h3 className="text-foreground">Certificaciones</h3>
+              </div>
+              <div className="space-y-2">
+                {userData.certifications.map((cert) => (
+                  <div 
+                    key={cert.id} 
+                    className="bg-muted/50 rounded-lg p-3 text-left"
+                  >
+                    <p className="text-foreground mb-1">{cert.name}</p>
+                    <div className="flex justify-between items-center text-muted-foreground">
+                      <span>{cert.institution}</span>
+                      <span>{cert.year}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-border text-center">

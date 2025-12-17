@@ -6,19 +6,34 @@ import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { User, Mail, Phone, MapPin, Calendar, Award, Edit, QrCode, CreditCard, LogOut, Download } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Award, IdCardLanyard, Edit, QrCode, CreditCard, LogOut, Download, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 import { useAuth } from '../auth/useAuth';
 
 interface UserProfilePageProps {
   onNavigate?: (page: string, id?: number) => void;
 }
 
+interface Certification {
+  id: number;
+  name: string;
+  institution: string;
+  year: number;
+}
+
 export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
   const { logout } = useAuth();
   const [userData, setUserData] = useState({
-    name: 'Juan Carlos Pérez Gutiérrez',
+    name: 'Ing. Juan Carlos Pérez Gutiérrez',
     email: 'juan.perez@email.com',
     phone: '+591 70123456',
     registration: 'CICB-LP-1234',
@@ -28,15 +43,43 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     status: 'Activo'
   });
 
-  const certifications = [
+  const [certifications, setCertifications] = useState<Certification[]>([
     { id: 1, name: 'Diseño Sismorresistente Avanzado', institution: 'CICB', year: 2024 },
     { id: 2, name: 'BIM para Ingeniería Civil', institution: 'Autodesk', year: 2023 },
     { id: 3, name: 'Gestión de Proyectos PMI', institution: 'PMI Bolivia', year: 2022 },
-  ];
+  ]);
+
+  const [newCert, setNewCert] = useState({
+    name: '',
+    institution: '',
+    year: new Date().getFullYear()
+  });
 
   const handleSave = () => {
     setIsEditing(false);
     // Aquí iría la lógica para guardar los datos
+  };
+
+  const handleAddCertification = () => {
+    if (newCert.name && newCert.institution) {
+      const certification: Certification = {
+        id: Math.max(...certifications.map(c => c.id), 0) + 1,
+        ...newCert
+      };
+      setCertifications([...certifications, certification]);
+      setNewCert({
+        name: '',
+        institution: '',
+        year: new Date().getFullYear()
+      });
+      setIsCertDialogOpen(false);
+    }
+  };
+
+  const handleDeleteCertification = (id: number) => {
+    if (window.confirm('¿Estás seguro de eliminar esta certificación?')) {
+      setCertifications(certifications.filter(cert => cert.id !== id));
+    }
   };
 
   const handleDownloadQR = () => {
@@ -94,7 +137,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               <h1 className="mb-3">Mi Perfil Profesional</h1>
               <p>Gestiona tu información profesional y credenciales del CICB</p>
             </div>
-            <Button
+            <Button 
               onClick={logout}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
@@ -133,7 +176,14 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                   <div className="flex items-center text-muted-foreground">
                     <Award className="w-4 h-4 mr-3 text-primary flex-shrink-0" />
                     <div>
-                      <p className="text-foreground">Registro</p>
+                      <p className="text-foreground">RNI</p>
+                      <p>{userData.registration}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <IdCardLanyard className="w-4 h-4 mr-3 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-foreground">RNIC</p>
                       <p>{userData.registration}</p>
                     </div>
                   </div>
@@ -170,13 +220,13 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                 <div className="bg-white p-4 rounded-lg shadow-sm">
                   <QRCodeSVG
                     id="qr-code-svg"
-                    value={`https://localhost:5173/tarjeta_usuario/${userData.registration}`}
+                    value={`https://cicb.org.bo/profile/${userData.registration}`}
                     size={180}
                     level="H"
                     includeMargin={true}
                   />
                 </div>
-                <div className='w-full space-y-2'>
+                <div className="w-full space-y-2">
                   {onNavigate && (
                     <Button 
                       onClick={() => onNavigate('user-card', 1)}
@@ -186,14 +236,14 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                       Ver Tarjeta
                     </Button>
                   )}
-                  <Button
+                  <Button 
                     onClick={handleDownloadQR}
-                    variant='outline'
-                    className='w-full'
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Descargar QR
-                </Button>
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Descargar QR
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -264,13 +314,13 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                             <Label htmlFor="name">Nombre Completo</Label>
                             <Input
                               id="name"
-                              value={`Ing. ${userData.name}`}
+                              value={userData.name}
                               disabled={!isEditing}
                               onChange={(e) => setUserData({...userData, name: e.target.value})}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="registration">Número de Registro</Label>
+                            <Label htmlFor="registration">RNIC</Label>
                             <Input
                               id="registration"
                               value={userData.registration}
@@ -375,7 +425,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                         <CardTitle>Certificaciones y Cursos</CardTitle>
                         <CardDescription>Tus capacitaciones y certificaciones profesionales registradas</CardDescription>
                       </div>
-                      <Button className="bg-primary text-primary-foreground">
+                      <Button className="bg-primary text-primary-foreground" onClick={() => setIsCertDialogOpen(true)}>
                         <Award className="w-4 h-4 mr-2" />
                         Agregar Certificación
                       </Button>
@@ -407,6 +457,13 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                             <Badge variant="outline" className="ml-2">
                               Certificado #{index + 1}
                             </Badge>
+                            <Button
+                              variant="outline"
+                              className="ml-2"
+                              onClick={() => handleDeleteCertification(cert.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -426,6 +483,59 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
           </div>
         </div>
       </div>
+
+      {/* Certification Dialog */}
+      <Dialog open={isCertDialogOpen} onOpenChange={setIsCertDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Agregar Certificación</DialogTitle>
+            <DialogDescription>
+              Ingresa los detalles de la certificación que deseas agregar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="certName">Nombre de la Certificación</Label>
+              <Input
+                id="certName"
+                value={newCert.name}
+                onChange={(e) => setNewCert({...newCert, name: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="certInstitution">Institución</Label>
+              <Input
+                id="certInstitution"
+                value={newCert.institution}
+                onChange={(e) => setNewCert({...newCert, institution: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="certYear">Año</Label>
+              <Input
+                id="certYear"
+                type="number"
+                value={newCert.year}
+                onChange={(e) => setNewCert({...newCert, year: parseInt(e.target.value)})}
+              />
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setIsCertDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="ml-2"
+              onClick={handleAddCertification}
+            >
+              Agregar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

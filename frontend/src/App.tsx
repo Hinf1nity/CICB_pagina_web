@@ -37,7 +37,7 @@ function AppRoutes() {
 
   const shouldShowNavbar = 
     currentPath !== '/login' && 
-    currentPath !== '/tarjeta_usuario' && 
+    !currentPath.startsWith('/tarjeta_usuario') && 
     !currentPath.startsWith('/admin');
 
   return (
