@@ -26,10 +26,10 @@ class NewsAdminGeneralSerializer(serializers.ModelSerializer):
 class NewsAdminListSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
-        fields = ['imagen']
+        fields = '__all__'
 
 
 class NewsAdminDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
-        exclude = ['imagen']
+        fields = '__all__'

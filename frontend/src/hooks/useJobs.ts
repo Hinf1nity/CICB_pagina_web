@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import api from "../api/kyClient";
 import { type JobData } from "../validations/jobsSchema";
+import { presignedUrlPost } from "./presignedUrlPost";
 
 export function useJobsPost() {
   const postJob = async (data: JobData) => {
+    let pdfId: string | null = null;
+
+    if (data.pdf) {
+      pdfId = await presignedUrlPost(data.pdf as File);
+    }
     const formData = new FormData();
     formData.append("titulo", data.titulo);
     formData.append("nombre_empresa", data.nombre_empresa);
@@ -11,6 +17,7 @@ export function useJobsPost() {
     formData.append("tipo_contrato", data.tipo_contrato);
     formData.append("salario", data.salario);
     formData.append("descripcion", data.descripcion);
+    formData.append("sobre_empresa", data.sobre_empresa);
     formData.append("estado", data.estado);
     data.requisitos.forEach((req, index) => {
       formData.append(`requisitos[${index}]`, req);
@@ -18,11 +25,12 @@ export function useJobsPost() {
     data.responsabilidades.forEach((res, index) => {
       formData.append(`responsabilidades[${index}]`, res);
     });
-    if (data.pdf) {
-      formData.append("pdf", data.pdf);
+    if (pdfId) {
+      formData.append("pdf", pdfId);
     }
-    console.log("PDF file to upload:", data);
-    const response = await api.post('jobs/', { body: formData });
+
+    const response = await api.post("jobs/job_admin/", { body: formData });
+
     return response.json();
   };
 
@@ -35,26 +43,26 @@ export function useJobs() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchJobs = async () => {
-      try {
-        const data: JobData[] = await api.get("jobs").json();
-        const formattedData: JobData[] = data.map((job) => ({
-          ...job,
-          requisitos:
-            typeof job.requisitos === "string"
-              ? (job.requisitos as string)
-                  .split(",")
-                  .map((r: string) => r.trim())
-                  .filter((r: string) => r.length > 0)
-              : job.requisitos || [],
-        }));
+    try {
+      const data: JobData[] = await api.get("jobs/job/").json();
+      const formattedData: JobData[] = data.map((job) => ({
+        ...job,
+        requisitos:
+          typeof job.requisitos === "string"
+            ? (job.requisitos as string)
+              .split(",")
+              .map((r: string) => r.trim())
+              .filter((r: string) => r.length > 0)
+            : job.requisitos || [],
+      }));
 
-        setJobs(formattedData);
-      } catch (err) {
-        setError("Error al cargar los empleos");
-      } finally {
-        setLoading(false);
-      }
-    };
+      setJobs(formattedData);
+    } catch (err) {
+      setError("Error al cargar los empleos");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchJobs();
@@ -71,17 +79,32 @@ export function useJobDetail(id?: string) {
 
   useEffect(() => {
     const fetchJob = async () => {
+      let pdf_url: string | null = null;
       try {
-        const data: JobData = await api.get(`jobs/${id}`).json();
+        const data: JobData = await api.get(`jobs/job/${id}/`).json();
+        if (data.pdf) {
+          const pdf_url_response = await api
+            .get(`jobs/job/${data.id}/pdf-download/`)
+            .json<{ download_url: string }>();
+          pdf_url = pdf_url_response.download_url;
+        }
         const formattedJob: JobData = {
           ...data,
           requisitos:
             typeof data.requisitos === "string"
               ? (data.requisitos as string)
-                  .split(",")
-                  .map((r: string) => r.trim())
-                  .filter((r: string) => r.length > 0)
+                .split(",")
+                .map((r: string) => r.trim())
+                .filter((r: string) => r.length > 0)
               : data.requisitos || [],
+          responsabilidades:
+            typeof data.responsabilidades === "string"
+              ? (data.responsabilidades as string)
+                .split(",")
+                .map((r: string) => r.trim())
+                .filter((r: string) => r.length > 0)
+              : data.responsabilidades || [],
+          pdf_url: pdf_url ? pdf_url : undefined,
         };
 
         setJob(formattedJob);
@@ -136,7 +159,7 @@ export function useJobPatch() {
       formData.append("pdf", data.pdf);
     }
 
-    const response = await api.patch(`jobs/${id}/`, { body: formData });
+    const response = await api.patch(`jobs/job_admin/${id}/`, { body: formData });
     return response.json();
   };
   return { patchJob };

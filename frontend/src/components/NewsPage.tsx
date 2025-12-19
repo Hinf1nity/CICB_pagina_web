@@ -15,9 +15,8 @@ export function NewsPage() {
   const navigate = useNavigate();
 
   const { noticias, loading, error } = useNoticias();
-  console.log(noticias);
 
-    const filteredNews = useMemo(() => {
+  const filteredNews = useMemo(() => {
     return noticias.filter((item) => {
       const matchesSearch =
         item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -133,8 +132,8 @@ export function NewsPage() {
                     <Button
                       className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
                       onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/noticias/${item.id}`);
+                        e.stopPropagation();
+                        navigate(`/noticias/${item.id}`);
                       }}
                     >
                       Leer más

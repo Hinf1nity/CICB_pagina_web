@@ -61,12 +61,12 @@ export function useStatsData() {
 
       const employmentAdapted: Employment[] = [{
         name: "Con Trabajo",
-        value: (stats.employment_rate/100) * stats.total_users,
+        value: (stats.employment_rate / 100) * stats.total_users,
         percentage: stats.employment_rate,
       },
       {
         name: "Sin Trabajo",
-        value: ((100 - stats.employment_rate)/100) * stats.total_users,
+        value: ((100 - stats.employment_rate) / 100) * stats.total_users,
         percentage: 100 - stats.employment_rate,
       }];
 

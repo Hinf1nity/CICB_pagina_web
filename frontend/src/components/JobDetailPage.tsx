@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import {ArrowLeft, MapPin, Briefcase, Calendar, FileText, Download, Building2, CheckCircle} from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, Calendar, FileText, Download, Building2, CheckCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -10,9 +10,8 @@ export function JobDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { job, loading, error } = useJobDetail(id);
-  console.log(job);
   const getTypeColor = (jobType: string) => {
-    
+
     const colors: Record<string, string> = {
       'completo': 'bg-primary text-primary-foreground',
       'contrato': 'bg-secondary text-secondary-foreground',
@@ -69,7 +68,7 @@ export function JobDetailPage() {
                     <p className="capitalize">{job.tipo_contrato}</p>
                   </Badge>
                 </div>
-                 <div className="flex items-center">
+                <div className="flex items-center">
                   {/* <DollarSign className="w-4 h-4 mr-2" /> */}
                   <span>{job.salario}</span>
                 </div>

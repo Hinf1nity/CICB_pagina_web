@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.postgres.fields import ArrayField
 from PDFs.models import PDF
 
 
@@ -15,8 +15,10 @@ class Job(models.Model):
     ubicacion = models.CharField(max_length=255)
     salario = models.CharField(max_length=86)
     tipo_contrato = models.CharField(max_length=86)
-    requisitos = models.JSONField(blank=True, null=True, default=list)
-    responsabilidades = models.JSONField(blank=True, null=True, default=list)
+    requisitos = ArrayField(models.CharField(
+        max_length=255), blank=True, null=True, default=list)
+    responsabilidades = ArrayField(models.CharField(
+        max_length=255), blank=True, null=True, default=list)
     fecha_publicacion = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(
         max_length=16,

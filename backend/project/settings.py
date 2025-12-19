@@ -103,8 +103,12 @@ AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION")
-
 AWS_S3_ENDPOINT = os.getenv("AWS_S3_ENDPOINT")
+AWS_S3_PUBLIC_URL = f"https://{AWS_S3_ENDPOINT}/{AWS_STORAGE_BUCKET_NAME}"
+AWS_S3_INTERNAL_ENDPOINT = "http://localstack:4566"
+AWS_S3_EXTERNAL_ENDPOINT = "http://localhost:4566"
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

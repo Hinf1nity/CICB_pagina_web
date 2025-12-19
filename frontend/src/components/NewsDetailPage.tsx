@@ -12,10 +12,9 @@ export function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
   // Datos de ejemplo - en producción vendrían de una API o estado global
 
-  const {noticias}= useNoticias();
-  
+  const { noticias } = useNoticias();
+
   const { noticia, loading, error } = useNoticiaDetail(id);
-  console.log(noticia);
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -78,10 +77,10 @@ export function NewsDetailPage() {
             </Badge>
             <div className="flex items-center text-muted-foreground">
               <Calendar className="w-4 h-4 mr-2" />
-              <span>{new Date(noticia.fecha_publicacion).toLocaleDateString('es-BO', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              <span>{new Date(noticia.fecha_publicacion).toLocaleDateString('es-BO', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}</span>
             </div>
             {/* <div className="flex items-center text-muted-foreground">
@@ -95,7 +94,7 @@ export function NewsDetailPage() {
         <Separator className="mb-8" />
 
         {/* Article Content */}
-        <div 
+        <div
           className="prose prose-lg max-w-none mb-12 text-foreground"
           dangerouslySetInnerHTML={{ __html: noticia.descripcion }}
         />
@@ -136,11 +135,9 @@ export function NewsDetailPage() {
           <h3 className="text-foreground mb-4">Noticias Relacionadas</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2].filter(id_filter => id_filter !== Number(id)).slice(0, 3).map((id_map) => {
-              const relatedNews = noticias[id_map-1];
-              console.log(id_map);
-              console.log(relatedNews);
+              const relatedNews = noticias[id_map - 1];
               if (!relatedNews) return null;
-              
+
               return (
                 <Card
                   key={id_map}
