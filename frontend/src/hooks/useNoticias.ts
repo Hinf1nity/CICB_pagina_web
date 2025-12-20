@@ -52,7 +52,7 @@ export function useNoticias() {
     fetchNoticias();
   }, []);
 
-  return { noticias, loading, error, refetchNoticias: fetchNoticias };
+  return { noticias, loading, error };
 }
 
 export function useNoticiaDetail(id?: string) {

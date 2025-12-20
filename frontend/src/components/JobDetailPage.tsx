@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, MapPin, Briefcase, Calendar, FileText, Download, Building2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, Calendar, FileText, Download, Building2, CheckCircle, Banknote } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -69,8 +69,12 @@ export function JobDetailPage() {
                   </Badge>
                 </div>
                 <div className="flex items-center">
-                  {/* <DollarSign className="w-4 h-4 mr-2" /> */}
-                  <span>{job.salario}</span>
+                  {job.salario && (
+                    <>
+                      <Banknote className="w-4 h-4 mr-2" />
+                      <span>{job.salario}</span>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
@@ -196,13 +200,15 @@ export function JobDetailPage() {
                       <p className="text-foreground">{job.tipo_contrato}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    {/* <DollarSign className="w-5 h-5 text-primary mt-1" /> */}
-                    <div>
-                      <p className="text-muted-foreground">Salario</p>
-                      <p className="text-foreground">{job.salario}</p>
+                  {job.salario && (
+                    <div className="flex items-start gap-3">
+                      <Banknote className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <p className="text-muted-foreground">Referencia Salarial</p>
+                        <p className="text-foreground">{job.salario}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <Separator className="my-6" />

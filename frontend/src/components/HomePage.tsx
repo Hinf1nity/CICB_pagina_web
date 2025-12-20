@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../auth/useAuth';
+import { useNoticias } from '../hooks/useNoticias';
 
 interface DepartmentalCollege {
   id: number;
@@ -21,6 +22,7 @@ export function HomePage() {
   const [direction, setDirection] = useState(0);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { noticias } = useNoticias();
 
   const stats = [
     { icon: Users, label: 'Miembros Activos', value: '2,500+' },
@@ -32,7 +34,7 @@ export function HomePage() {
   const features = [
     {
       title: 'Certificación Profesional',
-      description: 'Otorgamos certificaciones y validaciones para ingenieros civiles en Bolivia.',
+      description: 'A través de los colegios departamentales se otorgan certificaciones para ingenieros civiles en Bolivia.',
       icon: Award,
     },
     {
@@ -53,14 +55,14 @@ export function HomePage() {
   ];
 
   const departmentalColleges: DepartmentalCollege[] = [
-    { id: 1, name: 'CIC La Paz', department: 'La Paz', abbreviation: 'LP', image: '/cicImages/cicLaPaz.png', url: ''},
+    { id: 1, name: 'CIC La Paz', department: 'La Paz', abbreviation: 'LP', image: '/cicImages/cicLaPaz.png', url: '' },
     { id: 2, name: 'CIC Cochabamba', department: 'Cochabamba', abbreviation: 'CB' },
     { id: 3, name: 'CIC Santa Cruz', department: 'Santa Cruz', abbreviation: 'SC' },
     { id: 4, name: 'CIC Oruro', department: 'Oruro', abbreviation: 'OR' },
     { id: 5, name: 'CIC Potosí', department: 'Potosí', abbreviation: 'PT' },
     { id: 6, name: 'CIC Chuquisaca', department: 'Chuquisaca', abbreviation: 'CH', image: '/cicImages/cicChuquisaca.png', url: '' },
     { id: 7, name: 'CIC Tarija', department: 'Tarija', abbreviation: 'TJ' },
-    { id: 8, name: 'CIC Beni', department: 'Beni', abbreviation: 'BE', image: '/cicImages/cicBeni.png', url: ''},
+    { id: 8, name: 'CIC Beni', department: 'Beni', abbreviation: 'BE', image: '/cicImages/cicBeni.png', url: '' },
     { id: 9, name: 'CIC Pando', department: 'Pando', abbreviation: 'PA' },
   ];
 
@@ -80,6 +82,8 @@ export function HomePage() {
     const end = start + itemsPerSlide;
     return departmentalColleges.slice(start, end);
   };
+
+  const latestThreeNoticias = noticias.sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime()).slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,7 +106,7 @@ export function HomePage() {
               />
             </div>
             <p className="mb-6">
-              Comprometidos con la excelencia profesional y el desarrollo de la ingeniería civil en Bolivia. 
+              Comprometidos con la excelencia profesional y el desarrollo de la ingeniería civil en Bolivia.
               Representamos a los profesionales más capacitados del país.
             </p>
             <div className="flex flex-wrap gap-4">
@@ -158,18 +162,20 @@ export function HomePage() {
                 <h2 className="text-foreground">¿Quiénes Somos?</h2>
               </div>
               <p className="text-foreground mb-4">
-                El Colegio de Ingenieros Civiles de Bolivia (CICB) es una institución profesional que agrupa 
-                a los ingenieros civiles más destacados del país. Fundado con el objetivo de promover la 
-                excelencia técnica y el desarrollo profesional, nos hemos consolidado como la máxima autoridad 
-                en la regulación y certificación de la práctica de la ingeniería civil en Bolivia.
+                El Colegio de Ingenieros Civiles de Bolivia fue fundado el 18 de mayo de 1996 en la ciudad de Cochabamba, es
+                una asociación civil, sin fines de lucro que forma parte de la estructura orgánica de la Sociedad de Ingenieros
+                de Bolivia (SIB), cuenta con personalidad jurídica propia y se constituye en la institución que agrupa y
+                representa a los ingenieros civiles que están habilitados para ejercer su profesión en toda la jurisdicción
+                territorial de Bolivia y registrados en el Registro Nacional de Ingenieros de la Sociedad de Ingenieros de Bolivia
+                por mandato de la Ley 1449.
               </p>
               <p className="text-foreground mb-4">
-                Representamos a más de 2,500 profesionales activos que trabajan incansablemente en el desarrollo 
-                de la infraestructura y el progreso de nuestro país. Nuestro compromiso es garantizar la calidad, 
+                Representamos a más de 2,500 profesionales activos que trabajan incansablemente en el desarrollo
+                de la infraestructura y el progreso de nuestro país. Nuestro compromiso es garantizar la calidad,
                 ética y competencia profesional en cada proyecto que nuestros colegiados realizan.
               </p>
-              <p className="text-muted-foreground">
-                A través de programas de capacitación continua, regulación profesional y servicios de certificación, 
+              <p className="text-foreground">
+                A través de programas de capacitación continua, regulación profesional y servicios de certificación,
                 contribuimos al fortalecimiento de la ingeniería civil boliviana y al desarrollo sostenible de nuestra nación.
               </p>
             </div>
@@ -197,9 +203,9 @@ export function HomePage() {
                 <h2 className="text-primary-foreground">Nuestra Visión</h2>
               </div>
               <p className="text-primary-foreground/90 leading-relaxed">
-                Ser la institución líder en Bolivia que promueve la excelencia en la ingeniería civil, 
-                reconocida nacional e internacionalmente por su compromiso con el desarrollo sostenible, 
-                la innovación tecnológica y la formación de profesionales altamente capacitados que 
+                Ser la institución líder en Bolivia que promueve la excelencia en la ingeniería civil,
+                reconocida nacional e internacionalmente por su compromiso con el desarrollo sostenible,
+                la innovación tecnológica y la formación de profesionales altamente capacitados que
                 contribuyan al progreso y bienestar de la sociedad boliviana.
               </p>
             </div>
@@ -213,9 +219,9 @@ export function HomePage() {
                 <h2 className="text-primary-foreground">Nuestra Misión</h2>
               </div>
               <p className="text-primary-foreground/90 leading-relaxed">
-                Regular, representar y fortalecer el ejercicio profesional de la ingeniería civil en Bolivia, 
-                garantizando los más altos estándares de calidad, ética y competencia técnica. Promovemos 
-                la actualización continua de nuestros colegiados, fomentamos la investigación y el desarrollo 
+                Regular, representar y fortalecer el ejercicio profesional de la ingeniería civil en Bolivia,
+                garantizando los más altos estándares de calidad, ética y competencia técnica. Promovemos
+                la actualización continua de nuestros colegiados, fomentamos la investigación y el desarrollo
                 tecnológico, y contribuimos activamente al desarrollo sostenible del país.
               </p>
             </div>
@@ -238,7 +244,7 @@ export function HomePage() {
                 <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-3">
                   <Users className="w-8 h-8 text-accent-foreground" />
                 </div>
-                <h4 className="text-primary-foreground mb-2">Integridad</h4>
+                <h4 className="text-primary-foreground mb-2">Ética</h4>
                 <p className="text-primary-foreground/80">
                   Actuamos con honestidad y transparencia
                 </p>
@@ -287,7 +293,7 @@ export function HomePage() {
             >
               <ChevronLeft className="w-6 h-6" />
             </motion.button>
-            
+
             <motion.button
               onClick={nextSlide}
               className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:shadow-xl transition-all"
@@ -307,8 +313,8 @@ export function HomePage() {
                   initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-                  transition={{ 
-                    duration: 0.6, 
+                  transition={{
+                    duration: 0.6,
                     ease: [0.43, 0.13, 0.23, 0.96]
                   }}
                   className="grid grid-cols-1 md:grid-cols-3 gap-6"
@@ -318,8 +324,8 @@ export function HomePage() {
                       key={college.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ 
-                        duration: 0.5, 
+                      transition={{
+                        duration: 0.5,
                         delay: index * 0.1,
                         ease: "easeOut"
                       }}
@@ -368,9 +374,8 @@ export function HomePage() {
                     setDirection(index > currentSlide ? 1 : -1);
                     setCurrentSlide(index);
                   }}
-                  className={`rounded-full transition-all ${
-                    currentSlide === index ? 'bg-primary' : 'bg-muted-foreground/30'
-                  }`}
+                  className={`rounded-full transition-all ${currentSlide === index ? 'bg-primary' : 'bg-muted-foreground/30'
+                    }`}
                   animate={{
                     width: currentSlide === index ? 32 : 12,
                     height: 12,
@@ -428,22 +433,22 @@ export function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((item) => (
-              <Card key={item} className="overflow-hidden hover:shadow-lg transition-shadow">
+            {latestThreeNoticias.map((item) => (
+              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="h-48 bg-primary/10">
                   <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1748345952129-3bdd7d39f155?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbmdpbmVlcmluZyUyMHRlYW0lMjBvZmZpY2V8ZW58MXx8fHwxNzYxMTYzNzQ3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                    alt="Noticia"
+                    src={item.imagen_url || 'https://via.placeholder.com/400x300?text=No+Image'}
+                    alt={item.titulo}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <CardHeader>
-                  <CardTitle>Convocatoria Asamblea General {item}</CardTitle>
-                  <CardDescription>22 de octubre, 2025</CardDescription>
+                  <CardTitle>{item.titulo}</CardTitle>
+                  <CardDescription>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Se convoca a todos los miembros del colegio a la asamblea general ordinaria...
+                    {item.resumen}
                   </p>
                 </CardContent>
               </Card>

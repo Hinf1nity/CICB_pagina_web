@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardTitle, CardDescription,} from './ui/card';
+import { Card, CardTitle, CardDescription, } from './ui/card';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from './ui/select';
 import { Button } from './ui/button';
 import { Search, MapPin, Briefcase, Calendar, ArrowRight, } from 'lucide-react';
 import { useJobs } from '../hooks/useJobs';
@@ -13,13 +13,15 @@ export function JobsPage() {
   const [type, setCategory] = useState('all');
   const navigate = useNavigate();
   const { jobs, loading, error } = useJobs();
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch =
-      job.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = type === 'all' || job.tipo_contrato === type;
-    return matchesSearch && matchesType;
-  });
+  const filteredJobs = jobs
+    .filter((job) => {
+      const matchesSearch =
+        job.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = type === 'all' || job.tipo_contrato === type;
+      return matchesSearch && matchesType;
+    })
+    .sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
 
   if (loading) return <p className="text-center mt-10">Cargando trabajos...</p>;
   if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
@@ -49,19 +51,6 @@ export function JobsPage() {
               className="pl-10"
             />
           </div>
-
-          <Select value={type} onValueChange={setCategory}>
-            <SelectTrigger className="w-full md:w-[200px] cursor-pointer">
-              <SelectValue placeholder="Categoría" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las categorías</SelectItem>
-              <SelectItem value="Ingeniería Civil">Ingeniería Civil</SelectItem>
-              <SelectItem value="Arquitectura">Arquitectura</SelectItem>
-              <SelectItem value="Construcción">Construcción</SelectItem>
-              <SelectItem value="Educación">Educación</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
@@ -106,7 +95,7 @@ export function JobsPage() {
                 {Array.isArray(job.requisitos) && job.requisitos.length > 0 && (
                   <div>
                     <p className="text-sm font-medium text-foreground">
-                     Requisitos principales:
+                      Requisitos principales:
                     </p>
                     <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
                       {job.requisitos.slice(0, 3).map((req, i) => (

@@ -15,7 +15,9 @@ export function useJobsPost() {
     formData.append("nombre_empresa", data.nombre_empresa);
     formData.append("ubicacion", data.ubicacion);
     formData.append("tipo_contrato", data.tipo_contrato);
-    formData.append("salario", data.salario);
+    if (data.salario) {
+      formData.append("salario", data.salario);
+    }
     formData.append("descripcion", data.descripcion);
     formData.append("sobre_empresa", data.sobre_empresa);
     formData.append("estado", data.estado);
@@ -45,6 +47,40 @@ export function useJobs() {
   const fetchJobs = async () => {
     try {
       const data: JobData[] = await api.get("jobs/job/").json();
+      const formattedData: JobData[] = data.map((job) => ({
+        ...job,
+        requisitos:
+          typeof job.requisitos === "string"
+            ? (job.requisitos as string)
+              .split(",")
+              .map((r: string) => r.trim())
+              .filter((r: string) => r.length > 0)
+            : job.requisitos || [],
+      }));
+
+      setJobs(formattedData);
+    } catch (err) {
+      setError("Error al cargar los empleos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  return { jobs, loading, error };
+}
+
+export function useJobsAdmin() {
+  const [jobs, setJobs] = useState<JobData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchJobs = async () => {
+    try {
+      const data: JobData[] = await api.get("jobs/job_admin/").json();
       const formattedData: JobData[] = data.map((job) => ({
         ...job,
         requisitos:

@@ -13,7 +13,7 @@ class Job(models.Model):
     titulo = models.CharField(max_length=255)
     nombre_empresa = models.CharField(max_length=255)
     ubicacion = models.CharField(max_length=255)
-    salario = models.CharField(max_length=86)
+    salario = models.CharField(max_length=86, blank=True, null=True)
     tipo_contrato = models.CharField(max_length=86)
     requisitos = ArrayField(models.CharField(
         max_length=255), blank=True, null=True, default=list)

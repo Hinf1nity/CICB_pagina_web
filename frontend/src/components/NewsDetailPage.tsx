@@ -100,35 +100,37 @@ export function NewsDetailPage() {
         />
 
         {/* PDF Document Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <FileText className="w-8 h-8 text-primary" />
-                <div>
-                  <h3 className="text-foreground">Documento Oficial</h3>
-                  <p className="text-muted-foreground">Descarga o visualiza el documento completo en PDF</p>
+        {noticia.pdf_url && (
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-8 h-8 text-primary" />
+                  <div>
+                    <h3 className="text-foreground">Documento Oficial</h3>
+                    <p className="text-muted-foreground">Descarga o visualiza el documento completo en PDF</p>
+                  </div>
                 </div>
+                <Button
+                  onClick={() => window.open(noticia.pdf_url, '_blank')}
+                  className="bg-accent text-accent-foreground hover:bg-accent/90"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Descargar PDF
+                </Button>
               </div>
-              <Button
-                onClick={() => window.open(noticia.pdf_url, '_blank')}
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Descargar PDF
-              </Button>
-            </div>
 
-            {/* PDF Viewer */}
-            <div className="border rounded-lg overflow-hidden bg-muted">
-              <iframe
-                src={noticia.pdf_url}
-                className="w-full h-[600px]"
-                title="Documento PDF"
-              />
-            </div>
-          </CardContent>
-        </Card>
+              {/* PDF Viewer */}
+              <div className="border rounded-lg overflow-hidden bg-muted">
+                <iframe
+                  src={noticia.pdf_url}
+                  className="w-full h-[600px]"
+                  title="Documento PDF"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Related News */}
         <div>
