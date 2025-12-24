@@ -31,6 +31,10 @@ def calculate_current_metrics():
         count=Count('id')
     ).order_by('-count'))
 
+    active_data = list(User.objects.values('estado').annotate(
+        count=Count('id')
+    ).order_by('-count'))
+
     employed_users = User.objects.exclude(
         Q(registro_empleado__isnull=True) | Q(registro_empleado__exact='')
     ).count()
@@ -44,7 +48,8 @@ def calculate_current_metrics():
         "employed_users": employed_users,
         "employment_rate": round(employment_rate, 2),
         "specialties_breakdown": specialties_data,
-        "state_breakdown": state_data
+        "state_breakdown": state_data,
+        "activity_breakdown" : active_data
     }
 
 def calculate_growth_metrics():

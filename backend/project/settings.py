@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'IMGs',
     'resource_chart',
     'stats',
+    'performance_table',
 ]
 
 MIDDLEWARE = [
