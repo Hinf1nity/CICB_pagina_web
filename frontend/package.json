@@ -8,12 +8,13 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "mock": "json-server --watch src/fake_data/wrk.json --port 4000", 
+    "mock": "json-server --watch src/fake_data/wrk.json --port 4000",
     "mock_2": "json-server --watch src/fake_data/db.json --port 4001"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.1.15",
+    "@tanstack/react-query": "^5.90.12",
     "class-variance-authority": "^0.7.1",
     "ky": "^1.12.0",
     "lucide-react": "^0.546.0",

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import api from '../api/kyClient';
 import { type NewsData } from "../validations/newsSchema";
 import { presignedUrlPost } from "./presignedUrlPost";
@@ -21,74 +22,60 @@ export function useNoticiasAdmin() {
   useEffect(() => {
     fetchNoticias();
   }, []);
-
   return { noticias, loading, error, refetchNoticias: fetchNoticias };
 }
 
 export function useNoticias() {
-  const [noticias, setNoticias] = useState<NewsData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchNoticias = async () => {
-    try {
+  const { data: noticias = [], isLoading: loading, isError, error } = useQuery({
+    queryKey: ['noticias'],
+    queryFn: async () => {
       const data: NewsData[] = await api.get("news/news/").json();
-      for (const noticia of data) {
-        if (noticia.imagen) {
-          const img_url_response = await api
-            .get(`news/news/${noticia.id}/img-download/`)
-            .json<{ download_url: string }>();
-          noticia.imagen_url = img_url_response.download_url;
-        }
-      }
-      setNoticias(data);
-    } catch (err) {
-      setError("Error al cargar las noticias");
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchNoticias();
-  }, []);
+      console.log(data);
+      return data.map(item => ({
+        ...item,
+        img_url: item.imagen?.url,
+        imagen: undefined
+      }));
+    },
+    staleTime: 1000 * 60 * 60 * 5,
+    gcTime: 1000 * 60 * 60 * 6,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
-  return { noticias, loading, error };
+  return { noticias, loading, isError, error };
 }
 
 export function useNoticiaDetail(id?: string) {
-  const [noticia, setNoticias] = useState<NewsData>({} as NewsData);
+  const fetchNoticias = async () => {
+    const data: NewsData = await api.get(`news/news/${id}`).json();
+    if (data.pdf) {
+      const pdf_url_response = await api
+        .get(`news/news/${data.id}/pdf-download/`)
+        .json<{ download_url: string }>();
+      data.pdf_url = pdf_url_response.download_url;
+    }
+    if (data.imagen) {
+      const img_url_response = await api
+        .get(`news/news/${data.id}/img-download/`)
+        .json<{ download_url: string }>();
+      data.imagen_url = img_url_response.download_url;
+    }
+    console.log(data);
+    return data;
+  };
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: noticia, isLoading: loading, isError, error } = useQuery({
+    queryKey: ['noticia', id],
+    queryFn: fetchNoticias,
+    staleTime: 1000 * 60 * 60 * 5,
+    gcTime: 1000 * 60 * 60 * 6,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    enabled: !!id,
+  });
 
-  useEffect(() => {
-    const fetchNoticias = async () => {
-      try {
-        const data: NewsData = await api.get(`news/news/${id}`).json();
-        if (data.pdf) {
-          const pdf_url_response = await api
-            .get(`news/news/${data.id}/pdf-download/`)
-            .json<{ download_url: string }>();
-          data.pdf_url = pdf_url_response.download_url;
-        }
-        if (data.imagen) {
-          const img_url_response = await api
-            .get(`news/news/${data.id}/img-download/`)
-            .json<{ download_url: string }>();
-          data.imagen_url = img_url_response.download_url;
-        }
-        setNoticias(data);
-        console.log(data);
-      } catch (err) {
-        setError("Error al cargar las noticias");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNoticias();
-  }, [id]);
-
-  return { noticia, loading, error };
+  return { noticia, loading, isError, error };
 
 }
 

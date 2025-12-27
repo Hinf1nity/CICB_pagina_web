@@ -22,7 +22,8 @@ export const jobSchema = z.object({
     .refine((file) => file.type === "application/pdf", "Debe ser un PDF")
     .refine((file) => file.size <= 10 * 1024 * 1024, "El PDF no debe superar los 10MB")
     .optional()
-    .or(z.literal(null)),
+    .or(z.literal(null))
+    .or(z.string()),
   estado: z.enum(status, { message: `El estado debe ser uno de los siguientes: ${status.join(", ")}` }),
 });
 

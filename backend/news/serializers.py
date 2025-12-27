@@ -1,7 +1,10 @@
 from rest_framework import serializers
 from .models import News
+from IMGs.serializers import IMGSerializer
 
 class NewsListSerializer(serializers.ModelSerializer):
+    imagen = IMGSerializer()
+
     class Meta:
         model = News
         exclude = [

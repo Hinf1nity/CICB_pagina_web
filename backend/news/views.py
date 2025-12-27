@@ -27,6 +27,11 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
             return NewsListSerializer
         return NewsDetailSerializer
 
+    def get_queryset(self):
+        queryset = News.objects.filter(estado="publicado").select_related(
+            'imagen').order_by("-fecha_publicacion")
+        return queryset
+
     @action(
         detail=True,
         methods=["get"],

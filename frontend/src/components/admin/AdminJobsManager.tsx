@@ -12,9 +12,10 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, X } from 'lucide-react';
 import { DynamicList } from '../DynamicList';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { useJobsPost, useJobPatch, useJobsAdmin } from '../../hooks/useJobs';
+import { useJobsPost, useJobPatch, useJobsAdmin, useJobDetailAdmin } from '../../hooks/useJobs';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type JobData, jobSchema } from '../../validations/jobsSchema';
+import { is } from 'zod/v4/locales';
 
 
 export function AdminJobsManager() {
@@ -58,13 +59,21 @@ export function AdminJobsManager() {
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (item: JobData) => {
+  const handleEdit = async (item: JobData) => {
+    const formattedJob = await useJobDetailAdmin(`${item.id}`);
+    console.log('Cargando oferta para edición:', formattedJob);
+    if (formattedJob) {
+      item = {
+        ...formattedJob,
+        requisitos: formattedJob.requisitos || [""],
+        responsabilidades: formattedJob.responsabilidades || [""],
+        pdf: formattedJob.pdf_url ? formattedJob.pdf_url : null,
+      };
+    }
     reset({
       ...item,
-      requisitos: item.requisitos || [""],
-      responsabilidades: item.responsabilidades || [""],
-      pdf: null,
     });
+    console.log('Editando oferta:', item);
     setEditingItem(item);
     setIsDialogOpen(true);
   };
@@ -310,6 +319,9 @@ export function AdminJobsManager() {
                 render={({ field }) => {
                   const file = field.value;
 
+                  const isFile = file instanceof File;
+                  const isUrl = typeof file === 'string' && file.startsWith('http');
+
                   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     const newFile = e.target.files?.[0];
                     if (!newFile) return;
@@ -333,7 +345,20 @@ export function AdminJobsManager() {
                   return (
                     <div className="space-y-2">
                       <Label htmlFor="pdf">Documento PDF (Opcional)</Label>
-                      {file ? (
+                      {isUrl && (
+                        <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-destructive" />
+                            <a href={file} target="_blank" rel="noopener noreferrer" className="text-foreground underline">
+                              Ver PDF existente
+                            </a>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={removePdf}>
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                      {isFile && (
                         <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
                           <div className="flex items-center gap-2">
                             <FileText className="w-5 h-5 text-destructive" />
@@ -346,7 +371,9 @@ export function AdminJobsManager() {
                             <X className="w-4 h-4" />
                           </Button>
                         </div>
-                      ) : (
+                      )}
+
+                      {!file && (
                         <div className="border-2 border-dashed border-input rounded-md p-4 text-center hover:border-primary transition-colors">
                           <input
                             type="file"

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/kyClient";
 import { type JobData } from "../validations/jobsSchema";
 import { presignedUrlPost } from "./presignedUrlPost";
+import { useQuery } from "@tanstack/react-query";
 
 export function useJobsPost() {
   const postJob = async (data: JobData) => {
@@ -107,54 +108,77 @@ export function useJobsAdmin() {
   return { jobs, loading, error, refetchJobs: fetchJobs };
 }
 
+export async function useJobDetailAdmin(id: string) {
+  let pdf_url: string | null = null;
+  const data: JobData = await api.get(`jobs/job/${id}/`).json();
+  if (data.pdf) {
+    const pdf_url_response = await api
+      .get(`jobs/job/${data.id}/pdf-download/`)
+      .json<{ download_url: string }>();
+    pdf_url = pdf_url_response.download_url;
+  }
+  const formattedJob: JobData = {
+    ...data,
+    requisitos:
+      typeof data.requisitos === "string"
+        ? (data.requisitos as string)
+          .split(",")
+          .map((r: string) => r.trim())
+          .filter((r: string) => r.length > 0)
+        : data.requisitos || [],
+    responsabilidades:
+      typeof data.responsabilidades === "string"
+        ? (data.responsabilidades as string)
+          .split(",")
+          .map((r: string) => r.trim())
+          .filter((r: string) => r.length > 0)
+        : data.responsabilidades || [],
+    pdf_url: pdf_url ? pdf_url : undefined,
+  };
+  return formattedJob;
+}
+
 export function useJobDetail(id?: string) {
-  const [job, setJob] = useState<JobData>({} as JobData);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchJob = async () => {
-      let pdf_url: string | null = null;
-      try {
-        const data: JobData = await api.get(`jobs/job/${id}/`).json();
-        if (data.pdf) {
-          const pdf_url_response = await api
-            .get(`jobs/job/${data.id}/pdf-download/`)
-            .json<{ download_url: string }>();
-          pdf_url = pdf_url_response.download_url;
-        }
-        const formattedJob: JobData = {
-          ...data,
-          requisitos:
-            typeof data.requisitos === "string"
-              ? (data.requisitos as string)
-                .split(",")
-                .map((r: string) => r.trim())
-                .filter((r: string) => r.length > 0)
-              : data.requisitos || [],
-          responsabilidades:
-            typeof data.responsabilidades === "string"
-              ? (data.responsabilidades as string)
-                .split(",")
-                .map((r: string) => r.trim())
-                .filter((r: string) => r.length > 0)
-              : data.responsabilidades || [],
-          pdf_url: pdf_url ? pdf_url : undefined,
-        };
-
-        setJob(formattedJob);
-      } catch (err) {
-        setError("Error al cargar los detalles del empleo");
-      } finally {
-        setLoading(false);
-      }
+  const fetchJob = async () => {
+    let pdf_url: string | null = null;
+    const data: JobData = await api.get(`jobs/job/${id}/`).json();
+    if (data.pdf) {
+      const pdf_url_response = await api
+        .get(`jobs/job/${data.id}/pdf-download/`)
+        .json<{ download_url: string }>();
+      pdf_url = pdf_url_response.download_url;
+    }
+    const formattedJob: JobData = {
+      ...data,
+      requisitos:
+        typeof data.requisitos === "string"
+          ? (data.requisitos as string)
+            .split(",")
+            .map((r: string) => r.trim())
+            .filter((r: string) => r.length > 0)
+          : data.requisitos || [],
+      responsabilidades:
+        typeof data.responsabilidades === "string"
+          ? (data.responsabilidades as string)
+            .split(",")
+            .map((r: string) => r.trim())
+            .filter((r: string) => r.length > 0)
+          : data.responsabilidades || [],
+      pdf_url: pdf_url ? pdf_url : undefined,
     };
+    return formattedJob;
+  };
+  const { data: job, isLoading: loading, isError, error } = useQuery({
+    queryKey: ['job', id],
+    queryFn: fetchJob,
+    staleTime: 1000 * 60 * 60 * 5,
+    gcTime: 1000 * 60 * 60 * 6,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    enabled: !!id,
+  });
 
-    fetchJob();
-  }, [id]);
-
-  return { job, loading, error };
+  return { job, loading, isError, error };
 }
 
 export function useJobPatch() {
