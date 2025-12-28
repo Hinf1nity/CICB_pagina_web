@@ -23,8 +23,8 @@ class IMGSerializer(serializers.ModelSerializer):
             },
             ExpiresIn=60 * 60 * 6,  # 6 horas
         )
-        presigned_url = presigned_url.replace(
-            settings.AWS_S3_INTERNAL_ENDPOINT,
-            settings.AWS_S3_EXTERNAL_ENDPOINT,
-        )
+        # presigned_url = presigned_url.replace(
+        #     settings.AWS_S3_INTERNAL_ENDPOINT,
+        #     settings.AWS_S3_EXTERNAL_ENDPOINT,
+        # )
         return presigned_url

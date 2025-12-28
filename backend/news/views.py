@@ -59,14 +59,15 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
             },
             ExpiresIn=300,  # 5 minutos
         )
-        presigned_url = presigned_url.replace(
-            settings.AWS_S3_INTERNAL_ENDPOINT,
-            settings.AWS_S3_EXTERNAL_ENDPOINT,
-        )
+        # presigned_url = presigned_url.replace(
+        #     settings.AWS_S3_INTERNAL_ENDPOINT,
+        #     settings.AWS_S3_EXTERNAL_ENDPOINT,
+        # )
 
         return Response(
             {
                 "download_url": presigned_url,
+                "pdf_id": pdf.id,
             },
             status=status.HTTP_200_OK,
         )
@@ -97,14 +98,15 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
             },
             ExpiresIn=300,  # 5 minutos
         )
-        presigned_url = presigned_url.replace(
-            settings.AWS_S3_INTERNAL_ENDPOINT,
-            settings.AWS_S3_EXTERNAL_ENDPOINT,
-        )
+        # presigned_url = presigned_url.replace(
+        #     settings.AWS_S3_INTERNAL_ENDPOINT,
+        #     settings.AWS_S3_EXTERNAL_ENDPOINT,
+        # )
 
         return Response(
             {
                 "download_url": presigned_url,
+                "img_id": img.id,
             },
             status=status.HTTP_200_OK,
         )
@@ -122,3 +124,30 @@ class NewsAdminViewSet(viewsets.ModelViewSet):
             return NewsAdminDetailSerializer
 
         return NewsAdminGeneralSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().order_by('-fecha_publicacion')
+
+    def destroy(self, request, *args, **kwargs):
+        new = self.get_object()
+        if new.pdf:
+            pdf = new.pdf
+            ruta = pdf.ruta
+            s3_client.delete_object(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                Key=ruta,
+            )
+            new.pdf = None
+            new.save()
+            pdf.delete()
+        if new.imagen:
+            img = new.imagen
+            ruta = img.ruta
+            s3_client.delete_object(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                Key=ruta,
+            )
+            new.imagen = None
+            new.save()
+            img.delete()
+        return super().destroy(request, *args, **kwargs)

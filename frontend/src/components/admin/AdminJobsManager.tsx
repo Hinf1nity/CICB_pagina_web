@@ -12,11 +12,9 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, X } from 'lucide-react';
 import { DynamicList } from '../DynamicList';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { useJobsPost, useJobPatch, useJobsAdmin, useJobDetailAdmin } from '../../hooks/useJobs';
+import { useJobsPost, useJobPatch, useJobsAdmin, useJobDetailAdmin, useJobDelete } from '../../hooks/useJobs';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type JobData, jobSchema } from '../../validations/jobsSchema';
-import { is } from 'zod/v4/locales';
-
 
 export function AdminJobsManager() {
   const { register, handleSubmit, formState: { errors }, control, reset } = useForm<JobData>(
@@ -41,6 +39,7 @@ export function AdminJobsManager() {
   const { postJob } = useJobsPost();
   const { jobs, refetchJobs } = useJobsAdmin();
   const { patchJob } = useJobPatch();
+  // console.log('Errors en el formulario:', errors);
 
   const handleCreate = () => {
     reset({
@@ -67,7 +66,6 @@ export function AdminJobsManager() {
         ...formattedJob,
         requisitos: formattedJob.requisitos || [""],
         responsabilidades: formattedJob.responsabilidades || [""],
-        pdf: formattedJob.pdf_url ? formattedJob.pdf_url : null,
       };
     }
     reset({
@@ -78,11 +76,15 @@ export function AdminJobsManager() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm('¿Estás seguro de eliminar esta oferta laboral?')) {
       console.log('Eliminando oferta:', id);
+      const res = await useJobDelete(id);
+      console.log('Respuesta del servidor al eliminar:', res);
+      refetchJobs();
     }
   };
+
 
   const handleSave: SubmitHandler<JobData> = async (data) => {
     setIsDialogOpen(false);
@@ -321,7 +323,6 @@ export function AdminJobsManager() {
 
                   const isFile = file instanceof File;
                   const isUrl = typeof file === 'string' && file.startsWith('http');
-
                   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     const newFile = e.target.files?.[0];
                     if (!newFile) return;
@@ -335,7 +336,7 @@ export function AdminJobsManager() {
                       return;
                     }
 
-                    field.onChange(newFile); // ⬅️ actualiza React Hook Form
+                    field.onChange(newFile); // actualiza React Hook Form
                   };
 
                   const removePdf = () => {

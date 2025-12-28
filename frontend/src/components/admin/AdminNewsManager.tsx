@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Plus, Edit, Trash2, Eye, Upload, FileText, Image as ImageIcon, X } from 'lucide-react';
 import { RichTextEditor } from '../RichTextEditor';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { useNewsPost, useNoticiasAdmin, useNewsPatch } from '../../hooks/useNoticias';
+import { useNewsPost, useNoticiasAdmin, useNewsPatch, useNoticiaDetailAdmin, useNewsDelete } from '../../hooks/useNoticias';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type NewsData, newsSchema } from '../../validations/newsSchema';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
@@ -51,17 +51,21 @@ export function AdminNewsManager() {
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = async (item: any) => {
+    const detailedItem = await useNoticiaDetailAdmin(item.id);
     reset({
-      ...item,
+      ...detailedItem,
     });
-    setEditingItem(item);
+    setEditingItem(detailedItem);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm('¿Estás seguro de eliminar esta noticia?')) {
       console.log('Eliminando noticia:', id);
+      const res = await useNewsDelete(id);
+      console.log('Respuesta del servidor al eliminar:', res);
+      refetchNoticias();
     }
   };
 
@@ -201,25 +205,28 @@ export function AdminNewsManager() {
                 name="imagen"
                 control={control}
                 render={({ field }) => {
+                  const file = field.value;
 
+                  const isFile = file instanceof File;
+                  const isUrl = typeof file === 'string' && file.startsWith('http');
                   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
+                    const newFile = e.target.files?.[0];
+                    if (!newFile) return;
 
-                    if (file.size > 5 * 1024 * 1024) {
+                    if (newFile.size > 5 * 1024 * 1024) {
                       alert("La imagen no debe superar los 5MB");
                       return;
                     }
 
                     // Actualizamos React Hook Form
-                    field.onChange(file);
+                    field.onChange(newFile);
 
                     // Actualizamos el preview
                     const reader = new FileReader();
                     reader.onloadend = () => {
                       setNewsImagePreview(reader.result as string);
                     };
-                    reader.readAsDataURL(file);
+                    reader.readAsDataURL(newFile);
                   };
 
                   const removeImage = () => {
@@ -230,8 +237,25 @@ export function AdminNewsManager() {
                   return (
                     <div className="space-y-2">
                       <Label htmlFor="newsImagen">Imagen Principal *</Label>
-
-                      {newsImagePreview ? (
+                      {isUrl && (
+                        <div className="relative">
+                          <img
+                            src={file as string}
+                            alt="Imagen existente"
+                            className="w-full h-48 object-cover rounded-md border border-input"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={removeImage}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                      {isFile && newsImagePreview && (
                         <div className="relative">
                           <img
                             src={newsImagePreview}
@@ -248,7 +272,8 @@ export function AdminNewsManager() {
                             <X className="w-4 h-4" />
                           </Button>
                         </div>
-                      ) : (
+                      )}
+                      {!file && (
                         <div className="border-2 border-dashed border-input rounded-md p-6 text-center hover:border-primary transition-colors">
                           <input
                             type="file"
@@ -314,6 +339,8 @@ export function AdminNewsManager() {
                 render={({ field }) => {
                   const file = field.value;
 
+                  const isFile = file instanceof File;
+                  const isUrl = typeof file === 'string' && file.startsWith('http');
                   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                     const newFile = e.target.files?.[0];
                     if (!newFile) return;
@@ -327,7 +354,7 @@ export function AdminNewsManager() {
                       return;
                     }
 
-                    field.onChange(newFile); // ⬅️ actualiza React Hook Form
+                    field.onChange(newFile); // actualiza React Hook Form
                   };
 
                   const removePdf = () => {
@@ -337,7 +364,20 @@ export function AdminNewsManager() {
                   return (
                     <div className="space-y-2">
                       <Label htmlFor="newsPdf">Documento PDF (Opcional)</Label>
-                      {file ? (
+                      {isUrl && (
+                        <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-destructive" />
+                            <a href={file} target="_blank" rel="noopener noreferrer" className="text-foreground underline">
+                              Ver PDF existente
+                            </a>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={removePdf}>
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                      {isFile && (
                         <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
                           <div className="flex items-center gap-2">
                             <FileText className="w-5 h-5 text-destructive" />
@@ -353,7 +393,8 @@ export function AdminNewsManager() {
                             <X className="w-4 h-4" />
                           </Button>
                         </div>
-                      ) : (
+                      )}
+                      {!file && (
                         <div className="border-2 border-dashed border-input rounded-md p-4 text-center hover:border-primary transition-colors">
                           <input
                             type="file"

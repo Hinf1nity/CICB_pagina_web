@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardTitle, CardDescription, } from './ui/card';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from './ui/select';
 import { Button } from './ui/button';
 import { Search, MapPin, Briefcase, Calendar, ArrowRight, } from 'lucide-react';
 import { useJobs } from '../hooks/useJobs';

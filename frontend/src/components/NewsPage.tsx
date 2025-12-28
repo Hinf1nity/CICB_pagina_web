@@ -23,7 +23,8 @@ export function NewsPage() {
         item.resumen.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = category === 'all' || item.categoria === category;
       return matchesSearch && matchesCategory;
-    });
+    })
+      .sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
   }, [noticias, searchTerm, category]);
 
   if (loading) {

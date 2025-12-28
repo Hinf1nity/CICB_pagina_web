@@ -48,10 +48,10 @@ class PDFViewSet(viewsets.GenericViewSet):
             ExpiresIn=300,
         )
 
-        presigned_url = presigned_url.replace(
-            settings.AWS_S3_INTERNAL_ENDPOINT,
-            settings.AWS_S3_EXTERNAL_ENDPOINT,
-        )
+        # presigned_url = presigned_url.replace(
+        #     settings.AWS_S3_INTERNAL_ENDPOINT,
+        #     settings.AWS_S3_EXTERNAL_ENDPOINT,
+        # )
 
         pdf = PDF.objects.create(
             ruta=ruta,
@@ -61,7 +61,48 @@ class PDFViewSet(viewsets.GenericViewSet):
             {
                 "upload_url": presigned_url,
                 "pdf_id": pdf.id,
-                "ruta": ruta,
             },
             status=status.HTTP_201_CREATED,
+        )
+    
+    @action(detail=True, methods=["patch"], url_path="pdf-presigned-update", permission_classes=[IsAdminUser])
+    def update_pdf_presigned(self, request, pk=None):
+        file = self.get_object()
+
+        if not file.ruta:
+            return Response(
+                {"error": "Este archivo no esta guardado"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        content_type = request.data.get("content_type")
+
+        if content_type != "application/pdf":
+            return Response(
+                {"error": "Solo se permiten PDFs"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ruta = file.ruta
+
+        presigned_url = s3_client.generate_presigned_url(
+            "put_object",
+            Params={
+                "Bucket": settings.AWS_STORAGE_BUCKET_NAME,
+                "Key": ruta,
+                "ContentType": "application/pdf",
+            },
+            ExpiresIn=300,
+        )
+
+        # presigned_url = presigned_url.replace(
+        #     settings.AWS_S3_INTERNAL_ENDPOINT,
+        #     settings.AWS_S3_EXTERNAL_ENDPOINT,
+        # )
+
+        return Response(
+            {
+                "upload_url": presigned_url,
+            },
+            status=status.HTTP_200_OK,
         )

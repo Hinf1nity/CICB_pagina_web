@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from '../api/kyClient';
 import { type NewsData } from "../validations/newsSchema";
-import { presignedUrlPost } from "./presignedUrlPost";
+import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
 
 export function useNoticiasAdmin() {
   const [noticias, setNoticias] = useState<NewsData[]>([]);
@@ -33,17 +33,38 @@ export function useNoticias() {
       console.log(data);
       return data.map(item => ({
         ...item,
-        img_url: item.imagen?.url,
+        imagen_url: item.imagen?.url,
         imagen: undefined
       }));
     },
-    staleTime: 1000 * 60 * 60 * 5,
-    gcTime: 1000 * 60 * 60 * 6,
+    staleTime: 1000 * 60 * 1 * 1,
+    gcTime: 1000 * 60 * 1 * 2,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
 
   return { noticias, loading, isError, error };
+}
+
+export async function useNoticiaDetailAdmin(id?: string) {
+  const data: NewsData = await api.get(`news/news_admin/${id}`).json();
+  if (data.pdf) {
+    const pdf_url_response = await api
+      .get(`news/news/${data.id}/pdf-download/`)
+      .json<{ download_url: string, pdf_id: string }>();
+    data.pdf_url = `${pdf_url_response.pdf_id}`;
+    data.pdf = pdf_url_response.download_url;
+  }
+  if (data.imagen) {
+    const img_url_response = await api
+      .get(`news/news/${data.id}/img-download/`)
+      .json<{ download_url: string, img_id: string }>();
+    data.imagen_url = `${img_url_response.img_id}`;
+    data.imagen = img_url_response.download_url;
+  }
+  console.log(data);
+  return data;
+
 }
 
 export function useNoticiaDetail(id?: string) {
@@ -68,8 +89,8 @@ export function useNoticiaDetail(id?: string) {
   const { data: noticia, isLoading: loading, isError, error } = useQuery({
     queryKey: ['noticia', id],
     queryFn: fetchNoticias,
-    staleTime: 1000 * 60 * 60 * 5,
-    gcTime: 1000 * 60 * 60 * 6,
+    staleTime: 1000 * 60 * 15 * 1,
+    gcTime: 1000 * 60 * 15 * 2,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     enabled: !!id,
@@ -119,30 +140,66 @@ export function useNewsPost() {
 
 export function useNewsPatch() {
   const patchNews = async (id: string, data: NewsData, data_old: NewsData) => {
-    // Crear FormData
     const formData = new FormData();
+    let hasChanges = false;
+
+    const appendIfChanged = (key: string, value: any) => {
+      formData.append(key, value);
+      hasChanges = true;
+    };
+
     if (data.titulo !== data_old.titulo) {
-      formData.append("titulo", data.titulo);
+      appendIfChanged("titulo", data.titulo);
     }
     if (data.categoria !== data_old.categoria) {
-      formData.append("categoria", data.categoria);
+      appendIfChanged("categoria", data.categoria);
     }
     if (data.resumen !== data_old.resumen) {
-      formData.append("resumen", data.resumen);
+      appendIfChanged("resumen", data.resumen);
     }
     if (data.descripcion !== data_old.descripcion) {
-      formData.append("descripcion", data.descripcion);
+      appendIfChanged("descripcion", data.descripcion);
     }
     if (data.estado !== data_old.estado) {
-      formData.append("estado", data.estado);
+      appendIfChanged("estado", data.estado);
     }
-    // Archivos opcionales
-    // if (data.imagen && data.imagen !== data_old.imagen) {
-    //   formData.append("imagen", data.imagen);
-    // }
-    // if (data.pdf && data.pdf !== data_old.pdf) {
-    //   formData.append("pdf", data.pdf);
-    // }
+    if (data.imagen !== data_old.imagen) {
+      hasChanges = false;
+
+      if (data_old.imagen_url) {
+        const uploadRes = await presignedUrlPatch(
+          data.imagen as File,
+          data_old.imagen_url as string
+        );
+        if (!uploadRes) {
+          throw new Error("Error al subir la imagen");
+        }
+      } else {
+        const imgId = await presignedUrlPost(data.imagen as File);
+        formData.append("imagen", imgId);
+      }
+    }
+    if (data.pdf !== data_old.pdf) {
+      hasChanges = true;
+
+      if (data_old.pdf_url) {
+        const uploadRes = await presignedUrlPatch(
+          data.pdf as File,
+          data_old.pdf_url as string
+        );
+        if (!uploadRes) {
+          throw new Error("Error al subir el PDF");
+        }
+      } else {
+        const pdfId = await presignedUrlPost(data.pdf as File);
+        formData.append("pdf", pdfId);
+      }
+    }
+
+    if (!hasChanges) {
+      return null;
+    }
+
     const response = await api.patch(`news/news_admin/${id}/`, {
       body: formData,
     });
@@ -150,4 +207,9 @@ export function useNewsPatch() {
   };
 
   return { patchNews };
+}
+
+export async function useNewsDelete(id: number) {
+  const response = await api.delete(`news/news_admin/${id}/`);
+  return response.status === 204;
 }

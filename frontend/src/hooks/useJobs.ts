@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/kyClient";
 import { type JobData } from "../validations/jobsSchema";
-import { presignedUrlPost } from "./presignedUrlPost";
+import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
 import { useQuery } from "@tanstack/react-query";
 
 export function useJobsPost() {
@@ -110,12 +110,14 @@ export function useJobsAdmin() {
 
 export async function useJobDetailAdmin(id: string) {
   let pdf_url: string | null = null;
-  const data: JobData = await api.get(`jobs/job/${id}/`).json();
+  let pdf_id: string | null = null;
+  const data: JobData = await api.get(`jobs/job_admin/${id}/`).json();
   if (data.pdf) {
     const pdf_url_response = await api
       .get(`jobs/job/${data.id}/pdf-download/`)
-      .json<{ download_url: string }>();
+      .json<{ download_url: string, pdf_id: string }>();
     pdf_url = pdf_url_response.download_url;
+    pdf_id = pdf_url_response.pdf_id;
   }
   const formattedJob: JobData = {
     ...data,
@@ -133,7 +135,9 @@ export async function useJobDetailAdmin(id: string) {
           .map((r: string) => r.trim())
           .filter((r: string) => r.length > 0)
         : data.responsabilidades || [],
-    pdf_url: pdf_url ? pdf_url : undefined,
+    pdf: pdf_url ? pdf_url : undefined,
+    pdf_url: pdf_id ? `${pdf_id}` : undefined,
+    salario: data.salario ? data.salario : '',
   };
   return formattedJob;
 }
@@ -184,43 +188,87 @@ export function useJobDetail(id?: string) {
 export function useJobPatch() {
   const patchJob = async (id: number, data: JobData, existingJob: JobData) => {
     const formData = new FormData();
+    let hasChanges = false;
+
+    const appendIfChanged = (key: string, value: any) => {
+      formData.append(key, value);
+      hasChanges = true;
+    };
+
     if (data.titulo !== existingJob.titulo) {
-      formData.append("titulo", data.titulo);
+      appendIfChanged("titulo", data.titulo);
     }
+
     if (data.nombre_empresa !== existingJob.nombre_empresa) {
-      formData.append("nombre_empresa", data.nombre_empresa);
+      appendIfChanged("nombre_empresa", data.nombre_empresa);
     }
+
     if (data.ubicacion !== existingJob.ubicacion) {
-      formData.append("ubicacion", data.ubicacion);
+      appendIfChanged("ubicacion", data.ubicacion);
     }
+
     if (data.tipo_contrato !== existingJob.tipo_contrato) {
-      formData.append("tipo_contrato", data.tipo_contrato);
+      appendIfChanged("tipo_contrato", data.tipo_contrato);
     }
+
     if (data.salario !== existingJob.salario) {
-      formData.append("salario", data.salario);
+      appendIfChanged("salario", data.salario || "");
     }
+
     if (data.descripcion !== existingJob.descripcion) {
-      formData.append("descripcion", data.descripcion);
+      appendIfChanged("descripcion", data.descripcion);
     }
+
     if (data.estado !== existingJob.estado) {
-      formData.append("estado", data.estado);
+      appendIfChanged("estado", data.estado);
     }
+
     if (JSON.stringify(data.requisitos) !== JSON.stringify(existingJob.requisitos)) {
       data.requisitos.forEach((req, index) => {
         formData.append(`requisitos[${index}]`, req);
       });
+      hasChanges = true;
     }
+
     if (JSON.stringify(data.responsabilidades) !== JSON.stringify(existingJob.responsabilidades)) {
       data.responsabilidades.forEach((res, index) => {
         formData.append(`responsabilidades[${index}]`, res);
       });
-    }
-    if (data.pdf && data.pdf !== existingJob.pdf) {
-      formData.append("pdf", data.pdf);
+      hasChanges = true;
     }
 
-    const response = await api.patch(`jobs/job_admin/${id}/`, { body: formData });
+    if (data.pdf !== existingJob.pdf) {
+      hasChanges = true;
+
+      if (existingJob.pdf_url) {
+        const uploadRes = await presignedUrlPatch(
+          data.pdf as File,
+          existingJob.pdf_url as string
+        );
+        if (!uploadRes) {
+          throw new Error("Error al subir el PDF");
+        }
+      } else {
+        const pdfId = await presignedUrlPost(data.pdf as File);
+        formData.append("pdf", pdfId);
+      }
+    }
+
+    if (!hasChanges) {
+      return null;
+    }
+
+    const response = await api.patch(`jobs/job_admin/${id}/`, {
+      body: formData,
+    });
+
     return response.json();
   };
+
   return { patchJob };
+}
+
+export async function useJobDelete(id: number) {
+  const response = await api.delete(`jobs/job_admin/${id}/`);
+  return response.status === 204;
 }
