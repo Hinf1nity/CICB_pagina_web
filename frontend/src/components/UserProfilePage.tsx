@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { User, Mail, Phone, MapPin, Calendar, Award, IdCardLanyard, Edit, QrCode, CreditCard, LogOut, Download, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Award, IdCardLanyard, Edit, QrCode, CreditCard, LogOut, Download, Trash2, Camera } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Dialog,
@@ -31,6 +31,9 @@ interface Certification {
 export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
+  const [tempPhotoUrl, setTempPhotoUrl] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
   const { logout } = useAuth();
   const [userData, setUserData] = useState({
     name: 'Ing. Juan Carlos Pérez Gutiérrez',
@@ -40,7 +43,8 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     specialty: 'Ingeniería Estructural',
     city: 'La Paz',
     registrationDate: '2015-03-15',
-    status: 'Activo'
+    status: 'Activo',
+    statusLaboral: 'Empleado',
   });
 
   const [certifications, setCertifications] = useState<Certification[]>([
@@ -82,6 +86,23 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     }
   };
 
+  const handleUpdatePhoto = () => {
+    setPhotoUrl(tempPhotoUrl);
+    setIsPhotoDialogOpen(false);
+    setTempPhotoUrl('');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTempPhotoUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDownloadQR = () => {
     // Obtener el elemento SVG del código QR
     const svg = document.querySelector('#qr-code-svg') as SVGElement;
@@ -111,7 +132,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     const img = new Image();
     img.onload = () => {
       ctx.drawImage(img, padding, padding, svgSize, svgSize);
-      
+
       // Convertir canvas a blob y descargar
       canvas.toBlob((blob) => {
         if (blob) {
@@ -137,7 +158,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               <h1 className="mb-3">Mi Perfil Profesional</h1>
               <p>Gestiona tu información profesional y credenciales del CICB</p>
             </div>
-            <Button 
+            <Button
               onClick={logout}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
@@ -158,12 +179,21 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="flex justify-center mb-4">
-                    <Avatar className="w-32 h-32 border-4 border-primary">
-                      <AvatarImage src="" />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                        {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className='relative'>
+                      <Avatar className="w-32 h-32 border-4 border-primary">
+                        <AvatarImage src="" />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
+                          {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Button
+                        size="icon"
+                        className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90"
+                        onClick={() => setIsPhotoDialogOpen(true)}
+                      >
+                        <Camera className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
                   <h3 className="text-foreground mb-1">{userData.name}</h3>
                   <p className="text-muted-foreground mb-3">{userData.specialty}</p>
@@ -228,7 +258,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                 </div>
                 <div className="w-full space-y-2">
                   {onNavigate && (
-                    <Button 
+                    <Button
                       onClick={() => onNavigate('user-card', 1)}
                       className="w-full bg-primary text-primary-foreground"
                     >
@@ -236,7 +266,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                       Ver Tarjeta
                     </Button>
                   )}
-                  <Button 
+                  <Button
                     onClick={handleDownloadQR}
                     variant="outline"
                     className="w-full"
@@ -263,8 +293,8 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                   <span className="text-primary">10+</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">Estado</span>
-                  <Badge className="bg-secondary text-secondary-foreground">{userData.status}</Badge>
+                  <span className="text-muted-foreground">Estado Laboral</span>
+                  <Badge className="bg-secondary text-secondary-foreground">{userData.statusLaboral}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -316,7 +346,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                               id="name"
                               value={userData.name}
                               disabled={!isEditing}
-                              onChange={(e) => setUserData({...userData, name: e.target.value})}
+                              onChange={(e) => setUserData({ ...userData, name: e.target.value })}
                             />
                           </div>
                           <div className="space-y-2">
@@ -334,7 +364,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                               id="specialty"
                               value={userData.specialty}
                               disabled={!isEditing}
-                              onChange={(e) => setUserData({...userData, specialty: e.target.value})}
+                              onChange={(e) => setUserData({ ...userData, specialty: e.target.value })}
                             />
                           </div>
                           <div className="space-y-2">
@@ -342,8 +372,8 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                             <Input
                               id="city"
                               value={userData.city}
-                              disabled={!isEditing}
-                              onChange={(e) => setUserData({...userData, city: e.target.value})}
+                              disabled
+                              onChange={(e) => setUserData({ ...userData, city: e.target.value })}
                             />
                           </div>
                         </div>
@@ -364,7 +394,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                                 type="email"
                                 value={userData.email}
                                 disabled={!isEditing}
-                                onChange={(e) => setUserData({...userData, email: e.target.value})}
+                                onChange={(e) => setUserData({ ...userData, email: e.target.value })}
                                 className="flex-1"
                               />
                             </div>
@@ -377,7 +407,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                                 id="phone"
                                 value={userData.phone}
                                 disabled={!isEditing}
-                                onChange={(e) => setUserData({...userData, phone: e.target.value})}
+                                onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
                                 className="flex-1"
                               />
                             </div>
@@ -401,10 +431,10 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="status">Estado</Label>
+                            <Label htmlFor="status">Estado Laboral</Label>
                             <Input
                               id="status"
-                              value={userData.status}
+                              value={userData.statusLaboral}
                               disabled
                               className="bg-muted"
                             />
@@ -434,8 +464,8 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                   <CardContent>
                     <div className="space-y-4">
                       {certifications.map((cert, index) => (
-                        <div 
-                          key={cert.id} 
+                        <div
+                          key={cert.id}
                           className="border border-border rounded-lg p-5 hover:shadow-md transition-shadow bg-card"
                         >
                           <div className="flex items-start justify-between">
@@ -499,7 +529,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               <Input
                 id="certName"
                 value={newCert.name}
-                onChange={(e) => setNewCert({...newCert, name: e.target.value})}
+                onChange={(e) => setNewCert({ ...newCert, name: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -507,7 +537,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               <Input
                 id="certInstitution"
                 value={newCert.institution}
-                onChange={(e) => setNewCert({...newCert, institution: e.target.value})}
+                onChange={(e) => setNewCert({ ...newCert, institution: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -516,7 +546,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                 id="certYear"
                 type="number"
                 value={newCert.year}
-                onChange={(e) => setNewCert({...newCert, year: parseInt(e.target.value)})}
+                onChange={(e) => setNewCert({ ...newCert, year: parseInt(e.target.value) })}
               />
             </div>
           </div>
@@ -532,6 +562,54 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               onClick={handleAddCertification}
             >
               Agregar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Photo Dialog */}
+      <Dialog open={isPhotoDialogOpen} onOpenChange={setIsPhotoDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Cambiar Foto de Perfil</DialogTitle>
+            <DialogDescription>
+              Sube una nueva foto para tu perfil.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="photoUpload">Subir Foto</Label>
+              <Input
+                id="photoUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="photoPreview">Vista Previa</Label>
+              <div className="flex justify-center">
+                <Avatar className="w-32 h-32 border-4 border-primary">
+                  <AvatarImage src={tempPhotoUrl} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
+                    {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setIsPhotoDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="ml-2"
+              onClick={handleUpdatePhoto}
+            >
+              Guardar
             </Button>
           </div>
         </DialogContent>

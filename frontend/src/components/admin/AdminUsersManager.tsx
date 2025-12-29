@@ -11,7 +11,7 @@ import { Plus, Edit, Trash2, Search, UserCheck, UserX, Upload } from 'lucide-rea
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { userSchema, type UserData } from '../../validations/userSchema';
-import { useUsersPost, useUsers } from '../../hooks/useUsers';
+import { useUsersPost, useUsersAdmin, useUsersDetailAdmin, useUsersPatch, useUserDelete } from '../../hooks/useUsers';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 export function AdminUsersManager() {
@@ -21,7 +21,8 @@ export function AdminUsersManager() {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
   const { postUser } = useUsersPost();
-  const { users, refetchUsers } = useUsers();
+  const { users, refetchUsers } = useUsersAdmin();
+  const { patchUser } = useUsersPatch();
   console.log(users);
   const { register, handleSubmit, control, formState: { errors }, reset } = useForm<UserData>({
     resolver: zodResolver(userSchema),
@@ -32,7 +33,7 @@ export function AdminUsersManager() {
       celular: "",
       departamento: "La Paz",
       registro_empleado: "",
-      estado: "pendiente",
+      estado: "",
       fecha_inscripcion: "",
       imagen: undefined,
     },
@@ -56,37 +57,52 @@ export function AdminUsersManager() {
       celular: "",
       departamento: "La Paz",
       registro_empleado: "",
-      estado: "pendiente",
+      estado: "",
       fecha_inscripcion: "",
       imagen: undefined,
     });
   };
 
-  const handleEdit = (user: any) => {
+  const handleEdit = async (user: any) => {
+    const detailedUser = await useUsersDetailAdmin(user.id);
+    console.log('Detalles del usuario para editar:', detailedUser);
     reset({
-      ...user,
-      imagen: undefined,
+      ...detailedUser,
     });
-    setEditingUser(user);
+    setEditingUser(detailedUser);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm('¿Estás seguro de eliminar este usuario?')) {
       console.log('Eliminando usuario:', id);
+      const res = await useUserDelete(id);
+      console.log('Respuesta del servidor:', res);
+      refetchUsers();
     }
   };
 
-  const handleToggleStatus = (id: number, currentStatus: string) => {
-    const newStatus = currentStatus === 'Activo' ? 'Suspendido' : 'Activo';
+  const handleToggleStatus = async (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'activo' ? 'inactivo' : 'activo';
     console.log('Cambiando estado del usuario', id, 'a', newStatus);
+    const data = { estado: newStatus };
+    const data_old = { estado: currentStatus };
+    const res = await patchUser(id, data, data_old);
+    console.log('Respuesta del servidor:', res);
+    refetchUsers();
   };
 
   const handleSave: SubmitHandler<UserData> = async (data) => {
     setIsDialogOpen(false);
-    console.log('Guardando oferta:', data);
-    const res = await postUser(data);
-    console.log('Respuesta del servidor:', res);
+    if (editingUser) {
+      console.log('Actualizando usuario:', data);
+      const res = await patchUser(editingUser.id, data, editingUser);
+      console.log('Respuesta del servidor:', res);
+    } else {
+      console.log('Guardando oferta:', data);
+      const res = await postUser(data);
+      console.log('Respuesta del servidor:', res);
+    }
     setNewsImagePreview("");
     reset();
     refetchUsers();
@@ -150,8 +166,8 @@ export function AdminUsersManager() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Registro CICB</TableHead>
-                  <TableHead>Registro Ingeniero</TableHead>
+                  <TableHead>RNIC</TableHead>
+                  <TableHead>RNI</TableHead>
                   <TableHead>Fecha Inscripción</TableHead>
                   <TableHead>Celular</TableHead>
                   <TableHead>Especialidad</TableHead>
@@ -244,7 +260,7 @@ export function AdminUsersManager() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="registration">RNI</Label>
-                  <Input id="registration" placeholder="CICB-XX-XXXX" {...register("rni")} />
+                  <Input id="registration" placeholder="XXXXXX" {...register("rni")} />
                   {errors.rni && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                     <AlertTitle className='text-sm'>Error en RNI</AlertTitle>
                     <AlertDescription className='text-xs'>{errors.rni.message}</AlertDescription>
@@ -301,7 +317,7 @@ export function AdminUsersManager() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Celular</Label>
-                  <Input id="phone" placeholder="+591 XXXXXXXX" {...register("celular")} />
+                  <Input id="phone" placeholder="+591XXXXXXXX" {...register("celular")} />
                   {errors.celular && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                     <AlertTitle className='text-sm'>Error en Celular</AlertTitle>
                     <AlertDescription className='text-xs'>{errors.celular.message}</AlertDescription>
@@ -321,8 +337,7 @@ export function AdminUsersManager() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="activo">Activo</SelectItem>
-                            <SelectItem value="pendiente">Pendiente</SelectItem>
-                            <SelectItem value="suspendido">Suspendido</SelectItem>
+                            <SelectItem value="inactivo">Inactivo</SelectItem>
                           </SelectContent>
                         </Select>
                         {errors.estado && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -399,28 +414,32 @@ export function AdminUsersManager() {
                 name="imagen"
                 control={control}
                 render={({ field }) => {
-                  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
+                  const file = field.value;
 
-                    if (file.size > 5 * 1024 * 1024) {
+                  const isFile = file instanceof File;
+                  const isUrl = typeof file === 'string' && file.startsWith('http');
+                  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    const newFile = e.target.files?.[0];
+                    if (!newFile) return;
+
+                    if (newFile.size > 5 * 1024 * 1024) {
                       alert("La imagen no debe superar los 5MB");
                       return;
                     }
 
                     // Actualizamos React Hook Form
-                    field.onChange(file);
+                    field.onChange(newFile);
 
                     // Actualizamos el preview
                     const reader = new FileReader();
                     reader.onloadend = () => {
                       setNewsImagePreview(reader.result as string);
                     };
-                    reader.readAsDataURL(file);
+                    reader.readAsDataURL(newFile);
                   };
 
                   const removeImage = () => {
-                    field.onChange(undefined);
+                    field.onChange(null);
                     setNewsImagePreview("");
                   };
 
@@ -444,11 +463,29 @@ export function AdminUsersManager() {
                           <Upload className="w-4 h-4 mr-2" />
                           Subir Imagen
                         </Button>
-                        {newsImagePreview && (
+                        {isUrl && (
+                          <div className="relative">
+                            <img
+                              src={file as string}
+                              alt="Imagen existente"
+                              className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive hover:bg-destructive/90"
+                              onClick={removeImage}
+                            >
+                              <Trash2 className="w-3 h-3 text-destructive-foreground" />
+                            </Button>
+                          </div>
+                        )}
+                        {isFile && newsImagePreview && (
                           <div className="relative">
                             <img
                               src={newsImagePreview}
-                              alt="Preview"
+                              alt="Vista previa"
                               className="w-16 h-16 rounded-full object-cover border-2 border-border"
                             />
                             <Button
@@ -466,7 +503,9 @@ export function AdminUsersManager() {
                           <div className="text-muted-foreground">Imagen actual existente</div>
                         )}
                       </div>
-                      <p className="text-muted-foreground">Sube una foto de perfil opcional (formato JPG, PNG)</p>
+                      {!file && (
+                        <p className="text-muted-foreground">Sube una foto de perfil opcional (formato JPG, PNG)</p>
+                      )}
                       {errors.imagen && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error en Imagen</AlertTitle>
                         <AlertDescription className='text-xs'>{errors.imagen.message}</AlertDescription>

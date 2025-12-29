@@ -5,12 +5,12 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
-import { 
-  FileText, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import {
+  FileText,
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   Calendar,
   Download,
   ArrowLeft,
@@ -45,25 +45,26 @@ export function AdminRegulationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
-  const { items: regulations, refetchItems } = useItems("regulations");
+  const { items: regulations, refetchItems } = useItems("regulation");
   const { postItem } = useItemPost();
   const { patchItem } = useItemPatch();
   const { deleteItem } = useItemDelete();
   const { register, handleSubmit, formState: { errors }, control, reset } = useForm<GenericData>(
-      { resolver: zodResolver(genericSchema),
-        defaultValues: {
-          titulo: '',
-          descripcion: '',
-          fecha_publicacion: '',
-          pdf: undefined,
-          estado: '',
-       }
+    {
+      resolver: zodResolver(genericSchema),
+      defaultValues: {
+        nombre: '',
+        descripcion: '',
+        fecha_publicacion: '',
+        pdf: undefined,
+        estado: '',
       }
-    );
+    }
+  );
 
   const handleCreate = () => {
     reset({
-      titulo: '',
+      nombre: '',
       descripcion: '',
       fecha_publicacion: '',
       pdf: undefined,
@@ -76,7 +77,7 @@ export function AdminRegulationsPage() {
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar este reglamento?')) {
       console.log('Eliminando reglamento con ID:', id);
-      await deleteItem(id, "regulations");
+      await deleteItem(id, "regulation");
       refetchItems();
     }
   };
@@ -91,10 +92,10 @@ export function AdminRegulationsPage() {
 
   const handleSave: SubmitHandler<GenericData> = async (data) => {
     if (editingItem && editingItem.id !== undefined) {
-      await patchItem(editingItem.id, data, editingItem, "regulations");
+      await patchItem(editingItem.id, data, editingItem, "regulation");
       console.log('Editando reglamento:', data);
     } else {
-      await postItem(data, "regulations");
+      await postItem(data, "regulation");
       console.log('Creando nuevo reglamento:', data);
     }
     refetchItems();
@@ -104,14 +105,14 @@ export function AdminRegulationsPage() {
   };
 
   const filteredRegulations = regulations.filter(regulation => {
-    const matchesSearch = regulation.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         regulation.fecha_publicacion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         regulation.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = regulation.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      regulation.fecha_publicacion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      regulation.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
   const getStatusColor = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'vigente': return 'bg-[#3C8D50] text-white';
       case 'borrador': return 'bg-yellow-500 text-white';
       case 'archivado': return 'bg-gray-500 text-white';
@@ -120,7 +121,7 @@ export function AdminRegulationsPage() {
   };
 
   const getStatusLabel = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'vigente': return 'Vigente';
       case 'borrador': return 'Borrador';
       case 'archivado': return 'Archivado';
@@ -162,14 +163,14 @@ export function AdminRegulationsPage() {
               className="pl-10"
             />
           </div>
-          <Button 
+          <Button
             className="bg-primary text-primary-foreground"
             onClick={handleCreate}
           >
             <Plus className="w-4 h-4 mr-2" />
             Nuevo Reglamento
           </Button>
-          
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <form onSubmit={handleSubmit(handleSave)}>
@@ -178,24 +179,24 @@ export function AdminRegulationsPage() {
                     {editingItem ? 'Editar Reglamento' : 'Crear Nuevo Reglamento'}
                   </DialogTitle>
                   <DialogDescription>
-                    {editingItem 
-                      ? 'Actualiza la información del reglamento' 
+                    {editingItem
+                      ? 'Actualiza la información del reglamento'
                       : 'Completa la información para crear un nuevo reglamento'}
                   </DialogDescription>
                 </DialogHeader>
-                
+
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="titulo">Título</Label>
+                    <Label htmlFor="nombre">Título</Label>
                     <Input
-                      id="titulo"
+                      id="nombre"
                       placeholder="Título del reglamento..."
-                      {...register("titulo")}
+                      {...register("nombre")}
                     />
-                    {errors.titulo && (
+                    {errors.nombre && (
                       <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error en el Título</AlertTitle>
-                        <AlertDescription className='text-xs'>{errors.titulo?.message}</AlertDescription>
+                        <AlertDescription className='text-xs'>{errors.nombre?.message}</AlertDescription>
                       </Alert>
                     )}
                   </div>
@@ -260,74 +261,74 @@ export function AdminRegulationsPage() {
                     </div>
                   </div>
                   <Controller
-                  name="pdf"
-                  control={control}
-                  render={({ field }) => {
-                    const file = field.value;
+                    name="pdf"
+                    control={control}
+                    render={({ field }) => {
+                      const file = field.value;
 
-                    const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                      const newFile = e.target.files?.[0];
-                      if (!newFile) return;
+                      const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                        const newFile = e.target.files?.[0];
+                        if (!newFile) return;
 
-                      if (newFile.type !== "application/pdf") {
-                        alert("Solo se permiten archivos PDF");
-                        return;
-                      }
-                      if (newFile.size > 10 * 1024 * 1024) {
-                        alert("El PDF no debe superar los 10MB");
-                        return;
-                      }
+                        if (newFile.type !== "application/pdf") {
+                          alert("Solo se permiten archivos PDF");
+                          return;
+                        }
+                        if (newFile.size > 10 * 1024 * 1024) {
+                          alert("El PDF no debe superar los 10MB");
+                          return;
+                        }
 
-                      field.onChange(newFile); // ⬅️ actualiza React Hook Form
-                    };
+                        field.onChange(newFile); // ⬅️ actualiza React Hook Form
+                      };
 
-                    const removePdf = () => {
-                      field.onChange(null); // limpia el valor en el form
-                    };
+                      const removePdf = () => {
+                        field.onChange(null); // limpia el valor en el form
+                      };
 
-                    return (
-                      <div className="space-y-2">
-                        <Label htmlFor="pdf">Documento PDF</Label>
-                        {file ? (
-                          <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-5 h-5 text-destructive" />
-                              <span className="text-foreground">{file.name}</span>
-                              <span className="text-muted-foreground">
-                                ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                              </span>
+                      return (
+                        <div className="space-y-2">
+                          <Label htmlFor="pdf">Documento PDF</Label>
+                          {file ? (
+                            <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
+                              <div className="flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-destructive" />
+                                <span className="text-foreground">{file.name}</span>
+                                <span className="text-muted-foreground">
+                                  ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                                </span>
+                              </div>
+                              <Button type="button" variant="ghost" size="sm" onClick={removePdf}>
+                                <X className="w-4 h-4" />
+                              </Button>
                             </div>
-                            <Button type="button" variant="ghost" size="sm" onClick={removePdf}>
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="border-2 border-dashed border-input rounded-md p-4 text-center hover:border-primary transition-colors">
-                            <input
-                              type="file"
-                              id="pdf"
-                              accept=".pdf"
-                              onChange={handlePdfChange}
-                              className="hidden"
-                            />
-                            <label htmlFor="pdf" className="cursor-pointer">
-                              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                              <p className="text-muted-foreground">
-                                Sube un PDF con detalles adicionales (máx. 10MB)
-                              </p>
-                            </label>
-                          </div>
-                        )}
-                        {errors.pdf && (
-                          <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
-                            <AlertTitle className='text-sm'>Error en el PDF</AlertTitle>
-                            <AlertDescription className='text-xs'>{errors.pdf?.message}</AlertDescription>
-                          </Alert>
-                        )}
-                      </div>
-                    );
-                  }}
-                />
+                          ) : (
+                            <div className="border-2 border-dashed border-input rounded-md p-4 text-center hover:border-primary transition-colors">
+                              <input
+                                type="file"
+                                id="pdf"
+                                accept=".pdf"
+                                onChange={handlePdfChange}
+                                className="hidden"
+                              />
+                              <label htmlFor="pdf" className="cursor-pointer">
+                                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                                <p className="text-muted-foreground">
+                                  Sube un PDF con detalles adicionales (máx. 10MB)
+                                </p>
+                              </label>
+                            </div>
+                          )}
+                          {errors.pdf && (
+                            <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                              <AlertTitle className='text-sm'>Error en el PDF</AlertTitle>
+                              <AlertDescription className='text-xs'>{errors.pdf?.message}</AlertDescription>
+                            </Alert>
+                          )}
+                        </div>
+                      );
+                    }}
+                  />
                 </div>
 
                 <div className="flex justify-end gap-2">
@@ -418,14 +419,14 @@ export function AdminRegulationsPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h3 className="text-foreground">{regulation.titulo}</h3>
+                        <h3 className="text-foreground">{regulation.nombre}</h3>
                         <Badge className={getStatusColor(regulation.estado)}>
                           {getStatusLabel(regulation.estado)}
                         </Badge>
                       </div>
-                      
+
                       <p className="text-muted-foreground mb-3">{regulation.descripcion}</p>
-                      
+
                       <div className="flex flex-wrap gap-4 text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />

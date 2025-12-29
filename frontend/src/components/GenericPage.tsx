@@ -51,7 +51,7 @@ export function GenericPage({ title, description, type }: GenericPageProps) {
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
                   <Icon className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle>{item.titulo}</CardTitle>
+                <CardTitle>{item.nombre}</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription>{item.descripcion}</CardDescription>

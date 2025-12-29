@@ -7,20 +7,20 @@ export function useItems(type: "yearbooks" | "regulation" | "announcements") {
   const [loading, setLoading] = useState(true);
 
   const fetchItems = async (type: "yearbooks" | "regulation" | "announcements") => {
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
 
-        const response:GenericData[] = await api.get(`${type}/`).json();
+      const response: GenericData[] = await api.get(`${type}/`).json();
 
-        setItems(response)
+      setItems(response)
 
-      } catch (error) {
-        console.error("Error obteniendo datos:", error);
-        setItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    } catch (error) {
+      console.error("Error obteniendo datos:", error);
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchItems(type);
@@ -33,7 +33,7 @@ export function useItemPost() {
   const postItem = async (data: GenericData, type: "yearbooks" | "regulation" | "announcements") => {
     // Crear FormData
     const formData = new FormData();
-    formData.append("titulo", data.titulo);
+    formData.append("nombre", data.nombre);
     formData.append("descripcion", data.descripcion);
     formData.append("fecha_publicacion", data.fecha_publicacion);
     // Archivos opcionales
@@ -56,19 +56,19 @@ export function useItemPatch() {
   const patchItem = async (id: number, data: GenericData, old_data: GenericData, type: "yearbooks" | "regulation" | "announcements") => {
     // Crear FormData
     const formData = new FormData();
-    if (data.titulo !== old_data.titulo){
-      formData.append("titulo", data.titulo);
+    if (data.nombre !== old_data.nombre) {
+      formData.append("nombre", data.nombre);
     }
-    if (data.descripcion !== old_data.descripcion){
+    if (data.descripcion !== old_data.descripcion) {
       formData.append("descripcion", data.descripcion);
     }
-    if (data.fecha_publicacion !== old_data.fecha_publicacion){
+    if (data.fecha_publicacion !== old_data.fecha_publicacion) {
       formData.append("fecha_publicacion", data.fecha_publicacion);
     }
-    if (data.pdf !== old_data.pdf){
+    if (data.pdf !== old_data.pdf) {
       formData.append("pdf", data.pdf);
     }
-    if (data.estado !== old_data.estado){
+    if (data.estado !== old_data.estado) {
       formData.append("estado", data.estado);
     }
     // Enviar solicitud PATCH

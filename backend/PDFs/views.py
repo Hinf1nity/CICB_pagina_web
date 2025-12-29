@@ -36,7 +36,7 @@ class PDFViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        ruta = f"jobs/pdfs/{uuid.uuid4()}.pdf"
+        ruta = f"pdfs/{uuid.uuid4()}.pdf"
 
         presigned_url = s3_client.generate_presigned_url(
             "put_object",
@@ -64,7 +64,7 @@ class PDFViewSet(viewsets.GenericViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
-    
+
     @action(detail=True, methods=["patch"], url_path="pdf-presigned-update", permission_classes=[IsAdminUser])
     def update_pdf_presigned(self, request, pk=None):
         file = self.get_object()

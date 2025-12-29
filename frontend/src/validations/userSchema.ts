@@ -1,3 +1,4 @@
+import { image } from "motion/react-client";
 import { z } from "zod";
 
 const departamentos = ["La Paz", "Cochabamba", "Santa Cruz", "Oruro", "Potosí", "Tarija", "Chuquisaca", "Beni", "Pando"];
@@ -15,7 +16,8 @@ export const userSchema = z.object({
   registro_empleado: z.enum(employeeStatuses).optional(),
   estado: z.enum(estados, { message: "Estado inválido" }),
   fecha_inscripcion: z.string().refine((date) => !isNaN(Date.parse(date)), { message: "Fecha de inscripción inválida" }),
-  imagen: z.instanceof(File).optional(),
+  imagen: z.instanceof(File).optional().or(z.string().optional()),
+  imagen_url: z.string().optional(),
 });
 
 export type UserData = z.infer<typeof userSchema>;
