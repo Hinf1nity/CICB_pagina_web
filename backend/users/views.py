@@ -1,30 +1,28 @@
-from rest_framework import viewsets
-from rest_framework.permissions import AllowAny, IsAdminUser
-
-from .models import User
-from .serializers import UserSerializer
+from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.conf import settings
 from utils.s3 import s3_client
 import os
 
+from .models import UsuarioComun
+from .serializers import UsuarioComunSerializer, MyTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-    def get_permissions(self):
-        if self.action == 'retrieve':
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [IsAdminUser]
-        return [permission() for permission in permission_classes]
+    queryset = UsuarioComun.objects.all()
+    serializer_class = UsuarioComunSerializer
+    permission_classes = [IsAuthenticated]
 
     @action(
         detail=True,
         methods=["get"],
-        permission_classes=[IsAdminUser],
         url_path="img-download",
     )
     def get_img(self, request, pk=None):
@@ -46,7 +44,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 "ResponseContentType": "application/octet-stream",
                 "ResponseContentDisposition": f"inline; filename={os.path.basename(img.ruta)}",
             },
-            ExpiresIn=300,  # 5 minutos
+            ExpiresIn=300,
         )
 
         return Response({
@@ -56,14 +54,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         user = self.get_object()
+
         if user.imagen:
             img = user.imagen
             s3_client.delete_object(
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                 Key=img.ruta
             )
-            img = None
-            user.save()
             img.delete()
+            user.imagen = None
+            user.save()
 
         return super().destroy(request, *args, **kwargs)

@@ -6,7 +6,7 @@ class IsAdminPrin(permissions.BasePermission):
 
 class IsAdminSec(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.groups.filter(name="Administrador secundario").exists()
+        return request.user.groups.filter(name="Admin Ciudad").exists()
 
 class IsUser(permissions.BasePermission):
     def has_permission(self, request, view):

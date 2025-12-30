@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser
 from .models import Stats
 from .serializers import StatsSerializer
 
-from users.models import User
+from users.models import UsuarioComun
 from news.models import News
 from jobs.models import Job
 from regulation.models import Regulation
@@ -21,21 +21,21 @@ class StatsViewSet(viewsets.ModelViewSet):
 
 def calculate_current_metrics():
     """Calculates only the current status of the DB (Fast)"""
-    total_users = User.objects.count()
+    total_users = UsuarioComun.objects.count()
     
-    specialties_data = list(User.objects.values('especialidad').annotate(
+    specialties_data = list(UsuarioComun.objects.values('especialidad').annotate(
         count=Count('id')
     ).order_by('-count'))
 
-    state_data = list(User.objects.values('departamento').annotate(
+    state_data = list(UsuarioComun.objects.values('departamento').annotate(
         count=Count('id')
     ).order_by('-count'))
 
-    active_data = list(User.objects.values('estado').annotate(
+    active_data = list(UsuarioComun.objects.values('estado').annotate(
         count=Count('id')
     ).order_by('-count'))
 
-    employed_users = User.objects.exclude(
+    employed_users = UsuarioComun.objects.exclude(
         Q(registro_empleado__isnull=True) | Q(registro_empleado__exact='')
     ).count()
 
@@ -56,14 +56,14 @@ def calculate_growth_metrics():
     today = timezone.now().date()
     one_year_ago = today - timedelta(days=365)
     
-    current_total = User.objects.count()
+    current_total = UsuarioComun.objects.count()
     
-    users_last_year = User.objects.filter(fecha_inscripcion__lte=one_year_ago).count()
+    users_last_year = UsuarioComun.objects.filter(fecha_inscripcion__lte=one_year_ago).count()
     total_growth = 0
     if users_last_year > 0:
         total_growth = ((current_total - users_last_year) / users_last_year) * 100
 
-    current_employed = User.objects.exclude(
+    current_employed = UsuarioComun.objects.exclude(
         Q(registro_empleado__isnull=True) | Q(registro_empleado__exact='')
     ).count()
     
@@ -79,7 +79,7 @@ def calculate_growth_metrics():
     if past_rate > 0:
         emp_growth = ((current_rate - past_rate) / past_rate) * 100
 
-    state_growth_qs = User.objects.values('departamento').annotate(
+    state_growth_qs = UsuarioComun.objects.values('departamento').annotate(
         current_count=Count('id'),
         last_year_count=Count(
             Case(
@@ -142,7 +142,7 @@ class OverallStatsView(APIView):
 
     def get(self, request):
         data = {
-            "total_users": User.objects.count(),
+            "total_users": UsuarioComun.objects.count(),
             "total_news": News.objects.count(),
             "total_jobs": Job.objects.count(),
             "total_rulebooks": Regulation.objects.count(),
