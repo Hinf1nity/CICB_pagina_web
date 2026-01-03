@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from IMGs.models import Img
-
+from django.core.validators import MaxValueValidator
 
 class UsuarioComunManager(BaseUserManager):
     def create_user(self, rnic, nombre, rni, **extra_fields):
@@ -22,12 +22,10 @@ class UsuarioComunManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(rnic, nombre, rni, **extra_fields)
 
-
 class UsuarioComun(AbstractBaseUser, PermissionsMixin):
     ESTADOS = [("activo", "Activo"), ("inactivo", "Inactivo")]
 
-    rnic = models.CharField(max_length=50, unique=True,
-                            blank=True, null=True, editable=False)
+    rnic = models.PositiveIntegerField(unique=True, editable=False, null=True, blank=True, validators=[MaxValueValidator(99999)])
     rni = models.CharField(max_length=255)
     nombre = models.CharField(max_length=255)
     fecha_inscripcion = models.DateField(null=True, blank=True)
@@ -65,19 +63,9 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.rnic} - {self.nombre}"
 
-
 def generate_unique_rnic():
-    # Este ejemplo genera un número secuencial basado en el total de objetos existentes
-    # Asegúrate de que esto cubra tu caso y no cause colisiones en tu base de datos
-    max_rnic = UsuarioComun.objects.aggregate(models.Max('rnic'))['rnic__max']
-    if max_rnic:
-        next_rnic = int(max_rnic) + 1
-    else:
-        next_rnic = 1  # Empezar desde un valor base
-    return str(next_rnic)
-
-# Usando la señal pre_save para generar 'rnic' automáticamente
-
+    last = UsuarioComun.objects.order_by('-rnic').values_list('rnic', flat=True).first()
+    return (last or 0) + 1
 
 @receiver(pre_save, sender=UsuarioComun)
 def set_rnic(sender, instance, **kwargs):
@@ -99,7 +87,6 @@ class UsuarioAdminManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(username, password, **extra_fields)
-
 
 class UsuarioAdmin(AbstractUser):
     ciudad = models.CharField(max_length=100, blank=True, null=True)
