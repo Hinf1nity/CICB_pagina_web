@@ -28,9 +28,9 @@ interface UserProfilePageProps {
 }
 
 interface Certification {
-  nombre: string;
-  institucion: string;
-  anio: string;
+  nombre: string | undefined;
+  institucion: string | undefined;
+  anio: string | undefined;
 }
 
 export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
@@ -65,7 +65,6 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
       registro_empleado: 'desempleado',
     }
   });
-  console.log('Form errors:', errors);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -120,9 +119,9 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
       return;
     }
     setIsEditing(false);
-    console.log('Saved data:', data);
+    data.certificaciones = userDataCopy.certificaciones || [];
     const res = await patchUser(parseInt(userData.id), data, userDataCopy as Partial<UserPageData>) as UserPageData;
-    console.log('Patch response:', res);
+    if (!res) return;
     reset({
       nombre: res.nombre,
       mail: res.mail || '',
@@ -148,7 +147,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     }].sort((a, b) => parseInt(b.anio) - parseInt(a.anio));
     console.log('New certifications list:', data_new);
     setIsCertDialogOpen(false);
-    const res = await patchUser(parseInt(userData.id), { certificaciones: data_new }, userData as Partial<UserPageData>);
+    const res = await patchUser(parseInt(userData.id), { certificaciones: data_new }, userDataCopy as Partial<UserPageData>);
     console.log('Patch response for certifications:', res);
     setCertifications(data_new);
     reset();

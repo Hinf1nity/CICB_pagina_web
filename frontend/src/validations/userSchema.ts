@@ -19,9 +19,9 @@ export const userSchema = z.object({
   imagen_url: z.string().optional(),
   mail: z.string().refine((val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), { message: "Correo electrónico inválido" }).optional(),
   certificaciones: z.array(z.object({
-    nombre: z.string(),
-    institucion: z.string(),
-    anio: z.string().refine((val) => /^\d{4}$/.test(val), { message: "Año inválido" }),
+    nombre: z.string().optional(),
+    institucion: z.string().optional(),
+    anio: z.string().refine((val) => /^\d{4}$/.test(val), { message: "Año inválido" }).optional(),
   })).optional(),
 });
 
