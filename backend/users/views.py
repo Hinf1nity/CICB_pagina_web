@@ -8,12 +8,32 @@ import os
 
 from .models import UsuarioComun
 from .serializers import UsuarioComunSerializer
-
+from .permissions import IsAdminPrin, IsAdminSec, IsUser
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = UsuarioComun.objects.all()
     serializer_class = UsuarioComunSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve", "create", "update", "partial_update", "destroy"]:
+            user = self.request.user
+            if user.is_superuser:
+                return [IsAdminPrin()]
+            elif getattr(user, "rol", None) == "admin_ciudad":
+                return [IsAdminSec()]
+            else:
+                return [IsUser()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = UsuarioComun.objects.all()
+
+        if user.is_superuser:
+            return qs
+        if getattr(user, "rol", None) == "admin_ciudad":
+            return qs.filter(departamento=user.ciudad)
+        return qs.filter(id=user.id)
+        #return qs.none()
 
     @action(
         detail=True,
