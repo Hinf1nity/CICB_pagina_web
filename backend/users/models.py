@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from IMGs.models import Img
 from django.core.validators import MaxValueValidator
 
+
 class UsuarioComunManager(BaseUserManager):
     def create_user(self, rnic, nombre, rni, **extra_fields):
         if not rnic:
@@ -22,10 +23,12 @@ class UsuarioComunManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(rnic, nombre, rni, **extra_fields)
 
+
 class UsuarioComun(AbstractBaseUser, PermissionsMixin):
     ESTADOS = [("activo", "Activo"), ("inactivo", "Inactivo")]
 
-    rnic = models.PositiveIntegerField(unique=True, editable=False, null=True, blank=True, validators=[MaxValueValidator(99999)])
+    rnic = models.PositiveIntegerField(
+        unique=True, editable=False, null=True, blank=True, validators=[MaxValueValidator(99999)])
     rni = models.CharField(max_length=255)
     nombre = models.CharField(max_length=255)
     fecha_inscripcion = models.DateField(null=True, blank=True)
@@ -36,8 +39,7 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
         Img, on_delete=models.CASCADE, null=True, blank=True)
     registro_empleado = models.CharField(max_length=255, blank=True)
     estado = models.CharField(max_length=16, choices=ESTADOS, default="activo")
-    certificaciones = ArrayField(models.CharField(
-        max_length=255), blank=True, default=list)
+    certificaciones = models.JSONField(default=list)
     mail = models.CharField(max_length=32, blank=True)
     rol = models.CharField(max_length=20, default="Usuario", editable=False)
 
@@ -63,9 +65,12 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.rnic} - {self.nombre}"
 
+
 def generate_unique_rnic():
-    last = UsuarioComun.objects.order_by('-rnic').values_list('rnic', flat=True).first()
+    last = UsuarioComun.objects.order_by(
+        '-rnic').values_list('rnic', flat=True).first()
     return (last or 0) + 1
+
 
 @receiver(pre_save, sender=UsuarioComun)
 def set_rnic(sender, instance, **kwargs):
@@ -87,6 +92,7 @@ class UsuarioAdminManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(username, password, **extra_fields)
+
 
 class UsuarioAdmin(AbstractUser):
     ciudad = models.CharField(max_length=100, blank=True, null=True)

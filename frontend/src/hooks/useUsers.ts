@@ -75,6 +75,10 @@ export function useUsersPatch() {
     if (data.departamento && data.departamento !== data_old.departamento) appendIfChanged("departamento", data.departamento);
     if (data.registro_empleado !== undefined && data.registro_empleado !== data_old.registro_empleado) appendIfChanged("registro_empleado", data.registro_empleado);
     if (data.fecha_inscripcion && data.fecha_inscripcion !== data_old.fecha_inscripcion) appendIfChanged("fecha_inscripcion", data.fecha_inscripcion);
+    if (data.mail && data.mail !== data_old.mail) appendIfChanged("mail", data.mail);
+    if (data.certificaciones && JSON.stringify(data.certificaciones) !== JSON.stringify(data_old.certificaciones)) {
+      appendIfChanged("certificaciones", JSON.stringify(data.certificaciones));
+    }
     if (data.imagen && data.imagen !== data_old.imagen) {
       hasChanges = true;
 
@@ -94,6 +98,7 @@ export function useUsersPatch() {
     if (!hasChanges) {
       return null;
     }
+    console.log('FormData to be sent in patch:', formData);
     const response = await api.patch(`users/${id}/`, { body: formData });
     return response.json();
   };

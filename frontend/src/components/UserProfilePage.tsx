@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -15,95 +15,161 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useAuth } from '../auth/useAuth';
-import { useParams } from 'react-router-dom';
+import { useUsersDetailAdmin, useUsersPatch } from '../hooks/useUsers';
+import { type UserPageData, userPageSchema } from '../validations/userPageSchema';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Alert, AlertTitle, AlertDescription } from './ui/alert';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface UserProfilePageProps {
   onNavigate?: (page: string, id?: number) => void;
 }
 
 interface Certification {
-  id: number;
-  name: string;
-  institution: string;
-  year: number;
+  nombre: string;
+  institucion: string;
+  anio: string;
 }
 
 export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
-  const { id } = useParams<{ id: string }>();
-  console.log("UserProfilePage for user ID:", id);
   const [isEditing, setIsEditing] = useState(false);
   const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
   const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const [tempPhotoUrl, setTempPhotoUrl] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const { patchUser } = useUsersPatch();
+  const [userDataCopy, setUserDataCopy] = useState<Partial<UserPageData>>({});
   const [userData, setUserData] = useState({
-    name: 'Ing. Juan Carlos Pérez Gutiérrez',
-    email: 'juan.perez@email.com',
-    phone: '+591 70123456',
-    registration: 'CICB-LP-1234',
-    specialty: 'Ingeniería Estructural',
-    city: 'La Paz',
-    registrationDate: '2015-03-15',
-    status: 'Activo',
-    statusLaboral: 'Empleado',
-  });
-
-  const [certifications, setCertifications] = useState<Certification[]>([
-    { id: 1, name: 'Diseño Sismorresistente Avanzado', institution: 'CICB', year: 2024 },
-    { id: 2, name: 'BIM para Ingeniería Civil', institution: 'Autodesk', year: 2023 },
-    { id: 3, name: 'Gestión de Proyectos PMI', institution: 'PMI Bolivia', year: 2022 },
-  ]);
-
-  const [newCert, setNewCert] = useState({
+    id: '',
     name: '',
-    institution: '',
-    year: new Date().getFullYear()
+    registration: '',
+    specialty: '',
+    city: '',
+    registrationDate: '',
+    status: '',
+    statusLaboral: '',
+    experienceYears: 0,
   });
+  const [certifications, setCertifications] = useState<Certification[]>([]);
+  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<UserPageData>({
+    resolver: zodResolver(userPageSchema),
+    defaultValues: {
+      nombre: '',
+      mail: '',
+      celular: '',
+      especialidad: '',
+      certificaciones: [],
+      registro_empleado: 'desempleado',
+    }
+  });
+  console.log('Form errors:', errors);
 
-  const handleSave = () => {
+  useEffect(() => {
+    async function fetchUserData() {
+      if (user) {
+        const data = await useUsersDetailAdmin(user.id);
+        console.log('User data fetched:', data);
+        setUserDataCopy(data);
+        const yearsDifference = new Date().getFullYear() - new Date(data.fecha_inscripcion).getFullYear();
+        const hasPassedAniversary = (new Date().getMonth() > new Date(data.fecha_inscripcion).getMonth()) ||
+          (new Date().getMonth() === new Date(data.fecha_inscripcion).getMonth() && new Date().getDate() >= new Date(data.fecha_inscripcion).getDate());
+        const years = hasPassedAniversary ? yearsDifference : yearsDifference - 1;
+
+        setUserData({
+          id: data.id?.toString() || '',
+          name: data.nombre,
+          registration: data.rni,
+          specialty: `Ing. ${data.especialidad.charAt(0).toUpperCase() + data.especialidad.slice(1).toLowerCase()}` || 'No especificada',
+          city: data.departamento || 'No especificada',
+          registrationDate: data.fecha_inscripcion,
+          status: data.estado?.charAt(0).toUpperCase() + data.estado?.slice(1).toLowerCase(),
+          statusLaboral: data.registro_empleado ? data.registro_empleado.charAt(0).toUpperCase() +
+            data.registro_empleado.slice(1).toLowerCase() : 'No especificado',
+          experienceYears: years,
+        });
+        if (data.imagen) {
+          setPhotoUrl(data.imagen as string);
+        }
+        else {
+          setPhotoUrl('');
+        }
+        setCertifications(data.certificaciones?.map(cert => ({
+          nombre: cert.nombre,
+          institucion: cert.institucion,
+          anio: cert.anio
+        })) || []);
+        reset({
+          nombre: data.nombre,
+          mail: data.mail || '',
+          celular: data.celular,
+          especialidad: data.especialidad,
+          certificaciones: data.certificaciones || [],
+          registro_empleado: data.registro_empleado,
+        });
+      }
+    }
+    fetchUserData();
+  }, [user]);
+
+  const handleSave: SubmitHandler<UserPageData> = async (data) => {
+    if (!isEditing) {
+      setIsEditing(true);
+      return;
+    }
     setIsEditing(false);
-    // Aquí iría la lógica para guardar los datos
+    console.log('Saved data:', data);
+    const res = await patchUser(parseInt(userData.id), data, userDataCopy as Partial<UserPageData>) as UserPageData;
+    console.log('Patch response:', res);
+    reset({
+      nombre: res.nombre,
+      mail: res.mail || '',
+      celular: res.celular,
+      especialidad: res.especialidad,
+      registro_empleado: res.registro_empleado,
+    });
+    setUserDataCopy(res);
+    setUserData({
+      ...userData,
+      name: res.nombre,
+      specialty: `Ing. ${res.especialidad.charAt(0).toUpperCase() + res.especialidad.slice(1).toLowerCase()}` || 'No especificada',
+      statusLaboral: res.registro_empleado ? res.registro_empleado.charAt(0).toUpperCase() +
+        res.registro_empleado.slice(1).toLowerCase() : 'No especificado',
+    });
   };
 
-  const handleAddCertification = () => {
-    if (newCert.name && newCert.institution) {
-      const certification: Certification = {
-        id: Math.max(...certifications.map(c => c.id), 0) + 1,
-        ...newCert
-      };
-      setCertifications([...certifications, certification]);
-      setNewCert({
-        name: '',
-        institution: '',
-        year: new Date().getFullYear()
-      });
-      setIsCertDialogOpen(false);
-    }
+  const handleAddCertification = async (data) => {
+    const data_new = [...certifications, {
+      nombre: data.certificaciones[0].nombre,
+      institucion: data.certificaciones[0].institucion,
+      anio: data.certificaciones[0].anio.toString()
+    }].sort((a, b) => parseInt(b.anio) - parseInt(a.anio));
+    console.log('New certifications list:', data_new);
+    setIsCertDialogOpen(false);
+    const res = await patchUser(parseInt(userData.id), { certificaciones: data_new }, userData as Partial<UserPageData>);
+    console.log('Patch response for certifications:', res);
+    setCertifications(data_new);
+    reset();
   };
 
   const handleDeleteCertification = (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar esta certificación?')) {
-      setCertifications(certifications.filter(cert => cert.id !== id));
+      console.log('Delete certification with id:', id);
+      const data_new = certifications.filter((_, index) => index !== id);
+      setCertifications(data_new);
+      patchUser(parseInt(userData.id), { certificaciones: data_new }, userData as Partial<UserPageData>);
     }
   };
 
-  const handleUpdatePhoto = () => {
+  const handleUpdatePhoto = async (data) => {
     setPhotoUrl(tempPhotoUrl);
     setIsPhotoDialogOpen(false);
     setTempPhotoUrl('');
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempPhotoUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    // const res = await patchUser(parseInt(userData.id), { imagen: data.imagen }, userData as Partial<UserPageData>);
+    // console.log('Patch response for photo update:', res);
+    reset();
   };
 
   const handleDownloadQR = () => {
@@ -184,7 +250,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                   <div className="flex justify-center mb-4">
                     <div className='relative'>
                       <Avatar className="w-32 h-32 border-4 border-primary">
-                        <AvatarImage src="" />
+                        <AvatarImage src={photoUrl} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
                           {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </AvatarFallback>
@@ -253,7 +319,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                 <div className="bg-white p-4 rounded-lg shadow-sm">
                   <QRCodeSVG
                     id="qr-code-svg"
-                    value={`https://cicb.org.bo/profile/${userData.registration}`}
+                    value={`https://localhost/tarjeta_usuario/${userData.id}`}
                     size={180}
                     level="H"
                     includeMargin={true}
@@ -293,7 +359,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-border">
                   <span className="text-muted-foreground">Años de Experiencia</span>
-                  <span className="text-primary">10+</span>
+                  <span>{userData.experienceYears}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-muted-foreground">Estado Laboral</span>
@@ -320,132 +386,193 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               {/* Personal Information Tab */}
               <TabsContent value="info">
                 <Card>
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <CardTitle>Datos Personales</CardTitle>
-                        <CardDescription>Información de contacto y datos profesionales</CardDescription>
-                      </div>
-                      <Button
-                        variant="outline"
-                        onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                      >
-                        <Edit className="w-4 h-4 mr-2" />
-                        {isEditing ? 'Guardar Cambios' : 'Editar Perfil'}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {/* Información Básica */}
-                      <div>
-                        <h4 className="text-foreground mb-4 pb-2 border-b border-border">
-                          Información Básica
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="name">Nombre Completo</Label>
-                            <Input
-                              id="name"
-                              value={userData.name}
-                              disabled={!isEditing}
-                              onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="registration">RNIC</Label>
-                            <Input
-                              id="registration"
-                              value={userData.registration}
-                              disabled
-                              className="bg-muted"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="specialty">Especialidad</Label>
-                            <Input
-                              id="specialty"
-                              value={userData.specialty}
-                              disabled={!isEditing}
-                              onChange={(e) => setUserData({ ...userData, specialty: e.target.value })}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="city">Ciudad</Label>
-                            <Input
-                              id="city"
-                              value={userData.city}
-                              disabled
-                              onChange={(e) => setUserData({ ...userData, city: e.target.value })}
-                            />
-                          </div>
+                  <form onSubmit={handleSubmit(handleSave)}>
+                    <CardHeader>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle>Datos Personales</CardTitle>
+                          <CardDescription>Información de contacto y datos profesionales</CardDescription>
                         </div>
+                        <Button
+                          type='submit'
+                          variant="outline"
+                        // onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          {isEditing ? 'Guardar Cambios' : 'Editar Perfil'}
+                        </Button>
                       </div>
-
-                      {/* Información de Contacto */}
-                      <div>
-                        <h4 className="text-foreground mb-4 pb-2 border-b border-border">
-                          Información de Contacto
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="email">Correo Electrónico</Label>
-                            <div className="flex items-center">
-                              <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {/* Información Básica */}
+                        <div>
+                          <h4 className="text-foreground mb-4 pb-2 border-b border-border">
+                            Información Básica
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="nombre">Nombre Completo</Label>
                               <Input
-                                id="email"
-                                type="email"
-                                value={userData.email}
+                                id="nombre"
                                 disabled={!isEditing}
-                                onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                                className="flex-1"
+                                {...register("nombre")}
+                              />
+                              {errors.nombre && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                                <AlertTitle className='text-sm'>Error en Nombre</AlertTitle>
+                                <AlertDescription className='text-xs'>{errors.nombre.message}</AlertDescription>
+                              </Alert>)}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="registration">RNIC</Label>
+                              <Input
+                                id="registration"
+                                value={userData.registration}
+                                disabled
+                                className="bg-muted"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="especialidad">Especialidad</Label>
+                              {isEditing ? (
+                                <Controller
+                                  name="especialidad"
+                                  control={control}
+                                  render={({ field }) => (
+                                    <Select
+                                      value={field.value}
+                                      onValueChange={field.onChange}
+                                    >
+                                      <SelectTrigger id="especialidad">
+                                        <SelectValue placeholder="Selecciona una especialidad" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="estructural">Estructural</SelectItem>
+                                        <SelectItem value="hidráulica">Hidráulica</SelectItem>
+                                        <SelectItem value="vial">Vial</SelectItem>
+                                        <SelectItem value="geotecnia">Geotecnia</SelectItem>
+                                        <SelectItem value="ambiental">Ambiental</SelectItem>
+                                        <SelectItem value="construcción">Construcción</SelectItem>
+                                        <SelectItem value="sanitaria">Sanitaria</SelectItem>
+                                        <SelectItem value="transporte">Transporte</SelectItem>
+                                        <SelectItem value="civil">Civil</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
+                              ) : (
+                                <Input
+                                  id="especialidad"
+                                  value={userData.specialty}
+                                  disabled
+                                />
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="city">Ciudad</Label>
+                              <Input
+                                id="city"
+                                value={userData.city}
+                                disabled
+                                onChange={(e) => setUserData({ ...userData, city: e.target.value })}
                               />
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="phone">Teléfono</Label>
-                            <div className="flex items-center">
-                              <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
+                        </div>
+
+                        {/* Información de Contacto */}
+                        <div>
+                          <h4 className="text-foreground mb-4 pb-2 border-b border-border">
+                            Información de Contacto
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="email">Correo Electrónico</Label>
+                              <div className="flex items-center">
+                                <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
+                                <Input
+                                  id="email"
+                                  type="email"
+                                  placeholder='Sin correo registrado'
+                                  disabled={!isEditing}
+                                  className="flex-1"
+                                  {...register("mail")}
+                                />
+                              </div>
+                              {errors.mail && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                                <AlertTitle className='text-sm'>Error en Correo Electrónico</AlertTitle>
+                                <AlertDescription className='text-xs'>{errors.mail.message}</AlertDescription>
+                              </Alert>)}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="phone">Teléfono</Label>
+                              <div className="flex items-center">
+                                <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
+                                <Input
+                                  id="phone"
+                                  disabled={!isEditing}
+                                  className="flex-1"
+                                  {...register("celular")}
+                                />
+                              </div>
+                              {errors.celular && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                                <AlertTitle className='text-sm'>Error en Teléfono</AlertTitle>
+                                <AlertDescription className='text-xs'>{errors.celular.message}</AlertDescription>
+                              </Alert>)}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Información Adicional */}
+                        <div>
+                          <h4 className="text-foreground mb-4 pb-2 border-b border-border">
+                            Información Adicional
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="regDate">Fecha de Registro</Label>
                               <Input
-                                id="phone"
-                                value={userData.phone}
-                                disabled={!isEditing}
-                                onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
-                                className="flex-1"
+                                id="regDate"
+                                value={new Date(userData.registrationDate).toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                disabled
+                                className="bg-muted"
                               />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="status">Estado Laboral</Label>
+                              {isEditing ? (
+                                <Controller
+                                  name="registro_empleado"
+                                  control={control}
+                                  render={({ field }) => (
+                                    <Select
+                                      value={field.value}
+                                      onValueChange={field.onChange}
+                                    >
+                                      <SelectTrigger id="status">
+                                        <SelectValue placeholder="Selecciona un estado" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="empleado">Empleado</SelectItem>
+                                        <SelectItem value="desempleado">Desempleado</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
+                              ) : (
+                                <Input
+                                  id="status"
+                                  value={userData.statusLaboral}
+                                  disabled
+                                  className="bg-muted"
+                                />
+                              )}
                             </div>
                           </div>
                         </div>
                       </div>
-
-                      {/* Información Adicional */}
-                      <div>
-                        <h4 className="text-foreground mb-4 pb-2 border-b border-border">
-                          Información Adicional
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="regDate">Fecha de Registro</Label>
-                            <Input
-                              id="regDate"
-                              value={new Date(userData.registrationDate).toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' })}
-                              disabled
-                              className="bg-muted"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="status">Estado Laboral</Label>
-                            <Input
-                              id="status"
-                              value={userData.statusLaboral}
-                              disabled
-                              className="bg-muted"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
+                    </CardContent>
+                  </form>
                 </Card>
               </TabsContent>
 
@@ -468,7 +595,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                     <div className="space-y-4">
                       {certifications.map((cert, index) => (
                         <div
-                          key={cert.id}
+                          key={index}
                           className="border border-border rounded-lg p-5 hover:shadow-md transition-shadow bg-card"
                         >
                           <div className="flex items-start justify-between">
@@ -477,12 +604,12 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                                 <Award className="w-6 h-6 text-primary" />
                               </div>
                               <div>
-                                <h4 className="text-foreground mb-1">{cert.name}</h4>
-                                <p className="text-muted-foreground mb-2">{cert.institution}</p>
+                                <h4 className="text-foreground mb-1">{cert.nombre}</h4>
+                                <p className="text-muted-foreground mb-2">{cert.institucion}</p>
                                 <div className="flex items-center gap-4 text-muted-foreground">
                                   <span className="flex items-center gap-1">
                                     <Calendar className="w-4 h-4" />
-                                    Año: {cert.year}
+                                    Año: {cert.anio}
                                   </span>
                                 </div>
                               </div>
@@ -493,7 +620,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                             <Button
                               variant="outline"
                               className="ml-2"
-                              onClick={() => handleDeleteCertification(cert.id)}
+                              onClick={() => handleDeleteCertification(index)}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -520,101 +647,150 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
       {/* Certification Dialog */}
       <Dialog open={isCertDialogOpen} onOpenChange={setIsCertDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Agregar Certificación</DialogTitle>
-            <DialogDescription>
-              Ingresa los detalles de la certificación que deseas agregar.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="certName">Nombre de la Certificación</Label>
-              <Input
-                id="certName"
-                value={newCert.name}
-                onChange={(e) => setNewCert({ ...newCert, name: e.target.value })}
-              />
+          <form onSubmit={handleSubmit(handleAddCertification)}>
+            <DialogHeader>
+              <DialogTitle>Agregar Certificación</DialogTitle>
+              <DialogDescription>
+                Ingresa los detalles de la certificación que deseas agregar.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="certName">Nombre de la Certificación</Label>
+                <Input
+                  id="certName"
+                  {...register("certificaciones.0.nombre")}
+                />
+                {errors.certificaciones && errors.certificaciones[0]?.nombre && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                  <AlertTitle className='text-sm'>Error en Nombre de Certificación</AlertTitle>
+                  <AlertDescription className='text-xs'>{errors.certificaciones[0]?.nombre?.message}</AlertDescription>
+                </Alert>)}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="certInstitution">Institución</Label>
+                <Input
+                  id="certInstitution"
+                  {...register("certificaciones.0.institucion")}
+                />
+                {errors.certificaciones && errors.certificaciones[0]?.institucion && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                  <AlertTitle className='text-sm'>Error en Institución</AlertTitle>
+                  <AlertDescription className='text-xs'>{errors.certificaciones[0]?.institucion?.message}</AlertDescription>
+                </Alert>)}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="certYear">Año</Label>
+                <Input
+                  id="certYear"
+                  type="number"
+                  {...register("certificaciones.0.anio")}
+                />
+                {errors.certificaciones && errors.certificaciones[0]?.anio && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                  <AlertTitle className='text-sm'>Error en Año</AlertTitle>
+                  <AlertDescription className='text-xs'>{errors.certificaciones[0]?.anio?.message}</AlertDescription>
+                </Alert>)}
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="certInstitution">Institución</Label>
-              <Input
-                id="certInstitution"
-                value={newCert.institution}
-                onChange={(e) => setNewCert({ ...newCert, institution: e.target.value })}
-              />
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsCertDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type='submit'
+                className="ml-2"
+              >
+                Agregar
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="certYear">Año</Label>
-              <Input
-                id="certYear"
-                type="number"
-                value={newCert.year}
-                onChange={(e) => setNewCert({ ...newCert, year: parseInt(e.target.value) })}
-              />
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setIsCertDialogOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              className="ml-2"
-              onClick={handleAddCertification}
-            >
-              Agregar
-            </Button>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
 
       {/* Photo Dialog */}
       <Dialog open={isPhotoDialogOpen} onOpenChange={setIsPhotoDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Cambiar Foto de Perfil</DialogTitle>
-            <DialogDescription>
-              Sube una nueva foto para tu perfil.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="photoUpload">Subir Foto</Label>
-              <Input
-                id="photoUpload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-              />
+          <form onSubmit={handleSubmit(handleUpdatePhoto)}>
+            <DialogHeader>
+              <DialogTitle>Cambiar Foto de Perfil</DialogTitle>
+              <DialogDescription>
+                Sube una nueva foto para tu perfil.
+              </DialogDescription>
+            </DialogHeader>
+            <Controller
+              name="imagen"
+              control={control}
+              render={({ field }) => {
+                const file = field.value;
+
+                const isFile = file instanceof File;
+                const isUrl = typeof file === 'string' && file.startsWith('http');
+                const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                  const newFile = e.target.files?.[0];
+                  if (!newFile) return;
+
+                  if (newFile.size > 5 * 1024 * 1024) {
+                    alert("La imagen no debe superar los 5MB");
+                    return;
+                  }
+
+                  // Actualizamos React Hook Form
+                  field.onChange(newFile);
+
+                  // Actualizamos el preview
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setTempPhotoUrl(reader.result as string);
+                  };
+                  reader.readAsDataURL(newFile);
+                };
+
+                const removeImage = () => {
+                  field.onChange(null);
+                  setTempPhotoUrl("");
+                };
+                return (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="photoUpload">Subir Foto</Label>
+                      <Input
+                        id="photoUpload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="photoPreview">Vista Previa</Label>
+                      <div className="flex justify-center">
+                        <Avatar className="w-32 h-32 border-4 border-primary">
+                          <AvatarImage src={tempPhotoUrl} />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
+                            {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }}
+            />
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsPhotoDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type='submit'
+                className="ml-2"
+              >
+                Guardar
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="photoPreview">Vista Previa</Label>
-              <div className="flex justify-center">
-                <Avatar className="w-32 h-32 border-4 border-primary">
-                  <AvatarImage src={tempPhotoUrl} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                    {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setIsPhotoDialogOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              className="ml-2"
-              onClick={handleUpdatePhoto}
-            >
-              Guardar
-            </Button>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

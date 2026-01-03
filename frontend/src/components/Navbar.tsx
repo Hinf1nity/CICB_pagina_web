@@ -26,7 +26,7 @@ export function Navbar() {
   const [currentPage, setCurrentPage] = useState('home');
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, logout, hasPermission, user } = useAuth();
+  const { isAuthenticated, logout, hasPermission } = useAuth();
 
   useEffect(() => {
     const path = location.pathname.split('/')[1];
@@ -76,7 +76,7 @@ export function Navbar() {
 
   const profileRoute = () => {
     if (hasPermission("users.read")) {
-      return `/perfil/${user?.id}`;
+      return '/perfil';
     }
     if (hasPermission("admin.access")) {
       return '/admin';

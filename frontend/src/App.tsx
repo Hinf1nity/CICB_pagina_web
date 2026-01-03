@@ -50,7 +50,7 @@ function AppRoutes() {
         <Route path="/trabajos" element={<JobsPage />} />
         <Route path="/trabajos/:id" element={<JobDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/perfil/:id" element={<PrivateRoute requiredRole={['Usuario']}><UserProfilePage /></PrivateRoute>} />
+        <Route path="/perfil" element={<PrivateRoute requiredRole={['Usuario']}><UserProfilePage /></PrivateRoute>} />
         <Route path="/tarjeta_usuario/:id" element={<UserCardPage />} />
         <Route path="/tabla" element={<TablePage />} />
         <Route path="/estadisticas" element={<StatsPage />} />

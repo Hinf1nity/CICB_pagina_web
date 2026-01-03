@@ -3,10 +3,13 @@ import { Button } from './ui/button';
 import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, Settings, FileText, BookOpen, Megaphone, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
+import { useAdminData } from '../hooks/useAdminData';
 
 export function AdminDashboard() {
+  // const [adminStats, setAdminStats] = useState<AdminData | null>(null);
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { adminStats } = useAdminData();
   const adminSections = [
     {
       id: '/admin/usuarios',
@@ -15,7 +18,6 @@ export function AdminDashboard() {
       icon: Users,
       color: 'text-[#0B3D2E]',
       bgColor: 'bg-[#0B3D2E]/10',
-      stats: '156 usuarios registrados'
     },
     {
       id: '/admin/noticias',
@@ -24,7 +26,6 @@ export function AdminDashboard() {
       icon: Newspaper,
       color: 'text-[#1B5E3A]',
       bgColor: 'bg-[#1B5E3A]/10',
-      stats: '24 noticias publicadas'
     },
     {
       id: '/admin/trabajos',
@@ -33,7 +34,6 @@ export function AdminDashboard() {
       icon: Briefcase,
       color: 'text-[#3C8D50]',
       bgColor: 'bg-[#3C8D50]/10',
-      stats: '18 trabajos activos'
     },
     {
       id: '/admin/rendimientos',
@@ -42,7 +42,6 @@ export function AdminDashboard() {
       icon: ListChecks,
       color: 'text-[#3A5A78]',
       bgColor: 'bg-[#3A5A78]/10',
-      stats: '142 actividades registradas'
     },
     {
       id: "/admin/anuario",
@@ -52,7 +51,6 @@ export function AdminDashboard() {
       icon: BookOpen,
       color: "text-[#0B3D2E]",
       bgColor: "bg-[#0B3D2E]/10",
-      stats: "3 anuarios publicados",
     },
     {
       id: "/admin/regulaciones",
@@ -62,7 +60,6 @@ export function AdminDashboard() {
       icon: FileText,
       color: "text-[#1B5E3A]",
       bgColor: "bg-[#1B5E3A]/10",
-      stats: "15 reglamentos vigentes",
     },
     {
       id: "/admin/convocatorias",
@@ -72,7 +69,6 @@ export function AdminDashboard() {
       icon: Megaphone,
       color: "text-[#3C8D50]",
       bgColor: "bg-[#3C8D50]/10",
-      stats: "8 convocatorias activas",
     },
   ];
 
@@ -106,7 +102,7 @@ export function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground mb-1">Usuarios Totales</p>
-                  <p className="text-3xl">156</p>
+                  <p className="text-3xl">{adminStats?.total_users ?? 'Cargando...'}</p>
                 </div>
                 <Users className="w-8 h-8 text-[#0B3D2E]" />
               </div>
@@ -118,7 +114,7 @@ export function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground mb-1">Noticias Activas</p>
-                  <p className="text-3xl">24</p>
+                  <p className="text-3xl">{adminStats?.total_news ?? 'Cargando...'}</p>
                 </div>
                 <Newspaper className="w-8 h-8 text-[#1B5E3A]" />
               </div>
@@ -130,7 +126,7 @@ export function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground mb-1">Trabajos Publicados</p>
-                  <p className="text-3xl">18</p>
+                  <p className="text-3xl">{adminStats?.total_jobs ?? 'Cargando...'}</p>
                 </div>
                 <Briefcase className="w-8 h-8 text-[#3C8D50]" />
               </div>
@@ -144,7 +140,7 @@ export function AdminDashboard() {
                   <p className="text-muted-foreground mb-1">
                     Reglamentos
                   </p>
-                  <p className="text-3xl">8</p>
+                  <p className="text-3xl">{adminStats?.total_rulebooks ?? 'Cargando...'}</p>
                 </div>
                 <FileText className="w-8 h-8 text-[#3A5A78]" />
               </div>
@@ -175,8 +171,7 @@ export function AdminDashboard() {
                     <CardDescription className="mt-2">{section.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between">
-                      <p className="text-muted-foreground">{section.stats}</p>
+                    <div className="flex items-start justify-end">
                       <Button
                         variant="ghost"
                         size="sm"

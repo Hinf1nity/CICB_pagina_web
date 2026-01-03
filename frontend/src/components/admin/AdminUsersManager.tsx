@@ -292,6 +292,7 @@ export function AdminUsersManager() {
                             <SelectItem value="construcción">Construcción</SelectItem>
                             <SelectItem value="sanitaria">Sanitaria</SelectItem>
                             <SelectItem value="transporte">Transporte</SelectItem>
+                            <SelectItem value="civil">Civil</SelectItem>
                           </SelectContent>
                         </Select>
                         {errors.especialidad && (

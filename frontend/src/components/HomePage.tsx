@@ -21,7 +21,7 @@ export function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
   const navigate = useNavigate();
-  const { isAuthenticated, hasPermission, user } = useAuth();
+  const { isAuthenticated, hasPermission } = useAuth();
   const { noticias } = useNoticias();
 
   const stats = [
@@ -118,7 +118,7 @@ export function HomePage() {
             <div className="flex flex-wrap gap-4">
               {isAuthenticated && hasPermission("users.read") && (
                 <Button
-                  onClick={() => navigate(`/perfil/${user?.id}`)}
+                  onClick={() => navigate('/perfil')}
                   className="bg-accent text-accent-foreground hover:bg-accent/90"
                 >
                   Mi Perfil

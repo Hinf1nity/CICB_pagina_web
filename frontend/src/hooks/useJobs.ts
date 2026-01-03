@@ -32,6 +32,8 @@ export function useJobsPost() {
       formData.append("pdf", pdfId);
     }
 
+    console.log('FormData to be sent in patch:', formData);
+
     const response = await api.post("jobs/job_admin/", { body: formData });
 
     return response.json();
