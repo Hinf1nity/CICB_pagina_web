@@ -17,6 +17,7 @@ export function NewsPage() {
   const { noticias, loading, error } = useNoticias();
 
   const filteredNews = useMemo(() => {
+    const getTime = (s?: string) => (s ? new Date(s).getTime() : 0);
     return noticias.filter((item) => {
       const matchesSearch =
         item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -24,7 +25,7 @@ export function NewsPage() {
       const matchesCategory = category === 'all' || item.categoria === category;
       return matchesSearch && matchesCategory;
     })
-      .sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime());
+      .sort((a, b) => getTime(b.fecha_publicacion) - getTime(a.fecha_publicacion));
   }, [noticias, searchTerm, category]);
 
   if (loading) {

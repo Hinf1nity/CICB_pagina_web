@@ -1,10 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, Settings, FileText, BookOpen, Megaphone } from 'lucide-react';
+import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, Settings, FileText, BookOpen, Megaphone, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/useAuth';
 
 export function AdminDashboard() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const adminSections = [
     {
       id: '/admin/usuarios',
@@ -79,9 +81,18 @@ export function AdminDashboard() {
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-16">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Settings className="w-12 h-12" />
-            <h1>Panel de Administración</h1>
+          <div className="flex justify-between items-start mb-4">
+            <div className='flex items-center gap-3'>
+              <Settings className="w-12 h-12" />
+              <h1>Panel de Administración</h1>
+            </div>
+            <Button
+              onClick={logout}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Cerrar Sesión
+            </Button>
           </div>
           <p className="text-lg">Gestiona todo el contenido y usuarios del portal del Colegio de Ingenieros Civiles de Bolivia</p>
         </div>
@@ -148,7 +159,7 @@ export function AdminDashboard() {
             {adminSections.map((section) => {
               const Icon = section.icon;
               return (
-                <Card 
+                <Card
                   key={section.id}
                   className="hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 hover:border-primary"
                   onClick={() => navigate(section.id)}
@@ -166,8 +177,8 @@ export function AdminDashboard() {
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <p className="text-muted-foreground">{section.stats}</p>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         className="group-hover:bg-primary/10"
                         onClick={(e) => {

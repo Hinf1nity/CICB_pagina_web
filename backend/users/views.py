@@ -7,12 +7,7 @@ from utils.s3 import s3_client
 import os
 
 from .models import UsuarioComun
-from .serializers import UsuarioComunSerializer, MyTokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-
-
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+from .serializers import UsuarioComunSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):

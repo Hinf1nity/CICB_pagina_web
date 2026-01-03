@@ -6,7 +6,6 @@ import { Label } from './ui/label';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Lock, Mail, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-// import { useLogin } from '../hooks/useLogin';
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { type LoginData } from '../validations/loginSchema';
 import { useAuth } from '../auth/useAuth';
@@ -14,13 +13,25 @@ import { useAuth } from '../auth/useAuth';
 export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, hasPermission } = useAuth();
   const { register, handleSubmit } = useForm<LoginData>();
 
   const handleLogin: SubmitHandler<LoginData> = async (data) => {
     try {
-      await login(data.password, data.username);
-      navigate('/admin');
+      setIsLoading(true);
+      await login(data.username, data.password);
+      if (hasPermission("admin.access")) {
+        navigate('/admin');
+      }
+      else if (hasPermission("admin.users.manage")) {
+        navigate('/admin/usuarios');
+      }
+      else if (hasPermission("users.read")) {
+        navigate('/perfil');
+      }
+      else {
+        navigate('/');
+      }
     } catch (error) {
       console.error('Error during login:', error);
       alert('Error al iniciar sesión. Por favor, verifica tus credenciales e intenta de nuevo.');
@@ -58,11 +69,11 @@ export function LoginPage() {
             <CardContent>
               <form onSubmit={handleSubmit(handleLogin)} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="rni">RNI</Label>
+                  <Label htmlFor="rnic">RNIC</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
-                      id="rni"
+                      id="rnic"
                       placeholder="XXXXXX"
                       className="pl-10"
                       required
@@ -72,7 +83,7 @@ export function LoginPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
+                  <Label htmlFor="password">Contraseña(RNI)</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
@@ -84,15 +95,6 @@ export function LoginPage() {
                       required
                     />
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    className="text-primary hover:underline"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
                 </div>
 
                 <Button

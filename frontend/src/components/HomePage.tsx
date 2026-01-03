@@ -21,7 +21,7 @@ export function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, hasPermission, user } = useAuth();
   const { noticias } = useNoticias();
 
   const stats = [
@@ -83,7 +83,13 @@ export function HomePage() {
     return departmentalColleges.slice(start, end);
   };
 
-  const latestThreeNoticias = noticias.sort((a, b) => new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime()).slice(0, 3);
+  const latestThreeNoticias = [...noticias]
+    .sort((a, b) => {
+      const ta = a.fecha_publicacion ? new Date(a.fecha_publicacion).getTime() : 0;
+      const tb = b.fecha_publicacion ? new Date(b.fecha_publicacion).getTime() : 0;
+      return tb - ta;
+    })
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,14 +116,31 @@ export function HomePage() {
               Representamos a los profesionales más capacitados del país.
             </p>
             <div className="flex flex-wrap gap-4">
-              {isAuthenticated ? (
+              {isAuthenticated && hasPermission("users.read") && (
                 <Button
-                  onClick={() => navigate('/perfil')}
+                  onClick={() => navigate(`/perfil/${user?.id}`)}
                   className="bg-accent text-accent-foreground hover:bg-accent/90"
                 >
                   Mi Perfil
                 </Button>
-              ) : (
+              )}
+              {isAuthenticated && hasPermission("admin.access") && (
+                <Button
+                  onClick={() => navigate('/admin')}
+                  className="bg-accent text-accent-foreground hover:bg-accent/90"
+                >
+                  Panel de Administración
+                </Button>
+              )}
+              {(isAuthenticated && hasPermission("admin.users.manage")) && (
+                <Button
+                  onClick={() => navigate('/admin/usuarios')}
+                  className="bg-accent text-accent-foreground hover:bg-accent/90"
+                >
+                  Gestión de Usuarios
+                </Button>
+              )}
+              {!isAuthenticated && (
                 <Button
                   onClick={() => navigate('/login')}
                   className="bg-accent text-accent-foreground hover:bg-accent/90"

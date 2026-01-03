@@ -15,6 +15,7 @@ from .serializers import (
     NewsListSerializer,
     NewsAdminGeneralSerializer
 )
+from users.permissions import IsUser
 import os
 
 

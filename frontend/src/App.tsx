@@ -35,9 +35,9 @@ function AppRoutes() {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const shouldShowNavbar = 
-    currentPath !== '/login' && 
-    !currentPath.startsWith('/tarjeta_usuario') && 
+  const shouldShowNavbar =
+    currentPath !== '/login' &&
+    !currentPath.startsWith('/tarjeta_usuario') &&
     !currentPath.startsWith('/admin');
 
   return (
@@ -50,21 +50,21 @@ function AppRoutes() {
         <Route path="/trabajos" element={<JobsPage />} />
         <Route path="/trabajos/:id" element={<JobDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/perfil" element={<PrivateRoute><UserProfilePage /></PrivateRoute>} />
+        <Route path="/perfil/:id" element={<PrivateRoute requiredRole={['Usuario']}><UserProfilePage /></PrivateRoute>} />
         <Route path="/tarjeta_usuario/:id" element={<UserCardPage />} />
         <Route path="/tabla" element={<TablePage />} />
         <Route path="/estadisticas" element={<StatsPage />} />
         <Route path="/admin" element={
-          <PrivateRoute><AdminDashboard /></PrivateRoute>} />
+          <PrivateRoute requiredRole={['admin_general']}><AdminDashboard /></PrivateRoute>} />
         <Route path="/admin/usuarios" element={
-          <PrivateRoute><AdminUsersPage /></PrivateRoute>} />
+          <PrivateRoute requiredRole={['admin_general', 'admin_ciudad']}><AdminUsersPage /></PrivateRoute>} />
         <Route path="/admin/noticias" element={
-          <PrivateRoute><AdminNewsPage /></PrivateRoute>} />
-        <Route path="/admin/trabajos" element={<PrivateRoute><AdminJobsPage /></PrivateRoute>} />
-        <Route path="/admin/rendimientos" element={<PrivateRoute><AdminPerformancePage /></PrivateRoute>} />
-        <Route path="/admin/convocatorias" element={<PrivateRoute><AdminAnnouncementsPage /></PrivateRoute>} />
-        <Route path="/admin/regulaciones" element={<PrivateRoute><AdminRegulationsPage /></PrivateRoute>} />
-        <Route path="/admin/anuario" element={<PrivateRoute><AdminYearbookPage /></PrivateRoute>} />
+          <PrivateRoute requiredRole={['admin_general']}><AdminNewsPage /></PrivateRoute>} />
+        <Route path="/admin/trabajos" element={<PrivateRoute requiredRole={['admin_general']}><AdminJobsPage /></PrivateRoute>} />
+        <Route path="/admin/rendimientos" element={<PrivateRoute requiredRole={['admin_general']}><AdminPerformancePage /></PrivateRoute>} />
+        <Route path="/admin/convocatorias" element={<PrivateRoute requiredRole={['admin_general']}><AdminAnnouncementsPage /></PrivateRoute>} />
+        <Route path="/admin/regulaciones" element={<PrivateRoute requiredRole={['admin_general']}><AdminRegulationsPage /></PrivateRoute>} />
+        <Route path="/admin/anuario" element={<PrivateRoute requiredRole={['admin_general']}><AdminYearbookPage /></PrivateRoute>} />
         <Route path="/anuario" element={
           <GenericPage
             title="Anuario"

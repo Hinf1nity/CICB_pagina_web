@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { useAuth } from '../auth/useAuth';
+import { useParams } from 'react-router-dom';
 
 interface UserProfilePageProps {
   onNavigate?: (page: string, id?: number) => void;
@@ -29,6 +30,8 @@ interface Certification {
 }
 
 export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
+  const { id } = useParams<{ id: string }>();
+  console.log("UserProfilePage for user ID:", id);
   const [isEditing, setIsEditing] = useState(false);
   const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
   const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);

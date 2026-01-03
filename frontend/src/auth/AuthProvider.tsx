@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { AuthContext } from "./AuthContext";
 import { decodeJWT, isTokenExpired } from "../api/auth.utils";
 import { authService } from "../api/auth";
+import { hasPermission as checkPermission } from "../api/auth.roles";
 import type { User } from "../api/auth.types";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -25,10 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const decoded = decodeJWT(access);
     setUser({
       id: decoded.user_id,
-      username: decoded.username,
-      role: decoded.role,
+      rol: decoded.rol,
     });
   };
+
+  const hasPermission = (permission: string) =>
+    user ? checkPermission(user.rol, permission) : false;
 
   useEffect(() => {
     const token = localStorage.getItem("access");
@@ -36,8 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const decoded = decodeJWT(token);
       setUser({
         id: decoded.user_id,
-        username: decoded.username,
-        role: decoded.role,
+        rol: decoded.rol,
       });
     } else {
       logout();
@@ -47,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, isLoading, login, logout }}
+      value={{ user, isAuthenticated, isLoading, login, logout, hasPermission }}
     >
       {children}
     </AuthContext.Provider>

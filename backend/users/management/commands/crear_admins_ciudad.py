@@ -11,6 +11,20 @@ class Command(BaseCommand):
             "Tarija", "Chuquisaca", "Beni", "Pando"
         ]
 
+        if not Usuario.objects.filter(username="admin").exists():
+            Usuario.objects.create_superuser(
+                username="admin",
+                password="admin",
+                rol="admin_general",
+                is_staff=True,
+                is_superuser=True
+            )
+            self.stdout.write(self.style.SUCCESS(
+                "Administrador general creado: admin"))
+        else:
+            self.stdout.write(self.style.WARNING(
+                "El administrador general 'admin' ya existe"))
+
         for nombre in ciudades:
             username = f"admin_{nombre.replace(' ', '').lower()}"
 

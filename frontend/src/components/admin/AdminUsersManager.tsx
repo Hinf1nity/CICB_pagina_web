@@ -122,7 +122,7 @@ export function AdminUsersManager() {
         <CardHeader>
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <CardTitle>Gestión de Usuarios</CardTitle>
+              <CardTitle>Gestión de Colegiados</CardTitle>
               <CardDescription>Administra los perfiles de los miembros del colegio</CardDescription>
             </div>
             <Button onClick={handleCreate} className="bg-primary text-primary-foreground">
@@ -181,8 +181,8 @@ export function AdminUsersManager() {
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>{user.nombre}</TableCell>
-                    <TableCell>{user.rni}</TableCell>
                     <TableCell>{user.rnic}</TableCell>
+                    <TableCell>{user.rni}</TableCell>
                     <TableCell>{new Date(user.fecha_inscripcion).toLocaleDateString('es-BO')}</TableCell>
                     <TableCell>{user.celular}</TableCell>
                     <TableCell>

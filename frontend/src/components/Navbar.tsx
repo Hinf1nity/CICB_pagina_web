@@ -19,15 +19,14 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
 
 const userData = {
-  name: "Juan Pérez",
-  registration: "Reg. No. 12345",
+  name: "Diego Andres Calvimontes Vera",
 };
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, hasPermission, user } = useAuth();
 
   useEffect(() => {
     const path = location.pathname.split('/')[1];
@@ -45,8 +44,48 @@ export function Navbar() {
     { path: '/convocatorias', label: 'Convocatorias' },
   ];
 
-  const profileLabel = isAuthenticated ? "Mi Perfil" : "Iniciar sesión";
-  const profileRoute = isAuthenticated ? "/perfil" : "/login";
+  const profileButtonLabel = () => {
+    if (isAuthenticated) {
+      if (hasPermission("users.read")) {
+        return `Ing. ${userData.name}`;
+      }
+      if (hasPermission("admin.access")) {
+        return "Administración General";
+      }
+      if (hasPermission("admin.users.manage")) {
+        return "Administración Departamental";
+      }
+    }
+    return "Iniciar Sesión";
+  }
+
+  const profileLabel = () => {
+    if (isAuthenticated) {
+      if (hasPermission("users.read")) {
+        return "Mi Perfil";
+      }
+      if (hasPermission("admin.access")) {
+        return "Panel de Administración";
+      }
+      if (hasPermission("admin.users.manage")) {
+        return "Gestión de Colegiados";
+      }
+    }
+    return "Iniciar Sesión";
+  }
+
+  const profileRoute = () => {
+    if (hasPermission("users.read")) {
+      return `/perfil/${user?.id}`;
+    }
+    if (hasPermission("admin.access")) {
+      return '/admin';
+    }
+    if (hasPermission("admin.users.manage")) {
+      return '/admin/usuarios';
+    }
+    return '/login';
+  }
   const ProfileIcon = isAuthenticated ? User : LogIn;
 
   const isActive = (path: string) => {
@@ -63,7 +102,7 @@ export function Navbar() {
           {/* Logo y título */}
           <NavLink to="/" className="flex items-center space-x-3">
             <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full bg-white">
-              <img src="/src/assets/LOGO CIC B sin fondo.png" alt="Logo CICB" className="w-full h-full object-contain"/>
+              <img src="/src/assets/LOGO CIC B sin fondo.png" alt="Logo CICB" className="w-full h-full object-contain" />
             </div>
             <div className="hidden md:block">
               <h1 className="text-primary-foreground font-semibold text-lg">
@@ -81,62 +120,59 @@ export function Navbar() {
               <Button
                 key={item.path}
                 onClick={() => navigate(`${item.path}`)}
-                className={`px-4 py-2 rounded transition-colors cursor-pointer ${
-                  currentPage === item.path
-                    ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-primary/80'
-                }`}
+                className={`px-4 py-2 rounded transition-colors cursor-pointer ${currentPage === item.path
+                  ? 'bg-accent text-accent-foreground'
+                  : 'hover:bg-primary/80'
+                  }`}
               >
                 {item.label}
               </Button>
             ))}
             {isAuthenticated ? (
               <>
-              {/* Dropdown Menu para Perfil */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    className={`ml-2 px-4 py-2 rounded flex items-center space-x-2 transition-colors ${
-                      location.pathname === '/perfil'
+                {/* Dropdown Menu para Perfil */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className={`ml-2 px-4 py-2 rounded flex items-center space-x-2 transition-colors ${location.pathname === '/perfil'
                         ? 'bg-accent text-accent-foreground'
                         : 'hover:bg-primary/80'
-                    }`}
-                  >
-                    <User className="w-4 h-4" />
-                    <span>Mi Perfil</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <NavLink to="/perfil" className="flex items-center cursor-pointer">
-                      <User className="w-4 h-4 mr-2" />
-                      <span>Ver Perfil</span>
-                    </NavLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={logout}
-                    className="flex items-center cursor-pointer text-red-600 focus:text-red-600"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    <span>Cerrar Sesión</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                        }`}
+                    >
+                      <User className="w-4 h-4" />
+                      <span>{profileLabel()}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <NavLink to={profileRoute()} className="flex items-center cursor-pointer">
+                        <User className="w-4 h-4 mr-2" />
+                        <span>{profileButtonLabel()}</span>
+                      </NavLink>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="flex items-center cursor-pointer text-red-600 focus:text-red-600"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      <span>Cerrar Sesión</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
-            ):
-            (
-              <Button
-              onClick={() => navigate(profileRoute)}
-              className={`ml-2 px-4 py-2 rounded flex items-center space-x-2 transition-colors cursor-pointer ${
-                currentPage === 'perfil' || currentPage === 'login'
-                  ? 'bg-accent text-accent-foreground'
-                  : 'hover:bg-primary/80'
-              }`}
-            >
-              <ProfileIcon className="w-4 h-4" />
-              <span>{profileLabel}</span>
-            </Button>
+            ) :
+              (
+                <Button
+                  onClick={() => navigate('/login')}
+                  className={`ml-2 px-4 py-2 rounded flex items-center space-x-2 transition-colors cursor-pointer ${currentPage === 'perfil' || currentPage === 'login'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'hover:bg-primary/80'
+                    }`}
+                >
+                  <ProfileIcon className="w-4 h-4" />
+                  <span>Iniciar Sesión</span>
+                </Button>
               )}
           </div>
 
@@ -152,18 +188,17 @@ export function Navbar() {
                 {/* Header del drawer con info del usuario */}
                 <div className="bg-primary text-primary-foreground p-6">
                   {isAuthenticated ? (
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="w-16 h-16 border-2 border-accent">
-                      <AvatarImage src="" />
-                      <AvatarFallback className="bg-accent text-accent-foreground text-lg">
-                        {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold">Ing. {userData.name}</h3>
-                      <p className="text-sm text-primary-foreground/80">{userData.registration}</p>
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="w-16 h-16 border-2 border-accent">
+                        <AvatarImage src="" />
+                        <AvatarFallback className="bg-accent text-accent-foreground text-lg">
+                          {profileButtonLabel().split(' ').map(n => n[0]).join('').slice(1, 3)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold">{profileButtonLabel()}</h3>
+                      </div>
                     </div>
-                  </div>
                   ) : (
                     <div className="flex items-center space-x-4">
                       <Button onClick={() => navigate('/login')}>Iniciar Sesión <LogIn className="w-4 h-4" /></Button>
@@ -178,18 +213,17 @@ export function Navbar() {
                       Navegación
                     </h4>
                   </div>
-                  
+
                   <nav className="space-y-1 px-2">
                     {navItems.map((item) => (
                       <NavLink
                         key={item.path}
                         to={item.path}
                         onClick={() => setIsMenuOpen(false)}
-                        className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
-                          isActive(item.path)
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'text-foreground hover:bg-muted'
-                        }`}
+                        className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all ${isActive(item.path)
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'text-foreground hover:bg-muted'
+                          }`}
                       >
                         <span>{item.label}</span>
                         {isActive(item.path) && <ChevronRight className="w-4 h-4" />}
@@ -209,19 +243,18 @@ export function Navbar() {
 
                       <div className="space-y-1 px-2">
                         <NavLink
-                          to="/perfil"
+                          to={profileRoute()}
                           onClick={() => setIsMenuOpen(false)}
-                          className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
-                            location.pathname === '/perfil'
-                              ? 'bg-primary text-primary-foreground shadow-sm'
-                              : 'text-foreground hover:bg-muted'
-                          }`}
+                          className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all ${location.pathname === profileRoute()
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'text-foreground hover:bg-muted'
+                            }`}
                         >
                           <div className="flex items-center space-x-3">
                             <User className="w-5 h-5" />
-                            <span>Mi Perfil</span>
+                            <span>{profileLabel()}</span>
                           </div>
-                          {location.pathname === '/perfil' && <ChevronRight className="w-4 h-4" />}
+                          {location.pathname === profileRoute() && <ChevronRight className="w-4 h-4" />}
                         </NavLink>
 
                         <button
