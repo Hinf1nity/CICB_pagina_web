@@ -8,12 +8,17 @@ from django.core.validators import MaxValueValidator
 
 
 class UsuarioComunManager(BaseUserManager):
-    def create_user(self, rnic, nombre, rni, **extra_fields):
-        if not rnic:
-            raise ValueError("El rnic es obligatorio")
+    def create_user(self, rnic=None, nombre=None, rni=None, **extra_fields):
         if not rni:
             raise ValueError("El rni es obligatorio")
-        user = self.model(rnic=rnic, nombre=nombre, **extra_fields)
+        if not nombre:
+            raise ValueError("El nombre es obligatorio")
+
+        user = self.model(
+            rnic=rnic,
+            nombre=nombre,
+            **extra_fields
+        )
         user.set_password(rni)
         user.save(using=self._db)
         return user
