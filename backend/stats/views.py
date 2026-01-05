@@ -11,7 +11,7 @@ from news.models import News
 from jobs.models import Job
 from regulation.models import Regulation
 
-from django.db.models import Count, Q, Case, When, IntegerField
+from django.db.models import Count, Q, Case, When, IntegerField, F
 from django.utils import timezone
 from datetime import timedelta
 
@@ -32,16 +32,20 @@ def calculate_current_metrics():
         count=Count('id')
     ).order_by('-count'))
 
-    state_data = list(UsuarioComun.objects.values('departamento').annotate(
-        count=Count('id')
-    ).order_by('-count'))
-
-    active_data = list(UsuarioComun.objects.values('estado').annotate(
-        count=Count('id')
-    ).order_by('-count'))
+    state_data = UsuarioComun.objects.values('departamento').annotate(
+        total_count=Count('id'),
+        active_count=Count(Case(
+            When(estado='activo', then=1), 
+            output_field=IntegerField()
+        ))
+    ).annotate(
+        inactive_count=F('total_count') - F('active_count')
+    ).order_by('-total_count')
+    
+    state_data = list(state_data)
 
     employed_users = UsuarioComun.objects.exclude(
-        Q(registro_empleado__isnull=True) | Q(registro_empleado__exact='')
+        Q(registro_empleado__isnull=True) | Q(registro_empleado__exact='') | Q(registro_empleado__exact='desempleado')
     ).count()
 
     employment_rate = 0
@@ -57,7 +61,6 @@ def calculate_current_metrics():
         "employment_rate": round(employment_rate, 2),
         "specialties_breakdown": specialties_data,
         "state_breakdown": state_data,
-        "activity_breakdown" : active_data
     }
 
 def calculate_growth_metrics():
@@ -72,7 +75,7 @@ def calculate_growth_metrics():
         total_growth = ((current_total - users_last_year) / users_last_year) * 100
 
     current_employed = UsuarioComun.objects.exclude(
-        Q(registro_empleado__isnull=True) | Q(registro_empleado__exact='')
+        Q(registro_empleado__isnull=True) | Q(registro_empleado__exact='') | Q(registro_empleado__exact='desempleado')
     ).count()
     
     current_rate = (current_employed / current_total * 100) if current_total > 0 else 0

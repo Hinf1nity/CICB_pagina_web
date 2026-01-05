@@ -30,7 +30,15 @@ class UsuarioComunManager(BaseUserManager):
 
 
 class UsuarioComun(AbstractBaseUser, PermissionsMixin):
-    ESTADOS = [("activo", "Activo"), ("inactivo", "Inactivo")]
+    ESTADOS = [
+        ("activo", "Activo"),
+        ("inactivo", "Inactivo")
+    ]
+
+    EMPLEO = [
+        ("empleado", "Empleado"),
+        ("desempleado", "Desempleado") 
+    ]
 
     rnic = models.PositiveIntegerField(
         unique=True, editable=False, null=True, blank=True, validators=[MaxValueValidator(99999)])
@@ -42,7 +50,7 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
     celular = models.CharField(max_length=20, blank=True)
     imagen = models.ForeignKey(
         Img, on_delete=models.CASCADE, null=True, blank=True)
-    registro_empleado = models.CharField(max_length=255, blank=True)
+    registro_empleado = models.CharField(max_length=16, choices=EMPLEO, default="desempleado")
     estado = models.CharField(max_length=16, choices=ESTADOS, default="activo")
     certificaciones = models.JSONField(default=list)
     mail = models.CharField(max_length=32, blank=True)
