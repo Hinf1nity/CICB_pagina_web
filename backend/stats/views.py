@@ -15,11 +15,18 @@ from django.db.models import Count, Q, Case, When, IntegerField
 from django.utils import timezone
 from datetime import timedelta
 
+from loguru import logger
+import datetime
+import sys
+
+logger.add(sys.stderr, level="DEBUG")
+
 class StatsViewSet(viewsets.ModelViewSet):
     queryset = Stats.objects.all()
     serializer_class = StatsSerializer
 
 def calculate_current_metrics():
+    total_users = User.objects.count()
     """Calculates only the current status of the DB (Fast)"""
     total_users = UsuarioComun.objects.count()
     
@@ -42,6 +49,9 @@ def calculate_current_metrics():
     employment_rate = 0
     if total_users > 0:
         employment_rate = (employed_users / total_users) * 100
+
+    logger.info(f"Employed users : {employed_users}")
+    logger.info(f"Total users : {total_users}")
 
     return {
         "total_users": total_users,
@@ -107,6 +117,31 @@ def calculate_growth_metrics():
         "state_growth_breakdown": state_growth_data
     }
 
+def calculate_historic(years: int):
+    today = timezone.now().date()
+    current_year = today.year
+    history_data = []
+
+    for i in range(years):
+        target_year = current_year - i
+        end_of_year = datetime.date(target_year, 12, 31)
+
+        total_at_year_end = User.objects.filter(
+            fecha_inscripcion__lte=end_of_year
+        ).count()
+
+        new_users_in_year = User.objects.filter(
+            fecha_inscripcion__year=target_year
+        ).count()
+
+        history_data.append({
+            "year": target_year,
+            "total_users_cumulative": total_at_year_end,
+            "new_users_count": new_users_in_year
+        })
+
+    return history_data[::-1]
+
 class UserStatisticsView(APIView):
     def get_permissions(self):
         if self.request.method == 'POST':
@@ -154,4 +189,11 @@ class UserGrowthView(APIView):
 
     def get(self, request):
         data = calculate_growth_metrics()
+        return Response(data)
+    
+class UserHistoryView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        data = calculate_historic(years=5)
         return Response(data)

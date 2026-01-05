@@ -4,7 +4,8 @@ from .views import (
     StatsViewSet, 
     UserStatisticsView, 
     UserGrowthView,
-    OverallStatsView
+    OverallStatsView,
+    UserHistoryView
 )
 
 router = DefaultRouter()
@@ -14,5 +15,6 @@ urlpatterns = [
     path('users/', UserStatisticsView.as_view(), name='user_stats'),
     path('growth/', UserGrowthView.as_view(), name='user_growth'),
     path('overall/', OverallStatsView.as_view(), name='general_stats'),
+    path('history/', UserHistoryView.as_view(), name='user_history'),
     path('', include(router.urls)),
 ]
