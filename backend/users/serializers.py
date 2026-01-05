@@ -48,7 +48,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
         refresh = RefreshToken(attrs['refresh'])
-        data = super().validate(attrs)
+        # data = super().validate(attrs)
         print("Refreshing token for:", refresh.payload)
         rol = refresh.payload.get('rol')
         user_id = refresh.payload.get('user_id')
@@ -72,7 +72,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
         access_token = refresh.access_token
         access_token['rol'] = rol
-        data['access'] = str(access_token)
+        data = {"access": str(access_token)}
         return data
 
 
