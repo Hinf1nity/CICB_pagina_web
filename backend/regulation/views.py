@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from .models import Regulation
-from .serializers import RegulationSerializer
+from .serializers import RegulationSerializer, RegulationListSerializer
 from rest_framework.permissions import AllowAny, IsAdminUser
 
 class RegulationViewSet(viewsets.ModelViewSet):
@@ -13,3 +13,8 @@ class RegulationViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RegulationListSerializer
+        return RegulationSerializer

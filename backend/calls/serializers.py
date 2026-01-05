@@ -5,3 +5,10 @@ class CallSerializer(serializers.ModelSerializer):
     class Meta:
         model = Call
         fields = '__all__'
+
+class CallListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Call
+        exclude = [
+            'estado',
+        ]

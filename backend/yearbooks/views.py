@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from .models import Yearbook
-from .serializers import YearbookSerializer
+from .serializers import YearbookSerializer, YearbookListSerializer
 from rest_framework.permissions import AllowAny, IsAdminUser
 
 class YearbookViewSet(viewsets.ModelViewSet):
@@ -13,3 +13,8 @@ class YearbookViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return YearbookListSerializer
+        return YearbookSerializer
