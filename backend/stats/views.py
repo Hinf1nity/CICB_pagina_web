@@ -26,8 +26,6 @@ class StatsViewSet(viewsets.ModelViewSet):
     serializer_class = StatsSerializer
 
 def calculate_current_metrics():
-    total_users = User.objects.count()
-    """Calculates only the current status of the DB (Fast)"""
     total_users = UsuarioComun.objects.count()
     
     specialties_data = list(UsuarioComun.objects.values('especialidad').annotate(
@@ -126,11 +124,11 @@ def calculate_historic(years: int):
         target_year = current_year - i
         end_of_year = datetime.date(target_year, 12, 31)
 
-        total_at_year_end = User.objects.filter(
+        total_at_year_end = UsuarioComun.objects.filter(
             fecha_inscripcion__lte=end_of_year
         ).count()
 
-        new_users_in_year = User.objects.filter(
+        new_users_in_year = UsuarioComun.objects.filter(
             fecha_inscripcion__year=target_year
         ).count()
 
