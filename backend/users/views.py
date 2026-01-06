@@ -7,7 +7,7 @@ from utils.s3 import s3_client
 import os
 
 from .models import UsuarioComun
-from .serializers import UsuarioComunSerializer
+from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer
 from .permissions import IsAdminPrin, IsAdminSec, IsUser
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -23,6 +23,11 @@ class UserViewSet(viewsets.ModelViewSet):
             else:
                 return [IsUser()]
         return [IsAuthenticated()]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return UsuarioComunListSerializer
+        return UsuarioComunSerializer
 
     def get_queryset(self):
         user = self.request.user

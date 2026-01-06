@@ -96,3 +96,8 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
         if 'rni' in validated_data:
             validated_data['rni'] = make_password(validated_data['rni'])
         return super().update(instance, validated_data)
+
+class UsuarioComunListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UsuarioComun
+        fields = ['nombre','rnic','rni','fecha_inscripcion','celular','especialidad','departamento','registro_empleado','estado'] 

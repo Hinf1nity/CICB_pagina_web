@@ -5,3 +5,22 @@ class YearbookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Yearbook
         fields = '__all__'
+
+class YearbookListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Yearbook
+        exclude = [
+            'estado',
+        ]
+
+class YearbookAdminListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Yearbook
+        exclude = [
+            'pdf',
+        ]
+
+class YearbookAdminGeneralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Yearbook
+        fields = '__all__'
