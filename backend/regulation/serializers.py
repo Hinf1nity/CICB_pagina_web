@@ -12,3 +12,15 @@ class RegulationListSerializer(serializers.ModelSerializer):
         exclude = [
             'estado',
         ]
+
+class RegulationAdminListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Regulation
+        exclude = [
+            'pdf',
+        ] 
+
+class RegulationAdminGeneralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Regulation
+        fields = '__all__'

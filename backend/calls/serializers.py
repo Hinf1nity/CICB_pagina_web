@@ -12,3 +12,15 @@ class CallListSerializer(serializers.ModelSerializer):
         exclude = [
             'estado',
         ]
+
+class CallAdminListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Call
+        exclude = [
+            'pdf',
+        ]
+
+class CallAdminGeneralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Call
+        fields = '__all__'
