@@ -38,7 +38,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if getattr(user, "rol", None) == "admin_ciudad":
             return qs.filter(departamento=user.ciudad)
         return qs.filter(id=user.id)
-        #return qs.none()
 
     @action(
         detail=True,
@@ -86,3 +85,14 @@ class UserViewSet(viewsets.ModelViewSet):
             user.save()
 
         return super().destroy(request, *args, **kwargs)
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+
+        if getattr(user, "rol", None) != "admin_ciudad" and not user.is_superuser:
+            if instance != user:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("No puedes modificar otro usuario")
+
+        return super().partial_update(request, *args, **kwargs)

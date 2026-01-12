@@ -75,7 +75,6 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         data = {"access": str(access_token)}
         return data
 
-
 class UsuarioComunSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
@@ -85,7 +84,10 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
             'registro_empleado', 'estado', 'certificaciones',
             'mail', 'rol'
         ]
-        # extra_kwargs = {'rni': {'write_only': True}}
+        read_only_fields = [
+            'id', 'rnic', 'rni', 'fecha_inscripcion',
+            'departamento', 'registro_empleado', 'estado', 'rol'
+        ]
 
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['rni'])
