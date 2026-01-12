@@ -10,7 +10,16 @@ class IsAdminSec(permissions.BasePermission):
 
 class IsUser(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and not request.user.is_superuser and getattr(request.user, "rol", None) != "admin_ciudad"
+        if not request.user.is_authenticated:
+            return False
+
+        is_user = (
+            not request.user.is_superuser and getattr(request.user, "rol", None) != "admin_ciudad")
+
+        if not is_user:
+            return False
+
+        return request.method not in ["POST", "DELETE"]
 
 class IsPublic(permissions.BasePermission):
     def has_permission(self, request, view):
