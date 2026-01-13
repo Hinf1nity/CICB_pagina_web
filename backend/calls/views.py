@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
+from users.permissions import IsAdminPrin
 
 from .models import Call
 from .serializers import (
@@ -65,7 +66,7 @@ class CallViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CallAdminViewSet(viewsets.ModelViewSet):
     queryset = Call.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminPrin]
 
     def get_serializer_class(self):
         if self.action == 'list':

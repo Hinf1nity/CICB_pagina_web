@@ -13,7 +13,7 @@ from .serializers import (
     JobAdminDetailSerializer,
     JobAdminListSerializer
 )
-
+from users.permissions import IsAdminPrin
 
 class JobViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Job.objects.all()
@@ -70,7 +70,7 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
 
 class JobAdminViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminPrin]
 
     def get_serializer_class(self):
         if self.action == 'list':

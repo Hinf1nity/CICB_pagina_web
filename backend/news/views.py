@@ -17,7 +17,7 @@ from .serializers import (
 )
 from users.permissions import IsUser
 import os
-
+from users.permissions import IsAdminPrin
 
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = News.objects.all()
@@ -115,7 +115,7 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
 
 class NewsAdminViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminPrin]
 
     def get_serializer_class(self):
         if self.action == 'list':
