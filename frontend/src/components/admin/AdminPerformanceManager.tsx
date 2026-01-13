@@ -12,6 +12,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { type PerformanceData, performanceSchema } from '../../validations/performanceSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
+import {  usePerformance, usePerformancePost,  usePerformancePatch,  usePerformanceDelete } from '../../hooks/usePerformance';
+
 interface Resource {
   id: string;
   nombre: string;
@@ -35,6 +37,10 @@ export function AdminPerformanceManager() {
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<Action | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
+  const { actions, refetch } = usePerformance();
+  const { postPerformance } = usePerformancePost();
+  const { patchPerformance } = usePerformancePatch();
+  const { deletePerformance } = usePerformanceDelete();
   const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<PerformanceData>({
     resolver: zodResolver(performanceSchema),
     defaultValues: {
@@ -46,157 +52,157 @@ export function AdminPerformanceManager() {
     },
   });
 
-  const [actions, setActions] = useState<Action[]>([
-    {
-      id: '1',
-      codigo: 'ALB-001',
-      descripcion: 'Muro de ladrillo gambote e=18cm (incl. mortero)',
-      unidad: 'm²',
-      categoria: 'Albañilería',
-      recursos: [
-        { id: '1-1', nombre: 'Ladrillo gambote', unidad: 'pza', cantidad: '37' },
-        { id: '1-2', nombre: 'Cemento', unidad: 'kg', cantidad: '12.5' },
-        { id: '1-3', nombre: 'Arena', unidad: 'm³', cantidad: '0.04' },
-        { id: '1-4', nombre: 'Agua', unidad: 'lt', cantidad: '15' },
-        { id: '1-5', nombre: 'Albañil', unidad: 'hr', cantidad: '1.2' },
-        { id: '1-6', nombre: 'Ayudante', unidad: 'hr', cantidad: '1.2' },
-      ],
-    },
-    {
-      id: '2',
-      codigo: 'HOA-002',
-      descripcion: 'Hormigón armado f\'c=210 kg/cm² (incl. encofrado)',
-      unidad: 'm³',
-      categoria: 'Hormigón Armado',
-      recursos: [
-        { id: '2-1', nombre: 'Cemento Portland', unidad: 'kg', cantidad: '350' },
-        { id: '2-2', nombre: 'Arena', unidad: 'm³', cantidad: '0.52' },
-        { id: '2-3', nombre: 'Grava', unidad: 'm³', cantidad: '0.76' },
-        { id: '2-4', nombre: 'Agua', unidad: 'lt', cantidad: '185' },
-        { id: '2-5', nombre: 'Fierro corrugado', unidad: 'kg', cantidad: '120' },
-        { id: '2-6', nombre: 'Alambre de amarre', unidad: 'kg', cantidad: '2.5' },
-        { id: '2-7', nombre: 'Madera de encofrado', unidad: 'p²', cantidad: '8' },
-        { id: '2-8', nombre: 'Clavos', unidad: 'kg', cantidad: '0.3' },
-        { id: '2-9', nombre: 'Albañil especializado', unidad: 'hr', cantidad: '8' },
-        { id: '2-10', nombre: 'Ayudante', unidad: 'hr', cantidad: '16' },
-      ],
-    },
-    {
-      id: '3',
-      codigo: 'REV-003',
-      descripcion: 'Revoque interior con yeso',
-      unidad: 'm²',
-      categoria: 'Revestimientos',
-      recursos: [
-        { id: '3-1', nombre: 'Yeso', unidad: 'kg', cantidad: '8' },
-        { id: '3-2', nombre: 'Agua', unidad: 'lt', cantidad: '6' },
-        { id: '3-3', nombre: 'Yesero', unidad: 'hr', cantidad: '0.4' },
-        { id: '3-4', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.2' },
-      ],
-    },
-    {
-      id: '4',
-      codigo: 'CUB-004',
-      descripcion: 'Cubierta de calamina galvanizada #28',
-      unidad: 'm²',
-      categoria: 'Cubiertas',
-      recursos: [
-        { id: '4-1', nombre: 'Calamina galvanizada #28', unidad: 'm²', cantidad: '1.1' },
-        { id: '4-2', nombre: 'Cumbrera galvanizada', unidad: 'm', cantidad: '0.15' },
-        { id: '4-3', nombre: 'Clavos para calamina', unidad: 'pza', cantidad: '18' },
-        { id: '4-4', nombre: 'Tijerales de madera', unidad: 'pza', cantidad: '0.5' },
-        { id: '4-5', nombre: 'Techador', unidad: 'hr', cantidad: '0.6' },
-        { id: '4-6', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.6' },
-      ],
-    },
-    {
-      id: '5',
-      codigo: 'PIN-005',
-      descripcion: 'Pintura látex interior (2 manos)',
-      unidad: 'm²',
-      categoria: 'Pintura',
-      recursos: [
-        { id: '5-1', nombre: 'Pintura látex', unidad: 'lt', cantidad: '0.25' },
-        { id: '5-2', nombre: 'Sellador', unidad: 'lt', cantidad: '0.15' },
-        { id: '5-3', nombre: 'Lija', unidad: 'plg', cantidad: '0.1' },
-        { id: '5-4', nombre: 'Pintor', unidad: 'hr', cantidad: '0.35' },
-      ],
-    },
-    {
-      id: '6',
-      codigo: 'EXC-006',
-      descripcion: 'Excavación manual en terreno semi-duro',
-      unidad: 'm³',
-      categoria: 'Movimiento de Tierras',
-      recursos: [
-        { id: '6-1', nombre: 'Pala', unidad: 'hr', cantidad: '0.1' },
-        { id: '6-2', nombre: 'Picota', unidad: 'hr', cantidad: '0.1' },
-        { id: '6-3', nombre: 'Peón', unidad: 'hr', cantidad: '4.5' },
-      ],
-    },
-    {
-      id: '7',
-      codigo: 'CER-007',
-      descripcion: 'Cerámica para piso 40x40 cm',
-      unidad: 'm²',
-      categoria: 'Pisos',
-      recursos: [
-        { id: '7-1', nombre: 'Cerámica 40x40', unidad: 'm²', cantidad: '1.05' },
-        { id: '7-2', nombre: 'Cemento cola', unidad: 'kg', cantidad: '5' },
-        { id: '7-3', nombre: 'Fragua', unidad: 'kg', cantidad: '0.5' },
-        { id: '7-4', nombre: 'Ceramista', unidad: 'hr', cantidad: '0.8' },
-        { id: '7-5', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.4' },
-      ],
-    },
-    {
-      id: '8',
-      codigo: 'CAN-008',
-      descripcion: 'Cañería PVC agua potable Ø 1/2"',
-      unidad: 'm',
-      categoria: 'Instalaciones Sanitarias',
-      recursos: [
-        { id: '8-1', nombre: 'Tubo PVC 1/2"', unidad: 'm', cantidad: '1.05' },
-        { id: '8-2', nombre: 'Codos PVC 1/2"', unidad: 'pza', cantidad: '0.3' },
-        { id: '8-3', nombre: 'Tees PVC 1/2"', unidad: 'pza', cantidad: '0.2' },
-        { id: '8-4', nombre: 'Pegamento PVC', unidad: 'lt', cantidad: '0.05' },
-        { id: '8-5', nombre: 'Cinta teflón', unidad: 'rollo', cantidad: '0.1' },
-        { id: '8-6', nombre: 'Plomero', unidad: 'hr', cantidad: '0.4' },
-        { id: '8-7', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.2' },
-      ],
-    },
-    {
-      id: '9',
-      codigo: 'CAR-009',
-      descripcion: 'Carpintería de madera - puerta tablero',
-      unidad: 'm²',
-      categoria: 'Carpintería',
-      recursos: [
-        { id: '9-1', nombre: 'Madera mara', unidad: 'p²', cantidad: '5.5' },
-        { id: '9-2', nombre: 'Triplay 4mm', unidad: 'plg', cantidad: '1.1' },
-        { id: '9-3', nombre: 'Cola carpintero', unidad: 'kg', cantidad: '0.3' },
-        { id: '9-4', nombre: 'Clavos', unidad: 'kg', cantidad: '0.2' },
-        { id: '9-5', nombre: 'Laca', unidad: 'lt', cantidad: '0.4' },
-        { id: '9-6', nombre: 'Carpintero', unidad: 'hr', cantidad: '3' },
-      ],
-    },
-    {
-      id: '10',
-      codigo: 'ILE-010',
-      descripcion: 'Instalación eléctrica - punto de luz',
-      unidad: 'pto',
-      categoria: 'Instalaciones Eléctricas',
-      recursos: [
-        { id: '10-1', nombre: 'Cable THW #14', unidad: 'm', cantidad: '8' },
-        { id: '10-2', nombre: 'Tubo PVC eléctrico 3/4"', unidad: 'm', cantidad: '3' },
-        { id: '10-3', nombre: 'Caja octogonal', unidad: 'pza', cantidad: '1' },
-        { id: '10-4', nombre: 'Interruptor simple', unidad: 'pza', cantidad: '1' },
-        { id: '10-5', nombre: 'Cinta aislante', unidad: 'rollo', cantidad: '0.1' },
-        { id: '10-6', nombre: 'Electricista', unidad: 'hr', cantidad: '1.5' },
-      ],
-    },
-  ]);
+  // const [actions, setActions] = useState<Action[]>([
+  //   {
+  //     id: '1',
+  //     codigo: 'ALB-001',
+  //     descripcion: 'Muro de ladrillo gambote e=18cm (incl. mortero)',
+  //     unidad: 'm²',
+  //     categoria: 'Albañilería',
+  //     recursos: [
+  //       { id: '1-1', nombre: 'Ladrillo gambote', unidad: 'pza', cantidad: '37' },
+  //       { id: '1-2', nombre: 'Cemento', unidad: 'kg', cantidad: '12.5' },
+  //       { id: '1-3', nombre: 'Arena', unidad: 'm³', cantidad: '0.04' },
+  //       { id: '1-4', nombre: 'Agua', unidad: 'lt', cantidad: '15' },
+  //       { id: '1-5', nombre: 'Albañil', unidad: 'hr', cantidad: '1.2' },
+  //       { id: '1-6', nombre: 'Ayudante', unidad: 'hr', cantidad: '1.2' },
+  //     ],
+  //   },
+  //   {
+  //     id: '2',
+  //     codigo: 'HOA-002',
+  //     descripcion: 'Hormigón armado f\'c=210 kg/cm² (incl. encofrado)',
+  //     unidad: 'm³',
+  //     categoria: 'Hormigón Armado',
+  //     recursos: [
+  //       { id: '2-1', nombre: 'Cemento Portland', unidad: 'kg', cantidad: '350' },
+  //       { id: '2-2', nombre: 'Arena', unidad: 'm³', cantidad: '0.52' },
+  //       { id: '2-3', nombre: 'Grava', unidad: 'm³', cantidad: '0.76' },
+  //       { id: '2-4', nombre: 'Agua', unidad: 'lt', cantidad: '185' },
+  //       { id: '2-5', nombre: 'Fierro corrugado', unidad: 'kg', cantidad: '120' },
+  //       { id: '2-6', nombre: 'Alambre de amarre', unidad: 'kg', cantidad: '2.5' },
+  //       { id: '2-7', nombre: 'Madera de encofrado', unidad: 'p²', cantidad: '8' },
+  //       { id: '2-8', nombre: 'Clavos', unidad: 'kg', cantidad: '0.3' },
+  //       { id: '2-9', nombre: 'Albañil especializado', unidad: 'hr', cantidad: '8' },
+  //       { id: '2-10', nombre: 'Ayudante', unidad: 'hr', cantidad: '16' },
+  //     ],
+  //   },
+  //   {
+  //     id: '3',
+  //     codigo: 'REV-003',
+  //     descripcion: 'Revoque interior con yeso',
+  //     unidad: 'm²',
+  //     categoria: 'Revestimientos',
+  //     recursos: [
+  //       { id: '3-1', nombre: 'Yeso', unidad: 'kg', cantidad: '8' },
+  //       { id: '3-2', nombre: 'Agua', unidad: 'lt', cantidad: '6' },
+  //       { id: '3-3', nombre: 'Yesero', unidad: 'hr', cantidad: '0.4' },
+  //       { id: '3-4', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.2' },
+  //     ],
+  //   },
+  //   {
+  //     id: '4',
+  //     codigo: 'CUB-004',
+  //     descripcion: 'Cubierta de calamina galvanizada #28',
+  //     unidad: 'm²',
+  //     categoria: 'Cubiertas',
+  //     recursos: [
+  //       { id: '4-1', nombre: 'Calamina galvanizada #28', unidad: 'm²', cantidad: '1.1' },
+  //       { id: '4-2', nombre: 'Cumbrera galvanizada', unidad: 'm', cantidad: '0.15' },
+  //       { id: '4-3', nombre: 'Clavos para calamina', unidad: 'pza', cantidad: '18' },
+  //       { id: '4-4', nombre: 'Tijerales de madera', unidad: 'pza', cantidad: '0.5' },
+  //       { id: '4-5', nombre: 'Techador', unidad: 'hr', cantidad: '0.6' },
+  //       { id: '4-6', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.6' },
+  //     ],
+  //   },
+  //   {
+  //     id: '5',
+  //     codigo: 'PIN-005',
+  //     descripcion: 'Pintura látex interior (2 manos)',
+  //     unidad: 'm²',
+  //     categoria: 'Pintura',
+  //     recursos: [
+  //       { id: '5-1', nombre: 'Pintura látex', unidad: 'lt', cantidad: '0.25' },
+  //       { id: '5-2', nombre: 'Sellador', unidad: 'lt', cantidad: '0.15' },
+  //       { id: '5-3', nombre: 'Lija', unidad: 'plg', cantidad: '0.1' },
+  //       { id: '5-4', nombre: 'Pintor', unidad: 'hr', cantidad: '0.35' },
+  //     ],
+  //   },
+  //   {
+  //     id: '6',
+  //     codigo: 'EXC-006',
+  //     descripcion: 'Excavación manual en terreno semi-duro',
+  //     unidad: 'm³',
+  //     categoria: 'Movimiento de Tierras',
+  //     recursos: [
+  //       { id: '6-1', nombre: 'Pala', unidad: 'hr', cantidad: '0.1' },
+  //       { id: '6-2', nombre: 'Picota', unidad: 'hr', cantidad: '0.1' },
+  //       { id: '6-3', nombre: 'Peón', unidad: 'hr', cantidad: '4.5' },
+  //     ],
+  //   },
+  //   {
+  //     id: '7',
+  //     codigo: 'CER-007',
+  //     descripcion: 'Cerámica para piso 40x40 cm',
+  //     unidad: 'm²',
+  //     categoria: 'Pisos',
+  //     recursos: [
+  //       { id: '7-1', nombre: 'Cerámica 40x40', unidad: 'm²', cantidad: '1.05' },
+  //       { id: '7-2', nombre: 'Cemento cola', unidad: 'kg', cantidad: '5' },
+  //       { id: '7-3', nombre: 'Fragua', unidad: 'kg', cantidad: '0.5' },
+  //       { id: '7-4', nombre: 'Ceramista', unidad: 'hr', cantidad: '0.8' },
+  //       { id: '7-5', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.4' },
+  //     ],
+  //   },
+  //   {
+  //     id: '8',
+  //     codigo: 'CAN-008',
+  //     descripcion: 'Cañería PVC agua potable Ø 1/2"',
+  //     unidad: 'm',
+  //     categoria: 'Instalaciones Sanitarias',
+  //     recursos: [
+  //       { id: '8-1', nombre: 'Tubo PVC 1/2"', unidad: 'm', cantidad: '1.05' },
+  //       { id: '8-2', nombre: 'Codos PVC 1/2"', unidad: 'pza', cantidad: '0.3' },
+  //       { id: '8-3', nombre: 'Tees PVC 1/2"', unidad: 'pza', cantidad: '0.2' },
+  //       { id: '8-4', nombre: 'Pegamento PVC', unidad: 'lt', cantidad: '0.05' },
+  //       { id: '8-5', nombre: 'Cinta teflón', unidad: 'rollo', cantidad: '0.1' },
+  //       { id: '8-6', nombre: 'Plomero', unidad: 'hr', cantidad: '0.4' },
+  //       { id: '8-7', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.2' },
+  //     ],
+  //   },
+  //   {
+  //     id: '9',
+  //     codigo: 'CAR-009',
+  //     descripcion: 'Carpintería de madera - puerta tablero',
+  //     unidad: 'm²',
+  //     categoria: 'Carpintería',
+  //     recursos: [
+  //       { id: '9-1', nombre: 'Madera mara', unidad: 'p²', cantidad: '5.5' },
+  //       { id: '9-2', nombre: 'Triplay 4mm', unidad: 'plg', cantidad: '1.1' },
+  //       { id: '9-3', nombre: 'Cola carpintero', unidad: 'kg', cantidad: '0.3' },
+  //       { id: '9-4', nombre: 'Clavos', unidad: 'kg', cantidad: '0.2' },
+  //       { id: '9-5', nombre: 'Laca', unidad: 'lt', cantidad: '0.4' },
+  //       { id: '9-6', nombre: 'Carpintero', unidad: 'hr', cantidad: '3' },
+  //     ],
+  //   },
+  //   {
+  //     id: '10',
+  //     codigo: 'ILE-010',
+  //     descripcion: 'Instalación eléctrica - punto de luz',
+  //     unidad: 'pto',
+  //     categoria: 'Instalaciones Eléctricas',
+  //     recursos: [
+  //       { id: '10-1', nombre: 'Cable THW #14', unidad: 'm', cantidad: '8' },
+  //       { id: '10-2', nombre: 'Tubo PVC eléctrico 3/4"', unidad: 'm', cantidad: '3' },
+  //       { id: '10-3', nombre: 'Caja octogonal', unidad: 'pza', cantidad: '1' },
+  //       { id: '10-4', nombre: 'Interruptor simple', unidad: 'pza', cantidad: '1' },
+  //       { id: '10-5', nombre: 'Cinta aislante', unidad: 'rollo', cantidad: '0.1' },
+  //       { id: '10-6', nombre: 'Electricista', unidad: 'hr', cantidad: '1.5' },
+  //     ],
+  //   },
+  // ]);
 
-  const filteredActions = actions.filter(action => {
+  const filteredActions = (actions || []).filter(action => {
     const matchesSearch = 
       action.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
       action.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -228,28 +234,48 @@ export function AdminPerformanceManager() {
     });
   };
 
-  const handleEdit = (action: any) => {
-    console.log('Editando actividad: ', action);
+  const handleEdit = (action: Action) => {
     reset({
-      ...action,
+      codigo: action.codigo,
+      descripcion: action.descripcion,
+      unidad: action.unidad,
+      categoria: action.categoria,
+      recursos: action.recursos,
     });
     setEditingAction(action);
     setResources([...action.recursos]);
     setIsActionDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('¿Estás seguro de eliminar esta actividad?')) {
-      setActions(actions.filter(a => a.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar esta actividad?')) return;
+
+    try {
+      await deletePerformance(id);
+      refetch();
+    } catch (error) {
+      alert('Error al eliminar la actividad');
+      console.error(error);
     }
   };
 
-  const handleSave = (data: PerformanceData) => {
-    console.log('Guardando actividad');
-    setIsActionDialogOpen(false);
-    console.log('Datos guardados: ', data);
-    reset();
-    // Lógica para guardar
+  const handleSave = async (data: PerformanceData) => {
+    try {
+      if (editingAction && editingAction.id) {
+        await patchPerformance(editingAction.id, data);
+      } else {
+        await postPerformance(data);
+      }
+      
+      setIsActionDialogOpen(false);
+      reset();
+      setEditingAction(null);
+      setResources([]);
+      refetch();
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      alert("Error al procesar la solicitud");
+    }
   };
 
   const handleAddResource = () => {
@@ -268,7 +294,7 @@ export function AdminPerformanceManager() {
     setValue("recursos", resources.filter(r => r.id !== id), { shouldValidate: true });
   };
 
-  const categories = Array.from(new Set(actions.map(a => a.categoria)));
+  const categories = Array.from(new Set((actions || []).map(a => a.categoria)));
 
   return (
     <div className="space-y-6">

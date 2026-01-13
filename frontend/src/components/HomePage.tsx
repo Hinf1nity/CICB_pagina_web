@@ -55,15 +55,15 @@ export function HomePage() {
   ];
 
   const departmentalColleges: DepartmentalCollege[] = [
-    { id: 1, name: 'CIC La Paz', department: 'La Paz', abbreviation: 'LP', image: '/cicImages/cicLaPaz.png', url: '' },
-    { id: 2, name: 'CIC Cochabamba', department: 'Cochabamba', abbreviation: 'CB' },
-    { id: 3, name: 'CIC Santa Cruz', department: 'Santa Cruz', abbreviation: 'SC' },
-    { id: 4, name: 'CIC Oruro', department: 'Oruro', abbreviation: 'OR' },
-    { id: 5, name: 'CIC Potosí', department: 'Potosí', abbreviation: 'PT' },
-    { id: 6, name: 'CIC Chuquisaca', department: 'Chuquisaca', abbreviation: 'CH', image: '/cicImages/cicChuquisaca.png', url: '' },
-    { id: 7, name: 'CIC Tarija', department: 'Tarija', abbreviation: 'TJ' },
-    { id: 8, name: 'CIC Beni', department: 'Beni', abbreviation: 'BE', image: '/cicImages/cicBeni.png', url: '' },
-    { id: 9, name: 'CIC Pando', department: 'Pando', abbreviation: 'PA' },
+    { id: 1, name: 'CIC La Paz', department: 'La Paz', abbreviation: 'LP', image: '/cicImages/cicLaPaz.png', url: 'https://www.ciclp.org.bo/' },
+    { id: 2, name: 'CIC Cochabamba', department: 'Cochabamba', abbreviation: 'CB', image: '/cicImages/cicCochabamba.png', url: 'https://www.facebook.com/p/Colegio-de-Ingenieros-Civiles-de-Bolivia-dptal-Cochabamba-100057636151839/' },
+    { id: 3, name: 'CIC Santa Cruz', department: 'Santa Cruz', abbreviation: 'SC', image: '/cicImages/cicSantaCruz.png', url: 'https://www.facebook.com/colingeciviles/?locale=es_LA' },
+    { id: 4, name: 'CIC Oruro', department: 'Oruro', abbreviation: 'OR', image: '/cicImages/cicOruro.png', url: 'https://www.facebook.com/CICO.Oruro/' },
+    { id: 5, name: 'CIC Potosí', department: 'Potosí', abbreviation: 'PT', image: '/cicImages/cicPotosi.png', url: 'https://www.facebook.com/p/Colegio-de-Ingenieros-Civiles-de-Potos%C3%AD-100064657692157/?locale=es_LA' },
+    { id: 6, name: 'CIC Chuquisaca', department: 'Chuquisaca', abbreviation: 'CH', image: '/cicImages/cicChuquisaca.png', url: 'https://www.cicchuquisaca.org/' },
+    { id: 7, name: 'CIC Tarija', department: 'Tarija', abbreviation: 'TJ', image: '/cicImages/cicTarija.png', url: 'https://cic-tarija.blogspot.com/' },
+    { id: 8, name: 'CIC Beni', department: 'Beni', abbreviation: 'BE', image: '/cicImages/cicBeni.png', url: 'https://www.facebook.com/people/Colegio-de-Ingenieros-Civiles-del-Beni/100076558631461/?locale=ms_MY' },
+    { id: 9, name: 'CIC Pando', department: 'Pando', abbreviation: 'PA', image: '/cicImages/cicPando.png', url: '' },
   ];
 
   const nextSlide = () => {
@@ -357,20 +357,18 @@ export function HomePage() {
                         <CardContent className="p-6 text-center">
                           <div
                             onClick={() => college.url && window.open(college.url, '_blank')}
-                            className={`relative w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 
-                              ${college.url ? 'cursor-pointer' : ''} bg-primary`}
+                            className={`relative w-35 h-35 overflow-hidden mx-auto mb-4
+                              ${college.url ? 'cursor-pointer' : ''}`}
                           >
                             {college.image ? (
                               <ImageWithFallback
                                 src={college.image}
                                 alt={college.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain object-center"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-primary-foreground text-2xl">
-                                  {college.abbreviation}
-                                </span>
+                                <span className="text-2xl text-foreground">{college.abbreviation}</span>
                               </div>
                             )}
                           </div>
