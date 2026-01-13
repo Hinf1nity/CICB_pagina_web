@@ -16,37 +16,10 @@ class QuantifiedResourceDetailSerializer(serializers.ModelSerializer):
         model = QuantifiedResource
         fields = ['resource_id', 'nombre', 'unidad_recurso', 'cantidad']
 
-class PerformanceTableSerializer(serializers.ModelSerializer):
-    recursos_info = QuantifiedResourceInputSerializer(many=True, write_only=True)
-
-    class Meta:
-        model = PerformanceTable
-        fields = ['id', 'codigo', 'actividad', 'unidad', 'recursos_info']
-
-    def create(self, validated_data):
-        recursos_data = validated_data.pop('recursos_info')
-
-        performance_table = PerformanceTable.objects.create(**validated_data)
-
-        for item in recursos_data:
-            resource_obj = ResourceChart.objects.get(id=item['resource_id'])
-            
-            QuantifiedResource.objects.create(
-                performance_table=performance_table,
-                resource=resource_obj,
-                cantidad=item['cantidad']
-            )
-
-        return performance_table
     
-
-# 3. Main Serializer
 class PerformanceTableSerializer(serializers.ModelSerializer):
-    # WRITE ONLY: Used for POST requests (Input)
     recursos_info = QuantifiedResourceInputSerializer(many=True, write_only=True)
 
-    # READ ONLY: Used for GET requests (Output)
-    # source='quantifiedresource_set' grabs the related rows from the intermediate table
     recursos_detalles = QuantifiedResourceDetailSerializer(
         source='quantifiedresource_set', 
         many=True, 
@@ -60,8 +33,8 @@ class PerformanceTableSerializer(serializers.ModelSerializer):
             'codigo', 
             'actividad', 
             'unidad', 
-            'recursos_info',     # Used for input
-            'recursos_detalles'  # Used for output
+            'recursos_info',
+            'recursos_detalles'
         ]
 
     def create(self, validated_data):
