@@ -1,5 +1,5 @@
-from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets, status, mixins
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.conf import settings
@@ -96,3 +96,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 raise PermissionDenied("No puedes modificar otro usuario")
 
         return super().partial_update(request, *args, **kwargs)
+    
+class UserDetails(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = UsuarioComun.objects.all()
+    serializer_class = UsuarioComunSerializer
+    permission_classes = [AllowAny]
