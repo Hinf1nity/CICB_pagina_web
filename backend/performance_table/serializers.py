@@ -50,3 +50,7 @@ class PerformanceTableSerializer(serializers.ModelSerializer):
             )
 
         return performance_table
+
+class BulkResourceInputSerializer(serializers.Serializer):
+    nombre = serializers.CharField(max_length=255)
+    unidad = serializers.CharField(max_length=100)
