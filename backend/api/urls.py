@@ -10,6 +10,6 @@ urlpatterns = [
     path('pdfs/', include('PDFs.urls')),
     path('imgs/', include('IMGs.urls')),
     path('stats/', include('stats.urls')),
-    path('resource_chart/', include('resource_chart.urls')),
-    path('api/performance/', include('performance_table.urls')),
+    path('resources/', include('resource_chart.urls')),
+    path('performance/', include('performance_table.urls')),
 ]
