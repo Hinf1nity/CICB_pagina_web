@@ -90,9 +90,15 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        validated_data['password'] = make_password(validated_data['rni'])
+        rni = self.initial_data.get('rni')
+        if rni:
+            validated_data['password'] = make_password(rni)
+        else:
+            raise serializers.ValidationError({"rni": "Este campo es requerido para crear la contraseña."})
+
         print("Creating user with data:", validated_data)
         return super().create(validated_data)
+
 
     def update(self, instance, validated_data):
         if 'rni' in validated_data:
