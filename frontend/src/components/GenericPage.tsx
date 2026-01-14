@@ -11,6 +11,7 @@ interface GenericPageProps {
 
 export function GenericPage({ title, description, type }: GenericPageProps) {
   const { items, loading } = useItems(type);
+  console.log(`Loaded ${type}:`, items);
 
   const getIcon = () => {
     switch (type) {
@@ -46,24 +47,26 @@ export function GenericPage({ title, description, type }: GenericPageProps) {
           <p>Cargando información...</p>
         ) : (
           items.map((item: GenericData) => (
-            <Card key={item.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
-                  <Icon className="w-6 h-6 text-primary" />
-                </div>
-                <CardTitle>{item.nombre}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>{item.descripcion}</CardDescription>
-                <a href={item.pdf_url} target="_blank" rel="noreferrer" className="text-blue-500 underline mt-2 block">
-                  Ver PDF
-                </a>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  Fecha de Publicación: {new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}
-                </span>
-              </CardContent>
-            </Card>
+            <a key={item.id} href={item.pdf_url} target="_blank" rel="noreferrer" className="no-underline">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle>{item.nombre}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>{item.descripcion}</CardDescription>
+                  <span className="text-blue-500 underline mt-2 block">
+                    Ver PDF
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    Fecha de Publicación: {new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}
+                  </span>
+                </CardContent>
+              </Card>
+            </a>
           ))
         )}
       </div>

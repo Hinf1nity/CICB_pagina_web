@@ -1,19 +1,25 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from .models import Img
 from .serializers import IMGSerializer
 from utils.s3 import s3_client
 import uuid
+from users.permissions import IsAdminPrin, IsAdminSec, IsUser
 
 
 class IMGViewSet(viewsets.GenericViewSet):
     queryset = Img.objects.all()
     serializer_class = IMGSerializer
 
-    @action(detail=False, methods=["post"], url_path="img-presigned-url", permission_classes=[IsAdminUser])
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="img-presigned-url",
+        permission_classes=[IsAuthenticated],
+    )
     def generate_image_presigned_url(self, request):
         file_name = request.data.get("file_name")
         content_type = request.data.get("content_type")
@@ -67,7 +73,12 @@ class IMGViewSet(viewsets.GenericViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @action(detail=True, methods=["patch"], url_path="img-presigned-update", permission_classes=[IsAdminUser])
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="img-presigned-update",
+        permission_classes=[IsAuthenticated],
+    )
     def update_img_presigned(self, request, pk=None):
         file = self.get_object()
 

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../api/kyClient";
-import { s } from "motion/react-client";
 
 interface Specialty {
-  especialidad: string;
+  specialty: string;
   count: number;
   percentage?: number;
 }
@@ -24,8 +23,7 @@ interface Employment {
 interface Evolution {
   year: string;
   total: number;
-  employed: number;
-  unemployed: number;
+  new: number;
 }
 
 export function useStatsData() {
@@ -54,9 +52,9 @@ export function useStatsData() {
 
       const departmentsAdapted = stats.state_breakdown.map((d: any) => ({
         department: d.departamento,
-        engineers: d.count,
-        active: Math.round(d.count * 0.8),
-        inactive: Math.round(d.count * 0.2),
+        engineers: d.total_count,
+        active: d.active_count,
+        inactive: d.inactive_count,
       }));
 
       const employmentAdapted: Employment[] = [{
@@ -70,17 +68,19 @@ export function useStatsData() {
         percentage: 100 - stats.employment_rate,
       }];
 
-      // const evolutionAdapted = stats.evolution.map((e: any) => ({
-      //   year: e.year,
-      //   total: e.total_users,
-      //   employed: e.employment_rate,
-      //   unemployed: 100 - e.employment_rate,
-      // }));
+      const history = await api.get("stats/history/").json<any>();
+      console.log("Datos de historia de empleo recibidos:", history);
+
+      const evolutionAdapted = history.map((e: any) => ({
+        year: e.year,
+        total: e.total_users_cumulative,
+        new: e.new_users_count,
+      }));
 
       setSpecialties(specialtiesAdapted);
       setDepartments(departmentsAdapted);
       setEmployment(employmentAdapted);
-      // setEvolution(evolutionAdapted);
+      setEvolution(evolutionAdapted);
 
     } catch (err: any) {
       console.error(err);

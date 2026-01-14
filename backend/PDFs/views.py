@@ -7,13 +7,14 @@ from .models import PDF
 from .serializers import PDFSerializer
 from utils.s3 import s3_client
 import uuid
+from users.permissions import IsAdminPrin
 
 
 class PDFViewSet(viewsets.GenericViewSet):
     queryset = PDF.objects.all()
     serializer_class = PDFSerializer
 
-    @action(detail=False, methods=["post"], url_path="pdf-presigned-url", permission_classes=[IsAdminUser])
+    @action(detail=False, methods=["post"], url_path="pdf-presigned-url", permission_classes=[IsAdminPrin])
     def generate_pdf_presigned_url(self, request):
         file_name = request.data.get("file_name")
         content_type = request.data.get("content_type")
@@ -65,7 +66,7 @@ class PDFViewSet(viewsets.GenericViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @action(detail=True, methods=["patch"], url_path="pdf-presigned-update", permission_classes=[IsAdminUser])
+    @action(detail=True, methods=["patch"], url_path="pdf-presigned-update", permission_classes=[IsAdminPrin])
     def update_pdf_presigned(self, request, pk=None):
         file = self.get_object()
 

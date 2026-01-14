@@ -441,42 +441,44 @@ export function HomePage() {
       </section>
 
       {/* Latest News Section */}
-      <section className="py-16 bg-muted">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-foreground">Últimas Noticias</h2>
-            <Button
-              onClick={() => navigate('/noticias')}
-              variant="outline"
-            >
-              Ver Todas
-            </Button>
-          </div>
+      {latestThreeNoticias.length > 0 && (
+        <section className="py-16 bg-muted">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-foreground">Últimas Noticias</h2>
+              <Button
+                onClick={() => navigate('/noticias')}
+                variant="outline"
+              >
+                Ver Todas
+              </Button>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {latestThreeNoticias.map((item) => (
-              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-48 bg-primary/10">
-                  <ImageWithFallback
-                    src={item.imagen_url || 'https://via.placeholder.com/400x300?text=No+Image'}
-                    alt={item.titulo}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardHeader>
-                  <CardTitle>{item.titulo}</CardTitle>
-                  <CardDescription>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    {item.resumen}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {latestThreeNoticias.map((item) => (
+                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="h-48 bg-primary/10">
+                    <ImageWithFallback
+                      src={item.imagen_url || 'https://via.placeholder.com/400x300?text=No+Image'}
+                      alt={item.titulo}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <CardHeader>
+                    <CardTitle>{item.titulo}</CardTitle>
+                    <CardDescription>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      {item.resumen}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-8">
@@ -485,8 +487,8 @@ export function HomePage() {
             <div>
               <h3 className="mb-3">Contacto</h3>
               <p>Av. Arce #123, La Paz, Bolivia</p>
-              <p>Teléfono: +591 2 1234567</p>
-              <p>Email: info@cicb.org.bo</p>
+              <p>Teléfono: +591 67931497</p>
+              <p>Email: colegiocivbolivia@gmail.com</p>
             </div>
             <div>
               <h3 className="mb-3">Enlaces Rápidos</h3>

@@ -11,6 +11,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = Boolean(user);
 
+  const updateUser = (newUser: string | undefined) => {
+    if (user) {
+      setUser({
+        ...user,
+        name: newUser,
+      });
+    }
+  }
+
   const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
@@ -27,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser({
       id: decoded.user_id,
       rol: decoded.rol,
+      name: decoded.name ? decoded.name : undefined,
     });
   };
 
@@ -40,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({
         id: decoded.user_id,
         rol: decoded.rol,
+        name: decoded.name ? decoded.name : undefined,
       });
     } else {
       logout();
@@ -49,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, isLoading, login, logout, hasPermission }}
+      value={{ user, isAuthenticated, isLoading, login, logout, hasPermission, updateUser }}
     >
       {children}
     </AuthContext.Provider>

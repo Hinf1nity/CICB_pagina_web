@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription,} from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -12,10 +12,10 @@ import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
-import { useItems, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
+import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
 
 export function AdminAnnouncementsPage() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export function AdminAnnouncementsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
 
-  const { items: announcements, refetchItems, loading } = useItems("announcements");
+  const { items: announcements, refetchItems, loading } = useItemsAdmin("announcements");
   const { postItem } = useItemPost();
   const { patchItem } = useItemPatch();
   const { deleteItem } = useItemDelete();
@@ -54,7 +54,10 @@ export function AdminAnnouncementsPage() {
 
   const handleEdit = (item: GenericData) => {
     setEditingItem(item);
-    reset({ ...item });
+    reset({
+      ...item,
+      fecha_publicacion: item.fecha_publicacion ? new Date(item.fecha_publicacion).toISOString().split('T')[0] : '',
+    });
     setIsDialogOpen(true);
   };
 
@@ -83,13 +86,13 @@ export function AdminAnnouncementsPage() {
     <div className="min-h-screen bg-background">
       <div className="bg-[#003D33] text-white pt-6 pb-20">
         <div className="max-w-7xl mx-auto px-6">
-          <button 
+          <button
             onClick={() => navigate('/admin')}
             className="flex items-center text-sm mb-6 hover:underline"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Volver al Panel
           </button>
-          
+
           <div className="flex items-start gap-4">
             <Megaphone className="w-10 h-10 mt-1" />
             <div>
@@ -101,18 +104,18 @@ export function AdminAnnouncementsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        
+
         <div className="flex gap-4 mb-6 items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input 
-              placeholder="Buscar convocatorias por título o fecha..." 
+            <Input
+              placeholder="Buscar convocatorias por título o fecha..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
-          <Button 
+          <Button
             onClick={handleCreate}
             className="bg-primary text-primary-foreground"
           >
@@ -224,18 +227,18 @@ export function AdminAnnouncementsPage() {
             <div className="space-y-5">
               <div className="space-y-2">
                 <Label className="text-[#003D33] font-semibold">Título</Label>
-                <Input 
-                   {...register("nombre")} 
-                   placeholder="Título de la convocatoria..." 
+                <Input
+                  {...register("nombre")}
+                  placeholder="Título de la convocatoria..."
                 />
               </div>
 
               <div className="space-y-2">
                 <Label className="text-[#003D33] font-semibold">Descripción</Label>
-                <Textarea 
-                   {...register("descripcion")} 
-                   placeholder="Descripción detallada..." 
-                   rows={4} 
+                <Textarea
+                  {...register("descripcion")}
+                  placeholder="Descripción detallada..."
+                  rows={4}
                 />
               </div>
 
@@ -262,7 +265,7 @@ export function AdminAnnouncementsPage() {
                   />
                 </div>
               </div>
-              
+
               <Controller
                 name="pdf"
                 control={control}
@@ -270,10 +273,10 @@ export function AdminAnnouncementsPage() {
                   <div className="flex flex-col gap-2 pt-2">
                     <Label className="text-[#003D33] font-semibold">Documento PDF</Label>
                     {field.value instanceof File ? (
-                       <div className="flex items-center justify-between text-sm bg-gray-50 p-3 rounded-lg border border-gray-200">
-                         <span className="truncate font-medium">{field.value.name}</span>
-                         <X className="w-5 h-5 cursor-pointer text-gray-400 hover:text-red-500" onClick={() => field.onChange(null)} />
-                       </div>
+                      <div className="flex items-center justify-between text-sm bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <span className="truncate font-medium">{field.value.name}</span>
+                        <X className="w-5 h-5 cursor-pointer text-gray-400 hover:text-red-500" onClick={() => field.onChange(null)} />
+                      </div>
                     ) : (
                       <label className="cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-6 w-full text-center hover:bg-gray-50 transition-all">
                         <Input type="file" className="hidden" accept=".pdf" onChange={(e) => field.onChange(e.target.files?.[0])} />

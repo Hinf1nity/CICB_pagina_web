@@ -10,11 +10,11 @@ import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '../ui/select';
 
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
-import { useItems, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
+import { Alert, AlertDescription } from '../ui/alert';
 
 export function AdminYearbookPage() {
   const navigate = useNavigate();
@@ -22,7 +22,8 @@ export function AdminYearbookPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
 
-  const { items: yearbooks, refetchItems, loading } = useItems("yearbooks");
+  const { items: yearbooks, refetchItems, loading } = useItemsAdmin("yearbooks");
+  console.log("Yearbooks loaded:", yearbooks);
   const { postItem } = useItemPost();
   const { patchItem } = useItemPatch();
   const { deleteItem } = useItemDelete();
@@ -39,19 +40,22 @@ export function AdminYearbookPage() {
   });
 
   const handleCreate = () => {
-    reset({ 
-      nombre: '', 
-      descripcion: '', 
-      fecha_publicacion: new Date().toISOString().split('T')[0], 
-      pdf: undefined, 
-      estado: 'borrador' 
+    reset({
+      nombre: '',
+      descripcion: '',
+      fecha_publicacion: new Date().toISOString().split('T')[0],
+      pdf: undefined,
+      estado: 'borrador'
     });
     setEditingItem(null);
     setIsDialogOpen(true);
   };
 
   const handleEdit = (item: GenericData) => {
-    reset({ ...item });
+    reset({
+      ...item,
+      fecha_publicacion: item.fecha_publicacion ? new Date(item.fecha_publicacion).toISOString().split('T')[0] : '',
+    });
     setEditingItem(item);
     setIsDialogOpen(true);
   };
@@ -200,9 +204,9 @@ export function AdminYearbookPage() {
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="nombre">Título</Label>
-                  <Input 
-                    id="nombre" 
-                    {...register("nombre")} 
+                  <Input
+                    id="nombre"
+                    {...register("nombre")}
                     placeholder="Ej: Anuario CICB 2024"
                     autoComplete="off"
                   />
@@ -215,11 +219,11 @@ export function AdminYearbookPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="descripcion">Descripción</Label>
-                  <Textarea 
-                    id="descripcion" 
-                    {...register("descripcion")} 
+                  <Textarea
+                    id="descripcion"
+                    {...register("descripcion")}
                     placeholder="Resumen del contenido del anuario..."
-                    rows={4} 
+                    rows={4}
                   />
                   {errors.descripcion && (
                     <Alert variant="destructive" className="py-2">
@@ -310,7 +314,7 @@ export function AdminYearbookPage() {
                   </div>
                   <p className="text-sm text-muted-foreground line-clamp-2 max-w-4xl">{yearbook.descripcion}</p>
                   <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                    <Calendar className="w-3 h-3" /> 
+                    <Calendar className="w-3 h-3" />
                     Publicado: {yearbook.fecha_publicacion ? new Date(yearbook.fecha_publicacion).toLocaleDateString('es-BO') : 'Sin fecha'}
                   </p>
                 </div>
@@ -323,10 +327,10 @@ export function AdminYearbookPage() {
                   <Button variant="outline" size="sm" onClick={() => handleEdit(yearbook)}>
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => yearbook.id && handleDelete(yearbook.id)} 
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => yearbook.id && handleDelete(yearbook.id)}
                     className="text-red-500 hover:bg-red-50 border-red-100"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -334,7 +338,7 @@ export function AdminYearbookPage() {
                 </div>
               </div>
             ))}
-            
+
             {!loading && filteredYearbooks.length === 0 && (
               <div className="text-center py-16">
                 <BookOpen className="w-12 h-12 mx-auto mb-3 text-muted-foreground/40" />

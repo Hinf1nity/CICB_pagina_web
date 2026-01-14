@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { useUsersDetailAdmin, useUsersPatch } from '../hooks/useUsers';
 import { type UserPageData, userPageSchema } from '../validations/userPageSchema';
@@ -23,23 +24,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Alert, AlertTitle, AlertDescription } from './ui/alert';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-interface UserProfilePageProps {
-  onNavigate?: (page: string, id?: number) => void;
-}
-
 interface Certification {
   nombre: string | undefined;
   institucion: string | undefined;
   anio: string | undefined;
 }
 
-export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
+export function UserProfilePage() {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
   const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const [tempPhotoUrl, setTempPhotoUrl] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
-  const { logout, user } = useAuth();
+  const { logout, user, updateUser } = useAuth();
   const { patchUser } = useUsersPatch();
   const [userDataCopy, setUserDataCopy] = useState<Partial<UserPageData>>({});
   const [userData, setUserData] = useState({
@@ -70,7 +68,6 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     async function fetchUserData() {
       if (user) {
         const data = await useUsersDetailAdmin(user.id);
-        console.log('User data fetched:', data);
         setUserDataCopy(data);
         const yearsDifference = new Date().getFullYear() - new Date(data.fecha_inscripcion).getFullYear();
         const hasPassedAniversary = (new Date().getMonth() > new Date(data.fecha_inscripcion).getMonth()) ||
@@ -105,8 +102,10 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
           mail: data.mail || '',
           celular: data.celular,
           especialidad: data.especialidad,
-          certificaciones: data.certificaciones || [],
+          certificaciones: [],
           registro_empleado: data.registro_empleado,
+          imagen: data.imagen || undefined,
+          imagen_url: data.imagen_url || '',
         });
       }
     }
@@ -129,6 +128,9 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
       especialidad: res.especialidad,
       registro_empleado: res.registro_empleado,
     });
+    if (user?.name !== res.nombre) {
+      updateUser(res.nombre);
+    }
     setUserDataCopy(res);
     setUserData({
       ...userData,
@@ -147,10 +149,16 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     }].sort((a, b) => parseInt(b.anio) - parseInt(a.anio));
     console.log('New certifications list:', data_new);
     setIsCertDialogOpen(false);
-    const res = await patchUser(parseInt(userData.id), { certificaciones: data_new }, userDataCopy as Partial<UserPageData>);
+    const res = await patchUser(parseInt(userData.id), { certificaciones: data_new }, { certificaciones: userDataCopy.certificaciones } as Partial<UserPageData>);
     console.log('Patch response for certifications:', res);
     setCertifications(data_new);
-    reset();
+    reset({
+      certificaciones: [{
+        nombre: '',
+        institucion: '',
+        anio: '',
+      }],
+    });
   };
 
   const handleDeleteCertification = (id: number) => {
@@ -162,13 +170,13 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
     }
   };
 
-  const handleUpdatePhoto = async (data) => {
+  const handleUpdatePhoto = async (data: Partial<UserPageData>) => {
     setPhotoUrl(tempPhotoUrl);
     setIsPhotoDialogOpen(false);
-    setTempPhotoUrl('');
-    // const res = await patchUser(parseInt(userData.id), { imagen: data.imagen }, userData as Partial<UserPageData>);
-    // console.log('Patch response for photo update:', res);
+    const res = await patchUser(parseInt(userData.id), { imagen: data.imagen, imagen_url: data.imagen_url }, { imagen: userDataCopy.imagen, imagen_url: userDataCopy.imagen_url });
+    console.log('Patch response for photo update:', res);
     reset();
+    setTempPhotoUrl('');
   };
 
   const handleDownloadQR = () => {
@@ -296,7 +304,7 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                     <Calendar className="w-4 h-4 mr-3 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-foreground">Colegiado desde</p>
-                      <p>{new Date(userData.registrationDate).getFullYear()}</p>
+                      <p>{`${new Date(userData.registrationDate).getFullYear()}`}</p>
                     </div>
                   </div>
                 </div>
@@ -325,15 +333,13 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                   />
                 </div>
                 <div className="w-full space-y-2">
-                  {onNavigate && (
-                    <Button
-                      onClick={() => onNavigate('user-card', 1)}
-                      className="w-full bg-primary text-primary-foreground"
-                    >
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Ver Tarjeta
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => navigate(`/tarjeta_usuario/${userData.id}`)}
+                    className="w-full bg-primary text-primary-foreground"
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Ver Tarjeta
+                  </Button>
                   <Button
                     onClick={handleDownloadQR}
                     variant="outline"
@@ -354,11 +360,11 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-border">
                   <span className="text-muted-foreground">Certificaciones</span>
-                  <span className="text-primary">{certifications.length}</span>
+                  <span className="text-primary">{`${certifications.length}`}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-border">
                   <span className="text-muted-foreground">Años de Experiencia</span>
-                  <span>{userData.experienceYears}</span>
+                  <span>{`${userData.experienceYears}`}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-muted-foreground">Estado Laboral</span>
@@ -395,7 +401,6 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                         <Button
                           type='submit'
                           variant="outline"
-                        // onClick={() => isEditing ? handleSave() : setIsEditing(true)}
                         >
                           <Edit className="w-4 h-4 mr-2" />
                           {isEditing ? 'Guardar Cambios' : 'Editar Perfil'}
@@ -744,11 +749,6 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                   };
                   reader.readAsDataURL(newFile);
                 };
-
-                const removeImage = () => {
-                  field.onChange(null);
-                  setTempPhotoUrl("");
-                };
                 return (
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -764,10 +764,13 @@ export function UserProfilePage({ onNavigate }: UserProfilePageProps) {
                       <Label htmlFor="photoPreview">Vista Previa</Label>
                       <div className="flex justify-center">
                         <Avatar className="w-32 h-32 border-4 border-primary">
-                          <AvatarImage src={tempPhotoUrl} />
-                          <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                            {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                          </AvatarFallback>
+                          {isUrl && (<AvatarImage src={file as string} />)}
+                          {isFile && (<AvatarImage src={tempPhotoUrl} />)}
+                          {!file && (
+                            <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
+                              {userData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                            </AvatarFallback>
+                          )}
                         </Avatar>
                       </div>
                     </div>

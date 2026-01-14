@@ -35,13 +35,14 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         refresh = self.get_token(user)
         data = {"refresh": str(refresh), "access": str(refresh.access_token)}
-        data['rol'] = getattr(user, 'rol', 'Usuario')
         return data
 
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
         token['rol'] = getattr(user, 'rol', 'Usuario')
+        if hasattr(user, 'nombre'):
+            token['name'] = user.nombre
         return token
 
 
@@ -72,6 +73,8 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
         access_token = refresh.access_token
         access_token['rol'] = rol
+        if refresh.payload.get('name'):
+            access_token['name'] = refresh.payload.get('name')
         data = {"access": str(access_token)}
         return data
 
@@ -105,7 +108,9 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
             validated_data['rni'] = make_password(validated_data['rni'])
         return super().update(instance, validated_data)
 
+
 class UsuarioComunListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
-        fields = ['nombre','rnic','rni','fecha_inscripcion','celular','especialidad','departamento','registro_empleado','estado'] 
+        fields = ['nombre', 'rnic', 'rni', 'fecha_inscripcion', 'celular',
+                  'especialidad', 'departamento', 'registro_empleado', 'estado']

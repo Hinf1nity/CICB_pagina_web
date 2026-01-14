@@ -10,6 +10,7 @@ from .models import UsuarioComun
 from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer
 from .permissions import IsAdminPrin, IsAdminSec, IsUser
 
+
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UsuarioComunSerializer
 
@@ -43,6 +44,7 @@ class UserViewSet(viewsets.ModelViewSet):
         detail=True,
         methods=["get"],
         url_path="img-download",
+        permission_classes=[IsAuthenticated],
     )
     def get_img(self, request, pk=None):
         user = self.get_object()
@@ -85,7 +87,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user.save()
 
         return super().destroy(request, *args, **kwargs)
-    
+
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
@@ -96,7 +98,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 raise PermissionDenied("No puedes modificar otro usuario")
 
         return super().partial_update(request, *args, **kwargs)
-    
+
+
 class UserDetails(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = UsuarioComun.objects.all()
     serializer_class = UsuarioComunSerializer

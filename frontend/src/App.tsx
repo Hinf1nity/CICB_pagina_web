@@ -12,6 +12,7 @@ import { TablePage } from './components/TablePage';
 import { StatsPage } from './components/StatsPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { GenericPage } from './components/GenericPage';
+import { UnauthorizedPage } from './components/UnauthorizedPage';
 import { AdminUsersPage } from './components/admin/AdminUsersPage';
 import { AdminPerformancePage } from './components/admin/AdminPerformancePage';
 import { AdminJobsPage } from './components/admin/AdminJobsPage';
@@ -86,6 +87,7 @@ function AppRoutes() {
             type="announcements"
           />
         } />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

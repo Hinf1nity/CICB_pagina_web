@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useStatsData } from "../hooks/useStatsData";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from './ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell} from 'recharts';
+import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { Users, Briefcase, TrendingUp, MapPin } from 'lucide-react';
 
 interface Specialty {
@@ -25,15 +25,8 @@ interface Employment {
   percentage?: number;
 }
 
-interface Evolution {
-  year: string;
-  total: number;
-  employed: number;
-  unemployed: number;
-}
-
 export function StatsPage() {
-  const [selectedYear, setSelectedYear] = useState('2025');
+  // const [selectedYear, setSelectedYear] = useState('2025');
 
   const {
     specialties,
@@ -168,7 +161,7 @@ export function StatsPage() {
                   <YAxis style={{ fontSize: '12px' }} />
                   <Tooltip />
                   <Bar dataKey="count" name="Cantidad" fill={COLORS.primary} radius={[8, 8, 0, 0]}>
-                    {(specialties || []).map((entry: Specialty, index: number) => (
+                    {(specialties || []).map((_, index: number) => (
                       <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Bar>
@@ -204,7 +197,7 @@ export function StatsPage() {
                     outerRadius={120}
                     dataKey="value"
                   >
-                    {(employment || []).map((entry: Employment, index: number) => (
+                    {(employment || []).map((_, index: number) => (
                       <Cell
                         key={index}
                         fill={index === 0 ? COLORS.secondary : COLORS.accent}
@@ -274,10 +267,10 @@ export function StatsPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <CardTitle>Evolución Histórica</CardTitle>
-                <CardDescription>Tendencia de colegiados y situación laboral (2020-2024)</CardDescription>
+                <CardDescription>Tendencia de colegiados y situación laboral ({new Date().getFullYear() - 4}-{new Date().getFullYear()})</CardDescription>
               </div>
 
-              <Select value={selectedYear} onValueChange={setSelectedYear}>
+              {/* <Select value={selectedYear} onValueChange={setSelectedYear}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Seleccionar año" />
                 </SelectTrigger>
@@ -287,7 +280,7 @@ export function StatsPage() {
                   <SelectItem value="2023">2023</SelectItem>
                   <SelectItem value="2022">2022</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
           </CardHeader>
 
@@ -304,17 +297,17 @@ export function StatsPage() {
                   stroke={COLORS.primary} strokeWidth={3}
                   dot={{ fill: COLORS.primary, r: 5 }} />
 
-                <Line type="monotone" dataKey="employed" name="Con Trabajo"
+                <Line type="monotone" dataKey="new" name="Colegiados Nuevos"
                   stroke={COLORS.secondary} strokeWidth={3}
                   dot={{ fill: COLORS.secondary, r: 5 }} />
 
-                <Line type="monotone" dataKey="unemployed" name="Sin Trabajo"
+                {/* <Line type="monotone" dataKey="unemployed" name="Sin Trabajo"
                   stroke={COLORS.accent} strokeWidth={3}
-                  dot={{ fill: COLORS.accent, r: 5 }} />
+                  dot={{ fill: COLORS.accent, r: 5 }} /> */}
               </LineChart>
             </ResponsiveContainer>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-3 h-3 rounded-full bg-primary" />
@@ -338,7 +331,7 @@ export function StatsPage() {
                 </div>
                 <div className="text-foreground">Positiva ↑</div>
               </div>
-            </div>
+            </div> */}
 
           </CardContent>
         </Card>

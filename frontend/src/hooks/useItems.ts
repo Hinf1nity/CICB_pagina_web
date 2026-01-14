@@ -7,11 +7,50 @@ export function useItems(type: "yearbooks" | "regulation" | "announcements") {
   const [loading, setLoading] = useState(true);
 
   const fetchItems = async (type: "yearbooks" | "regulation" | "announcements") => {
-    const endpoint = type === "announcements" ? "calls" : type;
     try {
       setLoading(true);
-      const response: GenericData[] = await api.get(`${endpoint}/`).json();
-      setItems(response);
+      const url = type === "announcements" ? "calls" : type
+
+      const response: GenericData[] = await api.get(`${url}/${url}/`).json();
+
+      setItems(response.map(item => ({
+        ...item,
+        pdf_url: item.pdf?.url,
+        pdf: undefined,
+      })));
+
+    } catch (error) {
+      console.error("Error obteniendo datos:", error);
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems(type);
+  }, [type]);
+
+  return { items, loading, refetchItems: () => fetchItems(type) };
+}
+
+export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements") {
+  const [items, setItems] = useState<GenericData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchItems = async (type: "yearbooks" | "regulation" | "announcements") => {
+    try {
+      setLoading(true);
+      const url = type === "announcements" ? "calls" : type
+
+      const response: GenericData[] = await api.get(`${url}/${url}_admin/`).json();
+
+      setItems(response.map(item => ({
+        ...item,
+        pdf_url: item.pdf?.url,
+        pdf: undefined,
+      })));
+
     } catch (error) {
       console.error("Error obteniendo datos:", error);
       setItems([]);
@@ -32,7 +71,7 @@ export function useItemPost() {
     const endpoint = type === "announcements" ? "calls" : type;
     let finalPdfId = null;
 
-    if ((type === "yearbooks" || type === "announcements") && data.pdf instanceof File) {
+    if (data.pdf instanceof File) {
       const presignedData: any = await api.post("pdfs/pdf-presigned-url/", {
         json: {
           file_name: data.pdf.name,
@@ -60,15 +99,9 @@ export function useItemPost() {
       formData.append("fecha_publicacion", data.fecha_publicacion);
     }
 
-    if (type === "yearbooks" || type === "announcements") {
-      if (finalPdfId) formData.append("pdf", finalPdfId.toString());
-    } else {
-      if (data.pdf instanceof File) {
-        formData.append("pdf_url", data.pdf);
-      }
-    }
+    if (finalPdfId) formData.append("pdf", finalPdfId.toString());
 
-    return await api.post(`${endpoint}/`, { body: formData });
+    return await api.post(`${endpoint}/${endpoint}_admin/`, { body: formData });
   };
 
   return { postItem };
@@ -94,9 +127,9 @@ export function useItemPatch() {
     if (data.nombre !== old_data.nombre) formData.append("nombre", data.nombre);
     if (data.descripcion !== old_data.descripcion) formData.append("descripcion", data.descripcion);
     if (data.estado !== old_data.estado) formData.append("estado", data.estado);
-    
+
     if (type !== "announcements" && data.fecha_publicacion !== old_data.fecha_publicacion) {
-        formData.append("fecha_publicacion", data.fecha_publicacion);
+      formData.append("fecha_publicacion", data.fecha_publicacion);
     }
 
     if (data.pdf !== old_data.pdf) {
@@ -105,7 +138,7 @@ export function useItemPatch() {
       }
     }
 
-    return await api.patch(`${endpoint}/${id}/`, { body: formData });
+    return await api.patch(`${endpoint}/${endpoint}_admin/${id}/`, { body: formData });
   };
   return { patchItem };
 }
@@ -113,7 +146,7 @@ export function useItemPatch() {
 export function useItemDelete() {
   const deleteItem = async (id: number, type: "yearbooks" | "regulation" | "announcements") => {
     const endpoint = type === "announcements" ? "calls" : type;
-    return await api.delete(`${endpoint}/${id}/`);
+    return await api.delete(`${endpoint}/${endpoint}_admin/${id}/`);
   };
   return { deleteItem };
 }

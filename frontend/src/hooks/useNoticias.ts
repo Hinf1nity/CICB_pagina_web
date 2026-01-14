@@ -26,24 +26,39 @@ export function useNoticiasAdmin() {
 }
 
 export function useNoticias() {
-  const { data: noticias = [], isLoading: loading, isError, error } = useQuery({
+  const {
+    data: noticias, // Ya no necesitas valor por defecto aquí si usas initialData o placeholder, pero [] está bien
+    isLoading, // Ojo: En v5 prefiere 'isPending' si quieres saber si no hay data aún
+    isError,
+    error
+  } = useQuery({
     queryKey: ['noticias'],
+
+    // 2. La función SOLO busca datos, no los toca.
     queryFn: async () => {
-      const data: NewsData[] = await api.get("news/news/").json();
-      console.log(data);
-      return data.map(item => ({
+      // Asumimos que 'api' es tu instancia de Ky
+      return await api.get("news/news/").json<NewsData[]>();
+    },
+
+    // 3. SELECT: Aquí ocurre la magia de la transformación
+    // Esto permite que la caché guarde la respuesta original del servidor,
+    // pero tu componente reciba la versión limpia.
+    select: (data) => {
+      return data.map((item) => ({
         ...item,
         imagen_url: item.imagen?.url,
-        imagen: undefined
+        imagen: undefined, // Opcional: eliminar la ref original
       }));
     },
-    staleTime: 1000 * 60 * 1 * 1,
-    gcTime: 1000 * 60 * 1 * 2,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
   });
 
-  return { noticias, loading, isError, error };
+  // Retornamos un array vacío por defecto si es undefined para evitar crash en el .map del UI
+  return {
+    noticias: noticias ?? [],
+    isLoading,
+    isError,
+    error
+  };
 }
 
 export async function useNoticiaDetailAdmin(id?: string) {

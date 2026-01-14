@@ -18,15 +18,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
 
-const userData = {
-  name: "Diego Andres Calvimontes Vera",
-};
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, logout, hasPermission } = useAuth();
+  const { isAuthenticated, logout, hasPermission, user } = useAuth();
 
   useEffect(() => {
     const path = location.pathname.split('/')[1];
@@ -47,7 +44,7 @@ export function Navbar() {
   const profileButtonLabel = () => {
     if (isAuthenticated) {
       if (hasPermission("users.read")) {
-        return `Ing. ${userData.name}`;
+        return `Ing. ${user?.name}`;
       }
       if (hasPermission("admin.access")) {
         return "Administración General";

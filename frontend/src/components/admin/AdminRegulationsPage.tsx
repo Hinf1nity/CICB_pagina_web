@@ -38,14 +38,14 @@ import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { useItems, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
+import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
 
 export function AdminRegulationsPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
-  const { items: regulations, refetchItems } = useItems("regulation");
+  const { items: regulations, refetchItems } = useItemsAdmin("regulation");
   const { postItem } = useItemPost();
   const { patchItem } = useItemPatch();
   const { deleteItem } = useItemDelete();
@@ -85,6 +85,7 @@ export function AdminRegulationsPage() {
   const handleEdit = (regulation: GenericData) => {
     reset({
       ...regulation,
+      fecha_publicacion: regulation.fecha_publicacion ? new Date(regulation.fecha_publicacion).toISOString().split('T')[0] : '',
     });
     setEditingItem(regulation);
     setIsDialogOpen(true);
@@ -95,8 +96,8 @@ export function AdminRegulationsPage() {
       await patchItem(editingItem.id, data, editingItem, "regulation");
       console.log('Editando reglamento:', data);
     } else {
-      await postItem(data, "regulation");
       console.log('Creando nuevo reglamento:', data);
+      await postItem(data, "regulation");
     }
     refetchItems();
     setIsDialogOpen(false);
