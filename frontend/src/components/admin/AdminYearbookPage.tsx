@@ -13,8 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
-import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
-import { Alert, AlertDescription } from '../ui/alert';
+import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete, useItemDetailAdmin } from '../../hooks/useItems';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 export function AdminYearbookPage() {
   const navigate = useNavigate();
@@ -51,10 +51,13 @@ export function AdminYearbookPage() {
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (item: GenericData) => {
+  const handleEdit = async (item: GenericData) => {
+    const data = await useItemDetailAdmin(item.id!, "yearbooks")
     reset({
       ...item,
       fecha_publicacion: item.fecha_publicacion ? new Date(item.fecha_publicacion).toISOString().split('T')[0] : '',
+      pdf_url: data?.pdf_url,
+      pdf: data?.pdf,
     });
     setEditingItem(item);
     setIsDialogOpen(true);
@@ -211,8 +214,9 @@ export function AdminYearbookPage() {
                     autoComplete="off"
                   />
                   {errors.nombre && (
-                    <Alert variant="destructive" className="py-2">
-                      <AlertDescription className="text-xs">{errors.nombre.message}</AlertDescription>
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en el Título</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.nombre?.message}</AlertDescription>
                     </Alert>
                   )}
                 </div>
@@ -226,8 +230,9 @@ export function AdminYearbookPage() {
                     rows={4}
                   />
                   {errors.descripcion && (
-                    <Alert variant="destructive" className="py-2">
-                      <AlertDescription className="text-xs">{errors.descripcion.message}</AlertDescription>
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en la Descripción</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.descripcion?.message}</AlertDescription>
                     </Alert>
                   )}
                 </div>
@@ -236,6 +241,12 @@ export function AdminYearbookPage() {
                   <div className="space-y-2">
                     <Label htmlFor="fecha_publicacion">Fecha de Publicación</Label>
                     <Input id="fecha_publicacion" type="date" {...register("fecha_publicacion")} />
+                    {errors.fecha_publicacion && (
+                      <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                        <AlertTitle className='text-sm'>Error en la Fecha de Publicación</AlertTitle>
+                        <AlertDescription className='text-xs'>{errors.fecha_publicacion?.message}</AlertDescription>
+                      </Alert>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -244,13 +255,21 @@ export function AdminYearbookPage() {
                       control={control}
                       name="estado"
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="borrador">Borrador</SelectItem>
-                            <SelectItem value="publicado">Publicado</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="borrador">Borrador</SelectItem>
+                              <SelectItem value="publicado">Publicado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors.estado && (
+                            <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                              <AlertTitle className='text-sm'>Error en el Estado</AlertTitle>
+                              <AlertDescription className='text-xs'>{errors.estado?.message}</AlertDescription>
+                            </Alert>
+                          )}
+                        </>
                       )}
                     />
                   </div>
@@ -259,30 +278,53 @@ export function AdminYearbookPage() {
                 <Controller
                   name="pdf"
                   control={control}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label>Documento PDF (Anuario)</Label>
-                      {field.value instanceof File ? (
-                        <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <BookOpen className="w-5 h-5 text-[#063228]" />
-                            <span className="text-sm font-medium">{field.value.name}</span>
+                  render={({ field }) => {
+                    const file = field.value;
+
+                    const isFile = file instanceof File;
+                    const isUrl = typeof file === 'string' && file.startsWith('http');
+                    return (
+                      <div className="space-y-2">
+                        <Label>Documento PDF (Anuario)</Label>
+                        {isUrl && (
+                          <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <BookOpen className="w-5 h-5 text-[#063228]" />
+                              <a href={file} target="_blank" rel="noopener noreferrer" className="text-sm font-medium underline">
+                                Ver PDF Actual
+                              </a>
+                            </div>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => field.onChange(null)}><X className="w-4 h-4 text-red-500" /></Button>
                           </div>
-                          <Button type="button" variant="ghost" size="sm" onClick={() => field.onChange(null)}><X className="w-4 h-4 text-red-500" /></Button>
-                        </div>
-                      ) : (
-                        <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors bg-muted/50">
-                          <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={(e) => field.onChange(e.target.files?.[0])} />
-                          <label htmlFor="pdf-upload" className="cursor-pointer">
-                            <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                            <p className="text-sm font-medium">Click para subir el archivo PDF</p>
-                            <p className="text-xs text-muted-foreground mt-1">Tamaño máximo recomendado: 10MB</p>
-                          </label>
-                        </div>
-                      )}
-                      {errors.pdf && <p className="text-red-500 text-xs mt-1">{errors.pdf.message}</p>}
-                    </div>
-                  )}
+                        )}
+                        {isFile && (
+                          <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <BookOpen className="w-5 h-5 text-[#063228]" />
+                              <span className="text-sm font-medium">{file.name}</span>
+                            </div>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => field.onChange(null)}><X className="w-4 h-4 text-red-500" /></Button>
+                          </div>
+                        )}
+                        {!isFile && !isUrl && (
+                          <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors bg-muted/50">
+                            <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={(e) => field.onChange(e.target.files?.[0])} />
+                            <label htmlFor="pdf-upload" className="cursor-pointer">
+                              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                              <p className="text-sm font-medium">Click para subir el archivo PDF</p>
+                              <p className="text-xs text-muted-foreground mt-1">Tamaño máximo recomendado: 10MB</p>
+                            </label>
+                          </div>
+                        )}
+                        {errors.pdf && (
+                          <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                            <AlertTitle className='text-sm'>Error en el PDF</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.pdf?.message}</AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    )
+                  }}
                 />
               </div>
 

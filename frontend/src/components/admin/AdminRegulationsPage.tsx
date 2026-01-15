@@ -38,7 +38,7 @@ import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
+import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete, useItemDetailAdmin } from '../../hooks/useItems';
 
 export function AdminRegulationsPage() {
   const navigate = useNavigate();
@@ -82,10 +82,13 @@ export function AdminRegulationsPage() {
     }
   };
 
-  const handleEdit = (regulation: GenericData) => {
+  const handleEdit = async (regulation: GenericData) => {
+    const data = await useItemDetailAdmin(regulation.id!, "regulation");
     reset({
       ...regulation,
       fecha_publicacion: regulation.fecha_publicacion ? new Date(regulation.fecha_publicacion).toISOString().split('T')[0] : '',
+      pdf: data?.pdf,
+      pdf_url: data?.pdf_url,
     });
     setEditingItem(regulation);
     setIsDialogOpen(true);
@@ -267,6 +270,9 @@ export function AdminRegulationsPage() {
                     render={({ field }) => {
                       const file = field.value;
 
+                      const isFile = file instanceof File;
+                      const isUrl = typeof file === 'string' && file.startsWith('http');
+
                       const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         const newFile = e.target.files?.[0];
                         if (!newFile) return;
@@ -290,7 +296,20 @@ export function AdminRegulationsPage() {
                       return (
                         <div className="space-y-2">
                           <Label htmlFor="pdf">Documento PDF</Label>
-                          {file ? (
+                          {isUrl && (
+                            <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
+                              <div className="flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-destructive" />
+                                <a href={file} target="_blank" rel="noopener noreferrer" className="text-foreground underline">
+                                  Ver documento actual
+                                </a>
+                              </div>
+                              <Button type="button" variant="ghost" size="sm" onClick={removePdf}>
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
+                          {isFile && (
                             <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
                               <div className="flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-destructive" />
@@ -303,7 +322,8 @@ export function AdminRegulationsPage() {
                                 <X className="w-4 h-4" />
                               </Button>
                             </div>
-                          ) : (
+                          )}
+                          {!isFile && !isUrl && (
                             <div className="border-2 border-dashed border-input rounded-md p-4 text-center hover:border-primary transition-colors">
                               <input
                                 type="file"

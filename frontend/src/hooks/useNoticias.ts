@@ -79,7 +79,6 @@ export async function useNoticiaDetailAdmin(id?: string) {
   }
   console.log(data);
   return data;
-
 }
 
 export function useNoticiaDetail(id?: string) {

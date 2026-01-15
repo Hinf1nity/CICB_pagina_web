@@ -6,7 +6,8 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
 import {
-  Megaphone, Plus, Edit, Trash2, Search, Calendar, Download, ArrowLeft, Upload, X, Eye, FileEdit
+  Megaphone, Plus, Edit, Trash2, Search, Calendar, Download, ArrowLeft, Upload, X, Eye,
+  BookOpen
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
@@ -15,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
-import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete } from '../../hooks/useItems';
+import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete, useItemDetailAdmin } from '../../hooks/useItems';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 export function AdminAnnouncementsPage() {
   const navigate = useNavigate();
@@ -52,11 +54,14 @@ export function AdminAnnouncementsPage() {
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (item: GenericData) => {
+  const handleEdit = async (item: GenericData) => {
+    const data = await useItemDetailAdmin(item.id!, "announcements");
     setEditingItem(item);
     reset({
       ...item,
       fecha_publicacion: item.fecha_publicacion ? new Date(item.fecha_publicacion).toISOString().split('T')[0] : '',
+      pdf: data?.pdf,
+      pdf_url: data?.pdf_url,
     });
     setIsDialogOpen(true);
   };
@@ -231,6 +236,12 @@ export function AdminAnnouncementsPage() {
                   {...register("nombre")}
                   placeholder="Título de la convocatoria..."
                 />
+                {errors.nombre && (
+                  <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                    <AlertTitle className='text-sm'>Error en el Título</AlertTitle>
+                    <AlertDescription className='text-xs'>{errors.nombre?.message}</AlertDescription>
+                  </Alert>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -240,12 +251,24 @@ export function AdminAnnouncementsPage() {
                   placeholder="Descripción detallada..."
                   rows={4}
                 />
+                {errors.descripcion && (
+                  <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                    <AlertTitle className='text-sm'>Error en la Descripción</AlertTitle>
+                    <AlertDescription className='text-xs'>{errors.descripcion?.message}</AlertDescription>
+                  </Alert>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-[#003D33] font-semibold">Fecha de Publicación</Label>
                   <Input type="date" {...register("fecha_publicacion")} />
+                  {errors.fecha_publicacion && (
+                    <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                      <AlertTitle className='text-sm'>Error en la Fecha de Publicación</AlertTitle>
+                      <AlertDescription className='text-xs'>{errors.fecha_publicacion?.message}</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[#003D33] font-semibold">Estado</Label>
@@ -253,14 +276,22 @@ export function AdminAnnouncementsPage() {
                     control={control}
                     name="estado"
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="borrador">Borrador</SelectItem>
-                          <SelectItem value="activa">Activa</SelectItem>
-                          <SelectItem value="cerrada">Cerrada</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="borrador">Borrador</SelectItem>
+                            <SelectItem value="activa">Activa</SelectItem>
+                            <SelectItem value="cerrada">Cerrada</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {errors.estado && (
+                          <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                            <AlertTitle className='text-sm'>Error en el Estado</AlertTitle>
+                            <AlertDescription className='text-xs'>{errors.estado?.message}</AlertDescription>
+                          </Alert>
+                        )}
+                      </>
                     )}
                   />
                 </div>
@@ -269,23 +300,53 @@ export function AdminAnnouncementsPage() {
               <Controller
                 name="pdf"
                 control={control}
-                render={({ field }) => (
-                  <div className="flex flex-col gap-2 pt-2">
-                    <Label className="text-[#003D33] font-semibold">Documento PDF</Label>
-                    {field.value instanceof File ? (
-                      <div className="flex items-center justify-between text-sm bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <span className="truncate font-medium">{field.value.name}</span>
-                        <X className="w-5 h-5 cursor-pointer text-gray-400 hover:text-red-500" onClick={() => field.onChange(null)} />
-                      </div>
-                    ) : (
-                      <label className="cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-6 w-full text-center hover:bg-gray-50 transition-all">
-                        <Input type="file" className="hidden" accept=".pdf" onChange={(e) => field.onChange(e.target.files?.[0])} />
-                        <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                        <span className="text-sm text-gray-500 font-medium font-sans">Subir PDF</span>
-                      </label>
-                    )}
-                  </div>
-                )}
+                render={({ field }) => {
+                  const file = field.value;
+
+                  const isFile = file instanceof File;
+                  const isUrl = typeof file === 'string' && file.startsWith('http');
+                  return (
+                    <div className="space-y-2">
+                      <Label>Documento PDF (Anuario)</Label>
+                      {isUrl && (
+                        <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="w-5 h-5 text-[#063228]" />
+                            <a href={file} target="_blank" rel="noopener noreferrer" className="text-sm font-medium underline">
+                              Ver PDF Actual
+                            </a>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => field.onChange(null)}><X className="w-4 h-4 text-red-500" /></Button>
+                        </div>
+                      )}
+                      {isFile && (
+                        <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="w-5 h-5 text-[#063228]" />
+                            <span className="text-sm font-medium">{file.name}</span>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => field.onChange(null)}><X className="w-4 h-4 text-red-500" /></Button>
+                        </div>
+                      )}
+                      {!isFile && !isUrl && (
+                        <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors bg-muted/50">
+                          <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={(e) => field.onChange(e.target.files?.[0])} />
+                          <label htmlFor="pdf-upload" className="cursor-pointer">
+                            <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm font-medium">Click para subir el archivo PDF</p>
+                            <p className="text-xs text-muted-foreground mt-1">Tamaño máximo recomendado: 10MB</p>
+                          </label>
+                        </div>
+                      )}
+                      {errors.pdf && (
+                        <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                          <AlertTitle className='text-sm'>Error en el PDF</AlertTitle>
+                          <AlertDescription className='text-xs'>{errors.pdf?.message}</AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  )
+                }}
               />
             </div>
 
@@ -302,7 +363,7 @@ export function AdminAnnouncementsPage() {
   );
 }
 
-function StatCard({ title, value, icon }) {
+function StatCard({ title, value, icon }: { title: string, value: any, icon: React.ReactNode }) {
   return (
     <Card>
       <CardContent className="pt-6">
