@@ -35,14 +35,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         refresh = self.get_token(user)
         data = {"refresh": str(refresh), "access": str(refresh.access_token)}
+        data['rol'] = getattr(user, 'rol', 'Usuario')
         return data
 
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
         token['rol'] = getattr(user, 'rol', 'Usuario')
-        if hasattr(user, 'nombre'):
-            token['name'] = user.nombre
         return token
 
 
@@ -73,8 +72,6 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
         access_token = refresh.access_token
         access_token['rol'] = rol
-        if refresh.payload.get('name'):
-            access_token['name'] = refresh.payload.get('name')
         data = {"access": str(access_token)}
         return data
 
@@ -88,29 +85,31 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
             'mail', 'rol'
         ]
         read_only_fields = [
-            'id', 'rnic', 'rni', 'fecha_inscripcion',
+            'id', 'rnic', 'fecha_inscripcion',
             'departamento', 'registro_empleado', 'estado', 'rol'
         ]
+        extra_kwargs = {
+            'rni': {'write_only': True}
+        }
 
     def create(self, validated_data):
-        rni = self.initial_data.get('rni')
-        if rni:
-            validated_data['password'] = make_password(rni)
-        else:
+        rni = validated_data.get('rni')
+        if not rni:
             raise serializers.ValidationError({"rni": "Este campo es requerido para crear la contraseña."})
 
-        print("Creating user with data:", validated_data)
-        return super().create(validated_data)
+        # Validación de unicidad
+        if UsuarioComun.objects.filter(rni=rni).exists():
+            raise serializers.ValidationError({"rni": "RNI existente"})
 
+        validated_data['password'] = make_password(rni)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         if 'rni' in validated_data:
-            validated_data['rni'] = make_password(validated_data['rni'])
+            validated_data['password'] = make_password(validated_data['rni'])
         return super().update(instance, validated_data)
-
 
 class UsuarioComunListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
-        fields = ['nombre', 'rnic', 'rni', 'fecha_inscripcion', 'celular',
-                  'especialidad', 'departamento', 'registro_empleado', 'estado']
+        fields = ['nombre','rnic','rni','fecha_inscripcion','celular','especialidad','departamento','registro_empleado','estado'] 

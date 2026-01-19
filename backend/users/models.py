@@ -42,7 +42,7 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
 
     rnic = models.PositiveIntegerField(
         unique=True, editable=False, null=True, blank=True, validators=[MaxValueValidator(99999)])
-    rni = models.CharField(max_length=255)
+    rni = models.CharField(max_length=255, unique=True)
     nombre = models.CharField(max_length=255)
     fecha_inscripcion = models.DateField(null=True, blank=True)
     departamento = models.CharField(max_length=100, blank=True)
