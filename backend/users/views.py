@@ -9,10 +9,14 @@ import os
 from .models import UsuarioComun
 from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer
 from .permissions import IsAdminPrin, IsAdminSec, IsUser
+from rest_framework.pagination import PageNumberPagination
 
+class TwentyPerPagePagination(PageNumberPagination):
+    page_size = 20
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UsuarioComunSerializer
+    pagination_class = TwentyPerPagePagination
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create", "update", "partial_update", "destroy"]:
@@ -32,7 +36,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = UsuarioComun.objects.all()
+        qs = UsuarioComun.objects.all().order_by('-fecha_inscripcion')
 
         if user.is_superuser:
             return qs

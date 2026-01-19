@@ -14,10 +14,15 @@ from .serializers import (
     JobAdminListSerializer
 )
 from users.permissions import IsAdminPrin
+from rest_framework.pagination import PageNumberPagination
+
+class TwentyPerPagePagination(PageNumberPagination):
+    page_size = 20
 
 class JobViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Job.objects.all()
+    #queryset = Job.objects.all()
     permission_classes = [AllowAny]
+    pagination_class = TwentyPerPagePagination
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -69,8 +74,9 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class JobAdminViewSet(viewsets.ModelViewSet):
-    queryset = Job.objects.all()
+    #queryset = Job.objects.all()
     permission_classes = [IsAdminPrin]
+    pagination_class = TwentyPerPagePagination
 
     def get_serializer_class(self):
         if self.action == 'list':

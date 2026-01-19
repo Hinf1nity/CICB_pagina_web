@@ -12,11 +12,15 @@ from .serializers import (
     YearbookAdminListSerializer,
     YearbookAdminGeneralSerializer
 )
+from rest_framework.pagination import PageNumberPagination
 
+class TwentyPerPagePagination(PageNumberPagination):
+    page_size = 20
 
 class YearbookViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Yearbook.objects.all()
+    #queryset = Yearbook.objects.all()
     permission_classes = [AllowAny]
+    pagination_class = TwentyPerPagePagination
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -30,8 +34,9 @@ class YearbookViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class YearbookAdminViewSet(viewsets.ModelViewSet):
-    queryset = Yearbook.objects.all()
+    #queryset = Yearbook.objects.all()
     permission_classes = [IsAdminPrin]
+    pagination_class = TwentyPerPagePagination
 
     def get_serializer_class(self):
         if self.action == 'list':

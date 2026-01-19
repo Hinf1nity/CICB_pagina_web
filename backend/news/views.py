@@ -18,10 +18,15 @@ from .serializers import (
 from users.permissions import IsUser
 import os
 from users.permissions import IsAdminPrin
+from rest_framework.pagination import PageNumberPagination
+
+class TwentyPerPagePagination(PageNumberPagination):
+    page_size = 20
 
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = News.objects.all()
+    #queryset = News.objects.all()
     permission_classes = [AllowAny]
+    pagination_class = TwentyPerPagePagination
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -114,8 +119,9 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class NewsAdminViewSet(viewsets.ModelViewSet):
-    queryset = News.objects.all()
+    #queryset = News.objects.all()
     permission_classes = [IsAdminPrin]
+    pagination_class = TwentyPerPagePagination
 
     def get_serializer_class(self):
         if self.action == 'list':

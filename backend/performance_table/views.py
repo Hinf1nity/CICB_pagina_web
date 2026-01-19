@@ -8,10 +8,15 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from resource_chart.models import ResourceChart
+from rest_framework.pagination import PageNumberPagination
+
+class TwentyPerPagePagination(PageNumberPagination):
+    page_size = 20
 
 class PerformanceTableViewSet(viewsets.ModelViewSet):
-    queryset = PerformanceTable.objects.all()
+    queryset = PerformanceTable.objects.all().order_by('-id')
     serializer_class = PerformanceTableSerializer
+    pagination_class = TwentyPerPagePagination
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

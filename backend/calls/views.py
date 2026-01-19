@@ -12,11 +12,15 @@ from .serializers import (
     CallAdminListSerializer,
     CallAdminGeneralSerializer
 )
+from rest_framework.pagination import PageNumberPagination
 
+class TwentyPerPagePagination(PageNumberPagination):
+    page_size = 20
 
 class CallViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Call.objects.all()
+    #queryset = Call.objects.all()
     permission_classes = [AllowAny]
+    pagination_class = TwentyPerPagePagination
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -30,8 +34,9 @@ class CallViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CallAdminViewSet(viewsets.ModelViewSet):
-    queryset = Call.objects.all()
+    #queryset = Call.objects.all()
     permission_classes = [IsAdminPrin]
+    pagination_class = TwentyPerPagePagination
 
     def get_serializer_class(self):
         if self.action == 'list':
