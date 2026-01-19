@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'yearbooks',
     'PDFs',
     'IMGs',
-    'resource_chart',
     'stats',
     'performance_table',
 ]

@@ -1,28 +1,29 @@
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import api from '../api/kyClient';
 import { type NewsData } from "../validations/newsSchema";
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
 
 export function useNoticiasAdmin() {
-  const [noticias, setNoticias] = useState<NewsData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: noticias,
+    isPending,
+    isError,
+    error
+  } = useQuery({
+    queryKey: ['noticias_admin'],
+    queryFn: async () => {
+      return await api.get("news/news_admin/").json<NewsData[]>();
+    },
+  });
 
-  const fetchNoticias = async () => {
-    try {
-      const data: NewsData[] = await api.get("news/news_admin/").json();
-      setNoticias(data);
-    } catch (err) {
-      setError("Error al cargar las noticias");
-    } finally {
-      setLoading(false);
-    }
+  // Retornamos un array vacío por defecto si es undefined para evitar crash en el .map del UI
+  return {
+    noticias: noticias ?? [],
+    isPending,
+    isError,
+    error
   };
-  useEffect(() => {
-    fetchNoticias();
-  }, []);
-  return { noticias, loading, error, refetchNoticias: fetchNoticias };
 }
 
 export function useNoticias() {
@@ -32,7 +33,7 @@ export function useNoticias() {
     isError,
     error
   } = useQuery({
-    queryKey: ['noticias'],
+    queryKey: ['noticias_users'],
 
     // 2. La función SOLO busca datos, no los toca.
     queryFn: async () => {
@@ -115,115 +116,163 @@ export function useNoticiaDetail(id?: string) {
 }
 
 export function useNewsPost() {
-  const postNews = async (data: NewsData) => {
-    let pdf_id: string | null = null;
-    let img_id: string | null = null;
+  const queryClient = useQueryClient();
 
-    // Subir PDF si existe
-    if (data.pdf) {
-      pdf_id = await presignedUrlPost(data.pdf);
-    }
-    // Subir Imagen si existe
-    if (data.imagen) {
-      img_id = await presignedUrlPost(data.imagen);
-    }
-    // Crear FormData
-    const formData = new FormData();
-    formData.append("titulo", data.titulo);
-    formData.append("categoria", data.categoria);
-    formData.append("resumen", data.resumen);
-    formData.append("descripcion", data.descripcion);
-    formData.append("estado", data.estado);
-    // Archivos opcionales
-    if (img_id) {
-      formData.append("imagen", img_id);
-    }
-    if (pdf_id) {
-      formData.append("pdf", pdf_id);
-    }
+  return useMutation({
+    mutationFn: async (data: NewsData) => {
+      let pdf_id: string | null = null;
+      let img_id: string | null = null;
 
-    const response = await api.post("news/news_admin/", {
-      body: formData,
-    });
+      // Subir PDF si existe
+      if (data.pdf) {
+        pdf_id = await presignedUrlPost(data.pdf);
+      }
+      // Subir Imagen si existe
+      if (data.imagen) {
+        img_id = await presignedUrlPost(data.imagen);
+      }
+      // Crear FormData
+      const formData = new FormData();
+      formData.append("titulo", data.titulo);
+      formData.append("categoria", data.categoria);
+      formData.append("resumen", data.resumen);
+      formData.append("descripcion", data.descripcion);
+      formData.append("estado", data.estado);
+      // Archivos opcionales
+      if (img_id) {
+        formData.append("imagen", img_id);
+      }
+      if (pdf_id) {
+        formData.append("pdf", pdf_id);
+      }
 
-    return response.json();
-  };
+      const response = await api.post("news/news_admin/", {
+        body: formData,
+      });
 
-  return { postNews };
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success("Noticia creada exitosamente");
+      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+    },
+    onError: () => {
+      toast.error("Error al crear la noticia");
+    },
+  });
 }
 
 export function useNewsPatch() {
-  const patchNews = async (id: string, data: NewsData, data_old: NewsData) => {
-    const formData = new FormData();
-    let hasChanges = false;
 
-    const appendIfChanged = (key: string, value: any) => {
-      formData.append(key, value);
-      hasChanges = true;
-    };
+  const queryClient = useQueryClient();
 
-    if (data.titulo !== data_old.titulo) {
-      appendIfChanged("titulo", data.titulo);
-    }
-    if (data.categoria !== data_old.categoria) {
-      appendIfChanged("categoria", data.categoria);
-    }
-    if (data.resumen !== data_old.resumen) {
-      appendIfChanged("resumen", data.resumen);
-    }
-    if (data.descripcion !== data_old.descripcion) {
-      appendIfChanged("descripcion", data.descripcion);
-    }
-    if (data.estado !== data_old.estado) {
-      appendIfChanged("estado", data.estado);
-    }
-    if (data.imagen !== data_old.imagen) {
-      hasChanges = false;
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+      data_old
+    }: {
+      id: string;
+      data: NewsData;
+      data_old: NewsData;
+    }) => {
+      const formData = new FormData();
+      let hasChanges = false;
 
-      if (data_old.imagen_url) {
-        const uploadRes = await presignedUrlPatch(
-          data.imagen as File,
-          data_old.imagen_url as string
-        );
-        if (!uploadRes) {
-          throw new Error("Error al subir la imagen");
+      const appendIfChanged = (key: string, newValue: any, oldValue: any) => {
+        if (newValue !== oldValue) {
+          formData.append(key, newValue);
+          hasChanges = true;
         }
-      } else {
-        const imgId = await presignedUrlPost(data.imagen as File);
-        formData.append("imagen", imgId);
-      }
-    }
-    if (data.pdf !== data_old.pdf) {
-      hasChanges = true;
+      };
 
-      if (data_old.pdf_url) {
-        const uploadRes = await presignedUrlPatch(
-          data.pdf as File,
-          data_old.pdf_url as string
-        );
-        if (!uploadRes) {
-          throw new Error("Error al subir el PDF");
+      appendIfChanged("titulo", data.titulo, data_old.titulo);
+      appendIfChanged("categoria", data.categoria, data_old.categoria);
+      appendIfChanged("resumen", data.resumen, data_old.resumen);
+      appendIfChanged("descripcion", data.descripcion, data_old.descripcion);
+      appendIfChanged("estado", data.estado, data_old.estado);
+
+      // Manejo de la imagen
+      if (data.imagen !== data_old.imagen) {
+
+        if (data_old.imagen_url) {
+          // Actualizar imagen existente
+          const uploadRes = await presignedUrlPatch(
+            data.imagen as File,
+            data_old.imagen_url as string
+          );
+          if (!uploadRes) {
+            throw new Error("Error al subir la imagen");
+          }
+        } else {
+          // Nueva imagen
+          const imgId = await presignedUrlPost(data.imagen as File);
+          formData.append("imagen", imgId);
         }
-      } else {
-        const pdfId = await presignedUrlPost(data.pdf as File);
-        formData.append("pdf", pdfId);
+        hasChanges = true;
       }
-    }
 
-    if (!hasChanges) {
-      return null;
-    }
+      // Manejo del PDF
+      if (data.pdf !== data_old.pdf) {
+        if (data_old.pdf_url) {
+          // Actualizar PDF existente
+          const uploadRes = await presignedUrlPatch(
+            data.pdf as File,
+            data_old.pdf_url as string
+          );
+          if (!uploadRes) {
+            throw new Error("Error al subir el PDF");
+          }
+        } else {
+          // Nuevo PDF
+          const pdfId = await presignedUrlPost(data.pdf as File);
+          formData.append("pdf", pdfId);
+        }
+        hasChanges = true;
+      }
 
-    const response = await api.patch(`news/news_admin/${id}/`, {
-      body: formData,
-    });
-    return response.json();
-  };
+      if (!hasChanges) {
+        return null;
+      }
 
-  return { patchNews };
+      const response = await api.patch(`news/news_admin/${id}/`, {
+        body: formData,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success("Noticia actualizada exitosamente");
+      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+    },
+    onError: () => {
+      toast.error("Error al actualizar la noticia");
+    },
+  });
 }
 
-export async function useNewsDelete(id: number) {
-  const response = await api.delete(`news/news_admin/${id}/`);
-  return response.status === 204;
+export function useNewsDelete() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await api.delete(`news/news_admin/${id}/`);
+      return response.status === 204;
+    },
+    onSuccess: () => {
+      toast.success("Noticia eliminada exitosamente");
+      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+    },
+    onError: () => {
+      toast.error("Error al eliminar la noticia");
+    },
+    onMutate: () => {
+      const toastId = toast.loading("Eliminando noticia...");
+      return { toastId };
+    },
+    onSettled: (_data, _error, _variables, context) => {
+      if (context?.toastId) {
+        toast.dismiss(context.toastId);
+      }
+    },
+  });
 }

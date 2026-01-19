@@ -1,56 +1,55 @@
 from rest_framework import serializers
-from .models import PerformanceTable, QuantifiedResource
+from .models import PerformanceTable, QuantifiedResource, ResourceChart
 
-from resource_chart.models import ResourceChart
 
-class QuantifiedResourceInputSerializer(serializers.Serializer):
-    resource_id = serializers.IntegerField()
-    cantidad = serializers.CharField(max_length=255)
+class ResourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResourceChart
+        fields = ['id', 'nombre', 'unidad']
 
-class QuantifiedResourceDetailSerializer(serializers.ModelSerializer):
-    resource_id = serializers.ReadOnlyField(source='resource.id')
-    nombre = serializers.ReadOnlyField(source='resource.nombre')
-    unidad_recurso = serializers.ReadOnlyField(source='resource.unidad')
 
+class PerformanceResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuantifiedResource
-        fields = ['resource_id', 'nombre', 'unidad_recurso', 'cantidad']
+        fields = ['recurso', 'cantidad']
 
-    
+
 class PerformanceTableSerializer(serializers.ModelSerializer):
-    recursos_info = QuantifiedResourceInputSerializer(many=True, write_only=True)
-
-    recursos_detalles = QuantifiedResourceDetailSerializer(
-        source='quantifiedresource_set', 
-        many=True, 
-        read_only=True
-    )
+    recursos_info = PerformanceResourceSerializer(
+        many=True, write_only=True, source='quantifiedresource_set')
 
     class Meta:
         model = PerformanceTable
         fields = [
-            'id', 
-            'codigo', 
-            'actividad', 
-            'unidad', 
+            'id',
+            'codigo',
+            'actividad',
+            'unidad',
+            'categoria',
             'recursos_info',
-            'recursos_detalles'
         ]
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        recursos = QuantifiedResource.objects.filter(
+            performance_table=instance)
+        response['recursos_info'] = [
+            {
+                'recurso': ResourceSerializer(qr.recurso).data,
+                'cantidad': qr.cantidad
+            }
+            for qr in recursos
+        ]
+        return response
 
     def create(self, validated_data):
         recursos_data = validated_data.pop('recursos_info')
         performance_table = PerformanceTable.objects.create(**validated_data)
 
         for item in recursos_data:
-            resource_obj = ResourceChart.objects.get(id=item['resource_id'])
             QuantifiedResource.objects.create(
                 performance_table=performance_table,
-                resource=resource_obj,
-                cantidad=item['cantidad']
+                **item,
             )
 
         return performance_table
-
-class BulkResourceInputSerializer(serializers.Serializer):
-    nombre = serializers.CharField(max_length=255)
-    unidad = serializers.CharField(max_length=100)

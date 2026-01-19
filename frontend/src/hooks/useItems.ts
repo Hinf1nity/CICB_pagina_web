@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import api from "../api/kyClient";
 import type { GenericData } from "../validations/genericSchema";
 import { presignedUrlPatch, presignedUrlPost } from "./presignedUrl";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export function useItems(type: "yearbooks" | "regulation" | "announcements") {
   const [items, setItems] = useState<GenericData[]>([]);
@@ -85,78 +87,116 @@ export async function useItemDetailAdmin(id: number, type: "yearbooks" | "regula
 }
 
 export function useItemPost() {
-  const postItem = async (data: GenericData, type: "yearbooks" | "regulation" | "announcements") => {
-    const endpoint = type === "announcements" ? "calls" : type;
-    let finalPdfId: string | null = null;
+  const queryClient = useQueryClient();
 
-    if (data.pdf) {
-      finalPdfId = await presignedUrlPost(data.pdf);
+  return useMutation({
+    mutationFn: async ({ data, type }: { data: GenericData, type: "yearbooks" | "regulation" | "announcements" }) => {
+      const endpoint = type === "announcements" ? "calls" : type;
+      let finalPdfId: string | null = null;
+
+      if (data.pdf) {
+        finalPdfId = await presignedUrlPost(data.pdf);
+      }
+
+      const formData = new FormData();
+      formData.append("nombre", data.nombre);
+      formData.append("descripcion", data.descripcion);
+      formData.append("estado", data.estado);
+
+      if (type !== "announcements") {
+        formData.append("fecha_publicacion", data.fecha_publicacion);
+      }
+
+      if (finalPdfId) formData.append("pdf", finalPdfId.toString());
+
+      const response = await api.post(`${endpoint}/${endpoint}_admin/`, { body: formData });
+      return response;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+      toast.success("Elemento creado exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al crear el elemento");
     }
-
-    const formData = new FormData();
-    formData.append("nombre", data.nombre);
-    formData.append("descripcion", data.descripcion);
-    formData.append("estado", data.estado);
-
-    if (type !== "announcements") {
-      formData.append("fecha_publicacion", data.fecha_publicacion);
-    }
-
-    if (finalPdfId) formData.append("pdf", finalPdfId.toString());
-
-    return await api.post(`${endpoint}/${endpoint}_admin/`, { body: formData });
-  };
-
-  return { postItem };
+  });
 }
 
 export function useItemPatch() {
-  const patchItem = async (id: number, data: GenericData, old_data: GenericData, type: "yearbooks" | "regulation" | "announcements") => {
-    const endpoint = type === "announcements" ? "calls" : type;
-    let hasChanges = false;
+  const queryClient = useQueryClient();
 
-    const appendIfChanged = (key: string, value: any) => {
-      formData.append(key, value);
-      hasChanges = true;
-    };
+  return useMutation({
+    mutationFn: async ({ id, data, data_old, type }: { id: number, data: GenericData, data_old: GenericData, type: "yearbooks" | "regulation" | "announcements" }) => {
+      const endpoint = type === "announcements" ? "calls" : type;
+      let hasChanges = false;
+      const formData = new FormData();
 
-    const formData = new FormData();
-    if (data.nombre !== old_data.nombre) appendIfChanged("nombre", data.nombre);
-    if (data.descripcion !== old_data.descripcion) appendIfChanged("descripcion", data.descripcion);
-    if (data.estado !== old_data.estado) appendIfChanged("estado", data.estado);
-
-    if (type !== "announcements" && data.fecha_publicacion !== old_data.fecha_publicacion) {
-      appendIfChanged("fecha_publicacion", data.fecha_publicacion);
-    }
-
-    if (data.pdf !== old_data.pdf) {
-      hasChanges = true;
-      if (old_data.pdf_url) {
-        const uploadRes = await presignedUrlPatch(
-          data.pdf as File,
-          old_data.pdf_url as string
-        );
-        if (!uploadRes) {
-          throw new Error("Error al subir el PDF");
+      const appendIfChanged = (key: string, newValue: any, oldValue: any) => {
+        if (newValue !== oldValue) {
+          formData.append(key, newValue);
+          hasChanges = true;
         }
-      } else {
-        const pdfId = await presignedUrlPost(data.pdf as File);
-        formData.append("pdf", pdfId);
+      };
+
+      appendIfChanged("nombre", data.nombre, data_old.nombre);
+      appendIfChanged("descripcion", data.descripcion, data_old.descripcion);
+      appendIfChanged("estado", data.estado, data_old.estado);
+      appendIfChanged("fecha_publicacion", data.fecha_publicacion, data_old.fecha_publicacion);
+
+      if (data.pdf !== data_old.pdf) {
+        hasChanges = true;
+        if (data_old.pdf_url) {
+          const uploadRes = await presignedUrlPatch(
+            data.pdf as File,
+            data_old.pdf_url as string
+          );
+          if (!uploadRes) {
+            throw new Error("Error al subir el PDF");
+          }
+        } else {
+          const pdfId = await presignedUrlPost(data.pdf as File);
+          formData.append("pdf", pdfId);
+        }
       }
+
+      if (!hasChanges) {
+        return null;
+      }
+
+      const response = await api.patch(`${endpoint}/${endpoint}_admin/${id}/`, { body: formData });
+      return response;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+      toast.success("Elemento actualizado exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al actualizar el elemento");
     }
-    if (!hasChanges) {
-      return null;
-    }
-    const response = await api.patch(`${endpoint}/${endpoint}_admin/${id}/`, { body: formData });
-    return response.json;
-  };
-  return { patchItem };
+  });
 }
 
 export function useItemDelete() {
-  const deleteItem = async (id: number, type: "yearbooks" | "regulation" | "announcements") => {
-    const endpoint = type === "announcements" ? "calls" : type;
-    return await api.delete(`${endpoint}/${endpoint}_admin/${id}/`);
-  };
-  return { deleteItem };
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, type }: { id: number, type: "yearbooks" | "regulation" | "announcements" }) => {
+      const endpoint = type === "announcements" ? "calls" : type;
+      return await api.delete(`${endpoint}/${endpoint}_admin/${id}/`);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+      toast.success("Elemento eliminado exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al eliminar el elemento");
+    },
+    onMutate: () => {
+      const toastId = toast.loading("Eliminando elemento...");
+      return { toastId };
+    },
+    onSettled: (_data, _error, _variables, context) => {
+      toast.dismiss(context?.toastId);
+    }
+  });
 }

@@ -36,9 +36,10 @@ export function AdminJobsManager() {
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<JobData | null>(null);
-  const { postJob } = useJobsPost();
-  const { jobs, refetchJobs } = useJobsAdmin();
-  const { patchJob } = useJobPatch();
+  const { mutate: postJob, isPending: isPosting } = useJobsPost();
+  const { jobs } = useJobsAdmin();
+  const { mutate: patchJob, isPending: isPatching } = useJobPatch();
+  const { mutate: deleteJob } = useJobDelete();
   // console.log('Errors en el formulario:', errors);
 
   const handleCreate = () => {
@@ -79,26 +80,29 @@ export function AdminJobsManager() {
   const handleDelete = async (id: number) => {
     if (confirm('¿Estás seguro de eliminar esta oferta laboral?')) {
       console.log('Eliminando oferta:', id);
-      const res = await useJobDelete(id);
-      console.log('Respuesta del servidor al eliminar:', res);
-      refetchJobs();
+      deleteJob(id);
     }
   };
 
 
-  const handleSave: SubmitHandler<JobData> = async (data) => {
-    setIsDialogOpen(false);
+  const handleSave: SubmitHandler<JobData> = (data) => {
     console.log('Guardando oferta:', data);
     if (editingItem && editingItem.id !== undefined) {
-      const res = await patchJob(editingItem.id, data, editingItem);
-      console.log('Respuesta del servidor:', res);
-      setEditingItem(null);
+      patchJob({ id: editingItem.id, data, data_old: editingItem }, {
+        onSuccess: () => {
+          setEditingItem(null);
+          setIsDialogOpen(false);
+          reset();
+        }
+      });
     } else {
-      const res = await postJob(data);
-      console.log('Respuesta del servidor:', res);
+      postJob(data, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          reset();
+        }
+      });
     }
-    refetchJobs();
-    reset();
   };
 
   return (
@@ -431,11 +435,11 @@ export function AdminJobsManager() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" className="bg-primary text-primary-foreground">
-                Guardar
+              <Button type="submit" disabled={isPosting || isPatching} className="bg-primary text-primary-foreground">
+                {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Trabajo') : (isPosting ? 'Guardando...' : 'Guardar Trabajo')}
               </Button>
             </DialogFooter>
           </form>

@@ -22,11 +22,11 @@ export function AdminYearbookPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
 
-  const { items: yearbooks, refetchItems, loading } = useItemsAdmin("yearbooks");
+  const { items: yearbooks, loading } = useItemsAdmin("yearbooks");
   console.log("Yearbooks loaded:", yearbooks);
-  const { postItem } = useItemPost();
-  const { patchItem } = useItemPatch();
-  const { deleteItem } = useItemDelete();
+  const { mutate: postItem, isPending: isPosting } = useItemPost();
+  const { mutate: patchItem, isPending: isPatching } = useItemPatch();
+  const { mutate: deleteItem } = useItemDelete();
 
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm<GenericData>({
     resolver: zodResolver(genericSchema),
@@ -63,25 +63,28 @@ export function AdminYearbookPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar este anuario?')) {
-      await deleteItem(id, "yearbooks");
-      refetchItems();
+      deleteItem({ id, type: "yearbooks" });
     }
   };
 
-  const handleSave: SubmitHandler<GenericData> = async (data) => {
-    try {
-      if (editingItem?.id) {
-        await patchItem(editingItem.id, data, editingItem, "yearbooks");
-      } else {
-        await postItem(data, "yearbooks");
-      }
-      refetchItems();
-      setIsDialogOpen(false);
-      reset();
-    } catch (error) {
-      console.error("Error al guardar:", error);
+  const handleSave: SubmitHandler<GenericData> = (data) => {
+    if (editingItem?.id) {
+      patchItem({ id: editingItem.id, data, data_old: editingItem, type: "yearbooks" }, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          setEditingItem(null);
+          reset();
+        }
+      });
+    } else {
+      postItem({ data, type: "yearbooks" }, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          reset();
+        }
+      });
     }
   };
 
@@ -115,9 +118,9 @@ export function AdminYearbookPage() {
           </Button>
           <div className="flex items-center gap-3 mb-3">
             <BookOpen className="w-10 h-10" />
-            <h1 className="text-3xl font-bold">Gestión de Anuarios</h1>
+            <h1 className="text-3xl font-bold mb-3">Gestión de Anuarios</h1>
           </div>
-          <p className="text-primary-foreground/80">Administra los anuarios anuales del Colegio de Ingenieros Civiles de Bolivia</p>
+          <p>Administra los anuarios anuales del Colegio de Ingenieros Civiles de Bolivia</p>
         </div>
       </div>
 
@@ -144,8 +147,8 @@ export function AdminYearbookPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Total Anuarios</p>
-                  <p className="text-3xl font-bold">{yearbooks.length}</p>
+                  <p className="text-muted-foreground mb-1">Total Anuarios</p>
+                  <p className="text-3xl">{yearbooks.length}</p>
                 </div>
                 <BookOpen className="w-8 h-8 text-primary" />
               </div>
@@ -156,8 +159,8 @@ export function AdminYearbookPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Publicados</p>
-                  <p className="text-3xl font-bold">
+                  <p className="text-muted-foreground mb-1">Publicados</p>
+                  <p className="text-3xl">
                     {yearbooks.filter(y => y.estado === 'publicado').length}
                   </p>
                 </div>
@@ -170,8 +173,8 @@ export function AdminYearbookPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Borradores</p>
-                  <p className="text-3xl font-bold">
+                  <p className="text-muted-foreground mb-1">Borradores</p>
+                  <p className="text-3xl">
                     {yearbooks.filter(y => y.estado === 'borrador').length}
                   </p>
                 </div>
@@ -184,10 +187,10 @@ export function AdminYearbookPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Año Actual</p>
-                  <p className="text-3xl font-bold">{new Date().getFullYear()}</p>
+                  <p className="text-muted-foreground mb-1">Año Actual</p>
+                  <p className="text-3xl">{new Date().getFullYear()}</p>
                 </div>
-                <Calendar className="w-8 h-8 text-muted-foreground" />
+                <Calendar className="w-8 h-8 text-gray-500" />
               </div>
             </CardContent>
           </Card>
@@ -328,10 +331,10 @@ export function AdminYearbookPage() {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                <Button type="submit">
-                  {editingItem ? 'Actualizar' : 'Crear'} Anuario
+                <Button type="submit" disabled={isPosting || isPatching} className='bg-primary text-primary-foreground'>
+                  {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Anuario') : (isPosting ? 'Guardando...' : 'Guardar Anuario')}
                 </Button>
               </div>
             </form>
@@ -339,52 +342,55 @@ export function AdminYearbookPage() {
         </Dialog>
 
         {/* Lista de Anuarios */}
-        <Card className="shadow-md">
-          <CardHeader className="border-b">
+        <Card>
+          <CardHeader>
             <CardTitle>Anuarios Registrados</CardTitle>
             <CardDescription>{filteredYearbooks.length} anuario(s) encontrado(s)</CardDescription>
           </CardHeader>
-          <CardContent className="pt-6 space-y-4">
+          <CardContent className="space-y-4">
             {filteredYearbooks.map((yearbook) => (
-              <div key={yearbook.id} className="border border-border rounded-lg p-5 flex justify-between items-center gap-4 hover:shadow-md transition-shadow">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-lg text-foreground">{yearbook.nombre}</h3>
-                    <Badge className={getStatusColor(yearbook.estado)}>
-                      {yearbook.estado === 'publicado' ? 'Publicado' : 'Borrador'}
-                    </Badge>
+              <div key={yearbook.id} className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                      <h3 className="text-foreground">{yearbook.nombre}</h3>
+                      <Badge className={getStatusColor(yearbook.estado)}>
+                        {yearbook.estado === 'publicado' ? 'Publicado' : 'Borrador'}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground mb-3">{yearbook.descripcion}</p>
+                    <div className="flex flex-wrap gap-4 text-muted-foreground">
+                      <span>
+                        Publicado: {new Date(yearbook.fecha_publicacion).toLocaleDateString('es-BO')}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2 max-w-4xl">{yearbook.descripcion}</p>
-                  <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    Publicado: {yearbook.fecha_publicacion ? new Date(yearbook.fecha_publicacion).toLocaleDateString('es-BO') : 'Sin fecha'}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {yearbook.pdf_url && (
-                    <Button variant="outline" size="sm" onClick={() => window.open(yearbook.pdf_url as string, '_blank')}>
-                      <Download className="w-4 h-4 mr-2" /> PDF
+                  <div className="flex gap-2">
+                    {yearbook.pdf_url && (
+                      <Button variant="outline" size="sm" onClick={() => window.open(yearbook.pdf_url as string, '_blank')}>
+                        <Download className="w-4 h-4 mr-2" /> PDF
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(yearbook)}>
+                      <Edit className="w-4 h-4" />
                     </Button>
-                  )}
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(yearbook)}>
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => yearbook.id && handleDelete(yearbook.id)}
-                    className="text-red-500 hover:bg-red-50 border-red-100"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => yearbook.id && handleDelete(yearbook.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
 
             {!loading && filteredYearbooks.length === 0 && (
-              <div className="text-center py-16">
+              <div className="text-center py-12 text-muted-foreground">
                 <BookOpen className="w-12 h-12 mx-auto mb-3 text-muted-foreground/40" />
-                <p className="text-slate-400">No se encontraron anuarios en la base de datos</p>
+                <p>No se encontraron anuarios en la base de datos</p>
               </div>
             )}
           </CardContent>

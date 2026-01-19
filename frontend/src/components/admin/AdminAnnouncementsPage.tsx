@@ -25,10 +25,10 @@ export function AdminAnnouncementsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
 
-  const { items: announcements, refetchItems, loading } = useItemsAdmin("announcements");
-  const { postItem } = useItemPost();
-  const { patchItem } = useItemPatch();
-  const { deleteItem } = useItemDelete();
+  const { items: announcements, loading } = useItemsAdmin("announcements");
+  const { mutate: postItem, isPending: isPosting } = useItemPost();
+  const { mutate: patchItem, isPending: isPatching } = useItemPatch();
+  const { mutate: deleteItem } = useItemDelete();
 
   const stats = {
     total: announcements.length,
@@ -66,24 +66,28 @@ export function AdminAnnouncementsPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar esta publicación?")) {
-      await deleteItem(id, "announcements");
-      refetchItems();
+      deleteItem({ id, type: "announcements" });
     }
   };
 
-  const handleSave: SubmitHandler<GenericData> = async (data) => {
-    try {
-      if (editingItem?.id) {
-        await patchItem(editingItem.id, data, editingItem, "announcements");
-      } else {
-        await postItem(data, "announcements");
-      }
-      refetchItems();
-      setIsDialogOpen(false);
-    } catch (error) {
-      console.error("Error al guardar:", error);
+  const handleSave: SubmitHandler<GenericData> = (data) => {
+    if (editingItem?.id) {
+      patchItem({ id: editingItem.id, data, data_old: editingItem, type: "announcements" }, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          setEditingItem(null);
+          reset();
+        }
+      });
+    } else {
+      postItem({ data, type: "announcements" }, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          reset();
+        }
+      });
     }
   };
 
@@ -350,10 +354,10 @@ export function AdminAnnouncementsPage() {
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-              <Button type="submit" className="bg-[#003D33] hover:bg-[#002D26] px-8">
-                {editingItem ? 'Guardar Cambios' : 'Crear Convocatoria'}
+              <Button type="submit" disabled={isPosting || isPatching} className="bg-primary text-primary-foreground">
+                {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Anuncio') : (isPosting ? 'Guardando...' : 'Guardar Anuncio')}
               </Button>
             </div>
           </form>

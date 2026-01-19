@@ -14,7 +14,7 @@ export function NewsPage() {
   const [category, setCategory] = useState('all');
   const navigate = useNavigate();
 
-  const { noticias, loading, error } = useNoticias();
+  const { noticias, isLoading, error } = useNoticias();
 
   const filteredNews = useMemo(() => {
     const getTime = (s?: string) => (s ? new Date(s).getTime() : 0);
@@ -28,7 +28,7 @@ export function NewsPage() {
       .sort((a, b) => getTime(b.fecha_publicacion) - getTime(a.fecha_publicacion));
   }, [noticias, searchTerm, category]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Cargando noticias...</p>

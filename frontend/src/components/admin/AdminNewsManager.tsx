@@ -32,9 +32,10 @@ export function AdminNewsManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
-  const { postNews } = useNewsPost();
-  const { noticias, refetchNoticias } = useNoticiasAdmin();
-  const { patchNews } = useNewsPatch();
+  const { mutate, isPending } = useNewsPost();
+  const { noticias } = useNoticiasAdmin();
+  const { mutate: patchNews, isPending: isPatching } = useNewsPatch();
+  const { mutate: deleteNews } = useNewsDelete();
 
   const handleCreate = () => {
     reset({
@@ -60,28 +61,31 @@ export function AdminNewsManager() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (confirm('¿Estás seguro de eliminar esta noticia?')) {
       console.log('Eliminando noticia:', id);
-      const res = await useNewsDelete(id);
-      console.log('Respuesta del servidor al eliminar:', res);
-      refetchNoticias();
+      deleteNews(id);
     }
   };
 
-  const handleSave: SubmitHandler<NewsData> = async (data) => {
-    setIsDialogOpen(false);
+  const handleSave: SubmitHandler<NewsData> = (data) => {
     console.log('Guardando noticias:', data);
     if (editingItem) {
-      const res = await patchNews(editingItem.id, data, editingItem);
-      console.log('Respuesta del servidor:', res);
-      setEditingItem(null);
+      patchNews({ id: editingItem.id, data, data_old: editingItem }, {
+        onSuccess: () => {
+          setEditingItem(null);
+          setIsDialogOpen(false);
+          reset();
+        }
+      });
     } else {
-      const res = await postNews(data);
-      console.log('Respuesta del servidor:', res);
+      mutate(data, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          reset();
+        },
+      });
     }
-    reset();
-    refetchNoticias();
   };
 
 
@@ -446,11 +450,11 @@ export function AdminNewsManager() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button type='submit' className="bg-primary text-primary-foreground">
-                Guardar
+              <Button type='submit' disabled={isPending || isPatching} className="bg-primary text-primary-foreground">
+                {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Noticia') : (isPending ? 'Guardando...' : 'Guardar Noticia')}
               </Button>
             </DialogFooter>
           </form>

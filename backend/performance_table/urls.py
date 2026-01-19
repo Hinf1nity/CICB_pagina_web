@@ -1,11 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PerformanceTableViewSet, BulkResourceCreateView
+from .views import PerformanceTableViewSet, ResourcesViewSet
 
 router = DefaultRouter()
-router.register(r'', PerformanceTableViewSet)
+router.register(r'performance', PerformanceTableViewSet,
+                basename='performance')
+router.register(r'resources', ResourcesViewSet, basename='resources')
 
 urlpatterns = [
-    path('bulk-upload/', BulkResourceCreateView.as_view(), name='resource-bulk-check'),
     path('', include(router.urls)),
 ]

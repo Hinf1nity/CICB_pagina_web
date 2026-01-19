@@ -19,7 +19,7 @@ export function AdminPerformancePage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al Panel
           </Button>
-          <h1 className="mb-3">Gestión de Rendimientos</h1>
+          <h1 className="text-3xl font-bold mb-3">Gestión de Rendimientos</h1>
           <p>Administra la tabla de rendimientos de actividades de construcción</p>
         </div>
       </div>

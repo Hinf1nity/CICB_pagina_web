@@ -18,7 +18,7 @@ export function AdminJobsPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al Panel
           </Button>
-          <h1 className="mb-3">Gestión de Trabajos</h1>
+          <h1 className="text-3xl font-bold mb-3">Gestión de Trabajos</h1>
           <p>Administra las ofertas laborales publicadas en el portal</p>
         </div>
       </div>

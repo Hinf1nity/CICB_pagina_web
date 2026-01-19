@@ -20,10 +20,10 @@ export function AdminUsersManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
-  const { postUser } = useUsersPost();
-  const { users, refetchUsers } = useUsersAdmin();
-  const { patchUser } = useUsersPatch();
-  console.log(users);
+  const { mutate: postUser, isPending: isPosting } = useUsersPost();
+  const { users } = useUsersAdmin();
+  const { mutate: patchUser, isPending: isPatching } = useUsersPatch();
+  const { mutate: deleteUser } = useUserDelete();
   const { register, handleSubmit, control, formState: { errors }, reset } = useForm<UserData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -68,17 +68,17 @@ export function AdminUsersManager() {
     console.log('Detalles del usuario para editar:', detailedUser);
     reset({
       ...detailedUser,
+      rnic: detailedUser.rnic?.toString(),
+      mail: detailedUser.mail || undefined,
     });
     setEditingUser(detailedUser);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (confirm('¿Estás seguro de eliminar este usuario?')) {
       console.log('Eliminando usuario:', id);
-      const res = await useUserDelete(id);
-      console.log('Respuesta del servidor:', res);
-      refetchUsers();
+      deleteUser(id);
     }
   };
 
@@ -87,25 +87,30 @@ export function AdminUsersManager() {
     console.log('Cambiando estado del usuario', id, 'a', newStatus);
     const data = { estado: newStatus };
     const data_old = { estado: currentStatus };
-    const res = await patchUser(id, data, data_old);
-    console.log('Respuesta del servidor:', res);
-    refetchUsers();
+    patchUser({ id, data, data_old });
   };
 
-  const handleSave: SubmitHandler<UserData> = async (data) => {
-    setIsDialogOpen(false);
+  const handleSave: SubmitHandler<UserData> = (data) => {
     if (editingUser) {
       console.log('Actualizando usuario:', data);
-      const res = await patchUser(editingUser.id, data, editingUser);
-      console.log('Respuesta del servidor:', res);
+      patchUser({ id: editingUser.id, data, data_old: editingUser }, {
+        onSuccess: () => {
+          setEditingUser(null);
+          setIsDialogOpen(false);
+          setNewsImagePreview("");
+          reset();
+        }
+      });
     } else {
       console.log('Guardando oferta:', data);
-      const res = await postUser(data);
-      console.log('Respuesta del servidor:', res);
+      postUser(data, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          setNewsImagePreview("");
+          reset();
+        }
+      });
     }
-    setNewsImagePreview("");
-    reset();
-    refetchUsers();
   };
 
   const getStatusColor = (status: string) => {
@@ -518,11 +523,11 @@ export function AdminUsersManager() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button type='submit' className="bg-primary text-primary-foreground">
-                Guardar
+              <Button type='submit' disabled={isPosting || isPatching} className="bg-primary text-primary-foreground">
+                {editingUser ? (isPatching ? 'Actualizando...' : 'Actualizar Usuario') : (isPosting ? 'Guardando...' : 'Guardar Usuario')}
               </Button>
             </DialogFooter>
           </form>

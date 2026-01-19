@@ -1,17 +1,18 @@
-from .models import PerformanceTable
-from .serializers import PerformanceTableSerializer, BulkResourceInputSerializer
 
-from rest_framework import viewsets
+from .models import PerformanceTable, ResourceChart
+from .serializers import PerformanceTableSerializer, ResourceSerializer
+
+from rest_framework import viewsets, filters, status
 from rest_framework.permissions import AllowAny, IsAdminUser
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 
 from resource_chart.models import ResourceChart
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
+
 
 class PerformanceTableViewSet(viewsets.ModelViewSet):
     queryset = PerformanceTable.objects.all().order_by('-id')
@@ -22,27 +23,26 @@ class PerformanceTableViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             permission_classes = [AllowAny]
         else:
-            permission_classes = [IsAdminUser]
+            permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
-    
-class BulkResourceCreateView(APIView):
-    def post(self, request):
-        serializer = BulkResourceInputSerializer(data=request.data, many=True)
-        
-        if serializer.is_valid():
-            ids_list = []
-            
-            for item in serializer.validated_data:
-                name = item['nombre']
-                unit = item['unidad']
-                
-                obj, created = ResourceChart.objects.get_or_create(
-                    nombre=name,
-                    defaults={'unidad': unit}
-                )
-                
-                ids_list.append(obj.id)
-            
-            return Response(ids_list, status=status.HTTP_200_OK)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResourcesViewSet(viewsets.ModelViewSet):
+    queryset = ResourceChart.objects.all()
+    serializer_class = ResourceSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nombre']
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        is_many = isinstance(request.data, list)
+
+        if not is_many:
+            return super().create(request, *args, **kwargs)
+
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

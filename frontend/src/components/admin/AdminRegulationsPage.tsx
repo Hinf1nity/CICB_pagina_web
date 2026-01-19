@@ -45,10 +45,10 @@ export function AdminRegulationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
-  const { items: regulations, refetchItems } = useItemsAdmin("regulation");
-  const { postItem } = useItemPost();
-  const { patchItem } = useItemPatch();
-  const { deleteItem } = useItemDelete();
+  const { items: regulations } = useItemsAdmin("regulation");
+  const { mutate: postItem, isPending: isPosting } = useItemPost();
+  const { mutate: patchItem, isPending: isPatching } = useItemPatch();
+  const { mutate: deleteItem } = useItemDelete();
   const { register, handleSubmit, formState: { errors }, control, reset } = useForm<GenericData>(
     {
       resolver: zodResolver(genericSchema),
@@ -74,11 +74,9 @@ export function AdminRegulationsPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar este reglamento?')) {
-      console.log('Eliminando reglamento con ID:', id);
-      await deleteItem(id, "regulation");
-      refetchItems();
+      deleteItem({ id, type: "regulation" });
     }
   };
 
@@ -94,18 +92,25 @@ export function AdminRegulationsPage() {
     setIsDialogOpen(true);
   };
 
-  const handleSave: SubmitHandler<GenericData> = async (data) => {
+  const handleSave: SubmitHandler<GenericData> = (data) => {
     if (editingItem && editingItem.id !== undefined) {
-      await patchItem(editingItem.id, data, editingItem, "regulation");
+      patchItem({ id: editingItem.id, data, data_old: editingItem, type: "regulation" }, {
+        onSuccess: () => {
+          setEditingItem(null);
+          setIsDialogOpen(false);
+          reset();
+        }
+      });
       console.log('Editando reglamento:', data);
     } else {
       console.log('Creando nuevo reglamento:', data);
-      await postItem(data, "regulation");
+      postItem({ data, type: "regulation" }, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          reset();
+        }
+      });
     }
-    refetchItems();
-    setIsDialogOpen(false);
-    setEditingItem(null);
-    reset();
   };
 
   const filteredRegulations = regulations.filter(regulation => {
@@ -140,15 +145,15 @@ export function AdminRegulationsPage() {
         <div className="max-w-7xl mx-auto px-4">
           <Button
             variant="ghost"
-            className="mb-4 text-primary-foreground hover:bg-primary/80"
             onClick={() => navigate('/admin')}
+            className="mb-4 text-primary-foreground hover:bg-primary-foreground/10"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al Panel
           </Button>
           <div className="flex items-center gap-3 mb-3">
             <FileText className="w-10 h-10" />
-            <h1>Gestión de Reglamentos</h1>
+            <h1 className="text-3xl font-bold mb-3">Gestión de Reglamentos</h1>
           </div>
           <p>Administra los reglamentos, normativas y documentos oficiales del CICB</p>
         </div>
@@ -353,11 +358,11 @@ export function AdminRegulationsPage() {
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button type='submit' className="bg-primary text-primary-foreground">
-                    {editingItem ? 'Actualizar' : 'Crear'} Reglamento
+                  <Button type='submit' disabled={isPosting || isPatching} className="bg-primary text-primary-foreground">
+                    {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Reglamento') : (isPosting ? 'Guardando...' : 'Guardar Reglamento')}
                   </Button>
                 </div>
               </form>

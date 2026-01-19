@@ -75,6 +75,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         data = {"access": str(access_token)}
         return data
 
+
 class UsuarioComunSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
@@ -86,7 +87,7 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'id', 'rnic', 'fecha_inscripcion',
-            'departamento', 'registro_empleado', 'estado', 'rol'
+            'departamento', 'estado', 'rol'
         ]
         extra_kwargs = {
             'rni': {'write_only': True}
@@ -95,7 +96,8 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         rni = validated_data.get('rni')
         if not rni:
-            raise serializers.ValidationError({"rni": "Este campo es requerido para crear la contraseña."})
+            raise serializers.ValidationError(
+                {"rni": "Este campo es requerido para crear la contraseña."})
 
         # Validación de unicidad
         if UsuarioComun.objects.filter(rni=rni).exists():
@@ -109,7 +111,9 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
             validated_data['password'] = make_password(validated_data['rni'])
         return super().update(instance, validated_data)
 
+
 class UsuarioComunListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
-        fields = ['nombre','rnic','rni','fecha_inscripcion','celular','especialidad','departamento','registro_empleado','estado'] 
+        fields = ['id', 'nombre', 'rnic', 'rni', 'fecha_inscripcion', 'celular',
+                  'especialidad', 'departamento', 'registro_empleado', 'estado']

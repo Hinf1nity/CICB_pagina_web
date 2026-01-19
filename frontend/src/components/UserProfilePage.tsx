@@ -18,7 +18,7 @@ import {
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
-import { useUsersDetailAdmin, useUsersPatch } from '../hooks/useUsers';
+import { useUserPatchUserProfile, useUserProfileQuery } from '../hooks/useUsers';
 import { type UserPageData, userPageSchema } from '../validations/userPageSchema';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Alert, AlertTitle, AlertDescription } from './ui/alert';
@@ -32,13 +32,14 @@ interface Certification {
 
 export function UserProfilePage() {
   const navigate = useNavigate();
+  const { logout, user, updateUser } = useAuth();
+  const { data, isLoading } = useUserProfileQuery(user?.id.toString());
   const [isEditing, setIsEditing] = useState(false);
   const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
   const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
   const [tempPhotoUrl, setTempPhotoUrl] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
-  const { logout, user, updateUser } = useAuth();
-  const { patchUser } = useUsersPatch();
+  const { mutate: patchUser } = useUserPatchUserProfile();
   const [userDataCopy, setUserDataCopy] = useState<Partial<UserPageData>>({});
   const [userData, setUserData] = useState({
     id: '',
@@ -65,118 +66,106 @@ export function UserProfilePage() {
   });
 
   useEffect(() => {
-    async function fetchUserData() {
-      if (user) {
-        const data = await useUsersDetailAdmin(user.id);
-        setUserDataCopy(data);
-        const yearsDifference = new Date().getFullYear() - new Date(data.fecha_inscripcion).getFullYear();
-        const hasPassedAniversary = (new Date().getMonth() > new Date(data.fecha_inscripcion).getMonth()) ||
-          (new Date().getMonth() === new Date(data.fecha_inscripcion).getMonth() && new Date().getDate() >= new Date(data.fecha_inscripcion).getDate());
-        const years = hasPassedAniversary ? yearsDifference : yearsDifference - 1;
+    if (data) {
+      reset(data.formData);
 
-        setUserData({
-          id: data.id?.toString() || '',
-          name: data.nombre,
-          registration: data.rni,
-          specialty: `Ing. ${data.especialidad.charAt(0).toUpperCase() + data.especialidad.slice(1).toLowerCase()}` || 'No especificada',
-          city: data.departamento || 'No especificada',
-          registrationDate: data.fecha_inscripcion,
-          status: data.estado?.charAt(0).toUpperCase() + data.estado?.slice(1).toLowerCase(),
-          statusLaboral: data.registro_empleado ? data.registro_empleado.charAt(0).toUpperCase() +
-            data.registro_empleado.slice(1).toLowerCase() : 'No especificado',
-          experienceYears: years,
+      setUserData(data.uiData);
+      if (typeof data.uiData.photoUrl === 'string') {
+        setPhotoUrl(data.uiData.photoUrl);
+      }
+      setCertifications(data.uiData.certifications || []);
+
+      setUserDataCopy(data.raw);
+    }
+  }, [data, reset]);
+
+  if (isLoading) return <div>Cargando...</div>;
+
+
+  const handleSave: SubmitHandler<UserPageData> = (data) => {
+    data.certificaciones = userDataCopy.certificaciones || [];
+    if (data !== userDataCopy) {
+      try {
+        patchUser({ id: parseInt(userData.id), data, data_old: userDataCopy as Partial<UserPageData> }, {
+          onSuccess: (res: any) => {
+            if (user?.name !== res?.nombre) {
+              updateUser(res?.nombre);
+            }
+          }
         });
-        if (data.imagen) {
-          setPhotoUrl(data.imagen as string);
-        }
-        else {
-          setPhotoUrl('');
-        }
-        setCertifications(data.certificaciones?.map(cert => ({
-          nombre: cert.nombre,
-          institucion: cert.institucion,
-          anio: cert.anio
-        })) || []);
-        reset({
-          nombre: data.nombre,
-          mail: data.mail || '',
-          celular: data.celular,
-          especialidad: data.especialidad,
-          certificaciones: [],
-          registro_empleado: data.registro_empleado,
-          imagen: data.imagen || undefined,
-          imagen_url: data.imagen_url || '',
-        });
+        setIsEditing(false);
+      } catch (error) {
+        console.error('Error al guardar los cambios:', error);
       }
     }
-    fetchUserData();
-  }, [user]);
-
-  const handleSave: SubmitHandler<UserPageData> = async (data) => {
-    if (!isEditing) {
-      setIsEditing(true);
-      return;
-    }
-    setIsEditing(false);
-    data.certificaciones = userDataCopy.certificaciones || [];
-    const res = await patchUser(parseInt(userData.id), data, userDataCopy as Partial<UserPageData>) as UserPageData;
-    if (!res) return;
-    reset({
-      nombre: res.nombre,
-      mail: res.mail || '',
-      celular: res.celular,
-      especialidad: res.especialidad,
-      registro_empleado: res.registro_empleado,
-    });
-    if (user?.name !== res.nombre) {
-      updateUser(res.nombre);
-    }
-    setUserDataCopy(res);
-    setUserData({
-      ...userData,
-      name: res.nombre,
-      specialty: `Ing. ${res.especialidad.charAt(0).toUpperCase() + res.especialidad.slice(1).toLowerCase()}` || 'No especificada',
-      statusLaboral: res.registro_empleado ? res.registro_empleado.charAt(0).toUpperCase() +
-        res.registro_empleado.slice(1).toLowerCase() : 'No especificado',
-    });
   };
 
-  const handleAddCertification = async (data) => {
-    const data_new = [...certifications, {
+  const handleAddCertification = (data: any) => {
+    const currentCerts = userDataCopy.certificaciones || [];
+
+    const newCert = {
       nombre: data.certificaciones[0].nombre,
       institucion: data.certificaciones[0].institucion,
       anio: data.certificaciones[0].anio.toString()
-    }].sort((a, b) => parseInt(b.anio) - parseInt(a.anio));
-    console.log('New certifications list:', data_new);
-    setIsCertDialogOpen(false);
-    const res = await patchUser(parseInt(userData.id), { certificaciones: data_new }, { certificaciones: userDataCopy.certificaciones } as Partial<UserPageData>);
-    console.log('Patch response for certifications:', res);
-    setCertifications(data_new);
-    reset({
-      certificaciones: [{
-        nombre: '',
-        institucion: '',
-        anio: '',
-      }],
-    });
-  };
+    };
 
-  const handleDeleteCertification = (id: number) => {
-    if (window.confirm('¿Estás seguro de eliminar esta certificación?')) {
-      console.log('Delete certification with id:', id);
-      const data_new = certifications.filter((_, index) => index !== id);
-      setCertifications(data_new);
-      patchUser(parseInt(userData.id), { certificaciones: data_new }, userData as Partial<UserPageData>);
+    const data_new = [...currentCerts, newCert]
+      .sort((a, b) => parseInt(b.anio) - parseInt(a.anio));
+
+    try {
+      patchUser({
+        id: parseInt(userData.id),
+        data: { certificaciones: data_new },
+        data_old: { certificaciones: userDataCopy.certificaciones }
+      });
+
+      setIsCertDialogOpen(false);
+      reset({
+        certificaciones: [{ nombre: '', institucion: '', anio: '' }],
+      });
+
+    } catch (error) {
+      console.error("Error al agregar certificación:", error);
     }
   };
 
-  const handleUpdatePhoto = async (data: Partial<UserPageData>) => {
-    setPhotoUrl(tempPhotoUrl);
-    setIsPhotoDialogOpen(false);
-    const res = await patchUser(parseInt(userData.id), { imagen: data.imagen, imagen_url: data.imagen_url }, { imagen: userDataCopy.imagen, imagen_url: userDataCopy.imagen_url });
-    console.log('Patch response for photo update:', res);
-    reset();
-    setTempPhotoUrl('');
+  const handleDeleteCertification = (index: number) => {
+    if (!window.confirm('¿Estás seguro de eliminar esta certificación?')) return;
+    const data_new = (userDataCopy.certificaciones || []).filter((_, i) => i !== index);
+
+    try {
+      patchUser({
+        id: parseInt(userData.id),
+        data: { certificaciones: data_new },
+        data_old: { certificaciones: userDataCopy.certificaciones }
+      });
+
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+    }
+  };
+
+  const handleUpdatePhoto = (data: Partial<UserPageData>) => {
+    try {
+      patchUser({
+        id: parseInt(userData.id),
+        data: {
+          imagen: data.imagen,
+          imagen_url: data.imagen_url
+        },
+        data_old: {
+          imagen: userDataCopy.imagen,
+          imagen_url: userDataCopy.imagen_url
+        }
+      });
+
+      setIsPhotoDialogOpen(false);
+      setTempPhotoUrl('');
+      reset();
+
+    } catch (error) {
+      console.error("Error al actualizar foto:", error);
+    }
   };
 
   const handleDownloadQR = () => {
@@ -398,13 +387,26 @@ export function UserProfilePage() {
                           <CardTitle>Datos Personales</CardTitle>
                           <CardDescription>Información de contacto y datos profesionales</CardDescription>
                         </div>
-                        <Button
-                          type='submit'
-                          variant="outline"
-                        >
-                          <Edit className="w-4 h-4 mr-2" />
-                          {isEditing ? 'Guardar Cambios' : 'Editar Perfil'}
-                        </Button>
+                        {isEditing ? (
+                          <Button
+                            type='submit'
+                            variant="outline"
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Guardar Cambios
+                          </Button>
+                        ) : (
+                          <div>
+                            <Button
+                              variant="outline"
+                              type='button'
+                              onClick={() => setIsEditing(!isEditing)}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar Perfil
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -697,6 +699,7 @@ export function UserProfilePage() {
             <div className="mt-4 flex justify-end">
               <Button
                 variant="outline"
+                type='button'
                 onClick={() => setIsCertDialogOpen(false)}
               >
                 Cancelar

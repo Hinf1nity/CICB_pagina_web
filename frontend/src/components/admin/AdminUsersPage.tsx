@@ -32,7 +32,7 @@ export function AdminUsersPage() {
               Cerrar Sesión
             </Button>
           )}
-          <h1 className="mb-3">Gestión de Colegiados</h1>
+          <h1 className="text-3xl font-bold mb-3">Gestión de Colegiados</h1>
           <p>Administra los perfiles de los miembros del colegio</p>
         </div>
       </div>

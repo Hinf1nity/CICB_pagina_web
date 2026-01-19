@@ -18,7 +18,7 @@ export function AdminNewsPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al Panel
           </Button>
-          <h1 className="mb-3">Gestión de Noticias</h1>
+          <h1 className="text-3xl font-bold mb-3">Gestión de Noticias</h1>
           <p>Administra las noticias y artículos publicados en el portal</p>
         </div>
       </div>

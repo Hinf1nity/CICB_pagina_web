@@ -8,7 +8,7 @@ export const userSchema = z.object({
   id: z.number().optional(),
   nombre: z.string().min(2, { message: "Nombre demasiado corto" }).max(100, { message: "Nombre demasiado largo" }),
   rni: z.string().refine((val) => /^\d{6,10}$/.test(val), { message: "RNI inválido" }),
-  rnic: z.string().refine((val) => /^\d{6,10}$/.test(val), { message: "RNIC inválido" }).optional(),
+  rnic: z.string().optional(),
   especialidad: z.enum(especialidades, { message: "Especialidad inválida" }),
   celular: z.string().refine((val) => /^\+?\d{7,15}$/.test(val), { message: "Número de celular inválido" }),
   departamento: z.enum(departamentos, { message: "Departamento inválido" }),
