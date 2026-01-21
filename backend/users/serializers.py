@@ -99,7 +99,6 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"rni": "Este campo es requerido para crear la contraseña."})
 
-        # Validación de unicidad
         if UsuarioComun.objects.filter(rni=rni).exists():
             raise serializers.ValidationError({"rni": "RNI existente"})
 
@@ -110,7 +109,24 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
         if 'rni' in validated_data:
             validated_data['password'] = make_password(validated_data['rni'])
         return super().update(instance, validated_data)
+    
+class SerializerPatchAdminUser(serializers.ModelSerializer):
+    class Meta:
+        model = UsuarioComun
+        fields = [
+            'nombre', 'rnic', 'rni', 'departamento', 'especialidad',
+            'celular', 'imagen', 'registro_empleado', 'estado',
+            'certificaciones', 'mail', 'rol',
+        ]
+        extra_kwargs = {
+            'rni': {'required': False},
+        }
 
+    def update(self, instance, validated_data):
+        if 'rni' in validated_data:
+            instance.password = make_password(validated_data.pop('rni'))
+
+        return super().update(instance, validated_data)
 
 class UsuarioComunListSerializer(serializers.ModelSerializer):
     class Meta:
