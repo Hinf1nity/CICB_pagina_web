@@ -7,7 +7,7 @@ from utils.s3 import s3_client
 import os
 
 from .models import UsuarioComun
-from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer, SerializerPatchAdminUser
+from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer, SerializerUserAdmin
 from .permissions import IsAdminPrin, IsAdminSec, IsUser
 from rest_framework.pagination import PageNumberPagination
 
@@ -30,14 +30,13 @@ class UserViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_serializer_class(self):
-        if self.action == 'partial_update':
-            user = self.request.user
-            if user.is_superuser or getattr(user, "rol", None) == "admin_ciudad":
-                return SerializerPatchAdminUser
-            return UsuarioComunSerializer
-    
+        user = self.request.user
+        es_admin = user.is_superuser or getattr(user, "rol", None) in ["admin_ciudad", "admin_general"]
+
         if self.action == 'list':
             return UsuarioComunListSerializer
+        if es_admin and self.action in ['create', 'update', 'partial_update', 'retrieve']:
+            return SerializerUserAdmin
         return UsuarioComunSerializer
 
     def get_queryset(self):
