@@ -80,27 +80,11 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
         model = UsuarioComun
         fields = [
             'id', 'rnic', 'nombre', 'especialidad', 
-            'celular', 'registro_empleado', 'mail', "departamento"
+            'celular', 'registro_empleado', 'mail', "departamento",
+            "fecha_inscripcion"
         ]
         read_only_fields = ['id', 'rnic', 'departamento', 
-                        "fecha,_inscripcion" "estado", "rol"]
-
-    def create(self, validated_data):
-        print("\n" + "="*50)
-        print("RECIBIENDO DATOS PARA CREAR:", validated_data)
-        print("="*50 + "\n")
-        
-        try:
-            rni = validated_data.get('rni')
-            user = super().create(validated_data)
-            
-            if rni:
-                user.set_password(str(rni))
-                user.save()
-            return user
-        except Exception as e:
-            print("\n EL ERROR REAL ES ->", str(e), "\n")
-            raise serializers.ValidationError({"detail": str(e)})
+                        "fecha_inscripcion" "estado", "rol"]
 
 class SerializerPatchAdminUser(serializers.ModelSerializer):
     class Meta:

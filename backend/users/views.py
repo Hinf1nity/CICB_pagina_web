@@ -31,15 +31,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         user = self.request.user
-        es_admin = user.is_superuser or getattr(user, "rol", None) == "admin_ciudad"
-
-        if self.action in ['partial_update', 'update', 'retrieve', 'create']:
-            if es_admin:
-                return SerializerPatchAdminUser
-            return UsuarioComunSerializer
+        es_admin = user.is_superuser or getattr(user, "rol", None) in ["admin_ciudad", "admin_general"]
 
         if self.action == 'list':
             return UsuarioComunListSerializer
+        if es_admin and self.action in ['create', 'update', 'partial_update', 'retrieve']:
+            return SerializerPatchAdminUser
         return UsuarioComunSerializer
 
     def get_queryset(self):
