@@ -30,12 +30,14 @@ class UserViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_serializer_class(self):
-        if self.action == 'partial_update':
-            user = self.request.user
-            if user.is_superuser or getattr(user, "rol", None) == "admin_ciudad":
+        user = self.request.user
+        es_admin = user.is_superuser or getattr(user, "rol", None) == "admin_ciudad"
+
+        if self.action in ['partial_update', 'update', 'retrieve', 'create']:
+            if es_admin:
                 return SerializerPatchAdminUser
             return UsuarioComunSerializer
-    
+
         if self.action == 'list':
             return UsuarioComunListSerializer
         return UsuarioComunSerializer

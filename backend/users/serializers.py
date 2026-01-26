@@ -75,41 +75,33 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         data = {"access": str(access_token)}
         return data
 
-
 class UsuarioComunSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
         fields = [
-            'id', 'rnic', 'rni', 'nombre', 'fecha_inscripcion',
-            'departamento', 'especialidad', 'celular', 'imagen',
-            'registro_empleado', 'estado', 'certificaciones',
-            'mail', 'rol'
+            'id', 'rnic', 'nombre', 'especialidad', 
+            'celular', 'registro_empleado', 'mail', "departamento"
         ]
-        read_only_fields = [
-            'id', 'rnic', 'fecha_inscripcion',
-            'departamento', 'estado', 'rol'
-        ]
-        extra_kwargs = {
-            'rni': {'write_only': True}
-        }
+        read_only_fields = ['id', 'rnic', 'departamento', 
+                        "fecha,_inscripcion" "estado", "rol"]
 
     def create(self, validated_data):
-        rni = validated_data.get('rni')
-        if not rni:
-            raise serializers.ValidationError(
-                {"rni": "Este campo es requerido para crear la contraseña."})
+        print("\n" + "="*50)
+        print("RECIBIENDO DATOS PARA CREAR:", validated_data)
+        print("="*50 + "\n")
+        
+        try:
+            rni = validated_data.get('rni')
+            user = super().create(validated_data)
+            
+            if rni:
+                user.set_password(str(rni))
+                user.save()
+            return user
+        except Exception as e:
+            print("\n EL ERROR REAL ES ->", str(e), "\n")
+            raise serializers.ValidationError({"detail": str(e)})
 
-        if UsuarioComun.objects.filter(rni=rni).exists():
-            raise serializers.ValidationError({"rni": "RNI existente"})
-
-        validated_data['password'] = make_password(rni)
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        if 'rni' in validated_data:
-            validated_data['password'] = make_password(validated_data['rni'])
-        return super().update(instance, validated_data)
-    
 class SerializerPatchAdminUser(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
@@ -118,14 +110,27 @@ class SerializerPatchAdminUser(serializers.ModelSerializer):
             'celular', 'imagen', 'registro_empleado', 'estado',
             'certificaciones', 'mail', 'rol',
         ]
-        extra_kwargs = {
-            'rni': {'required': False},
-        }
+        read_only_fields = ['rnic']
+
+    def create(self, validated_data):
+        rni = validated_data.get('rni')
+        
+        if not rni:
+            raise serializers.ValidationError(
+                {"rni": "Este campo es requerido para crear el usuario y su contraseña."})
+
+        if UsuarioComun.objects.filter(rni=rni).exists():
+            raise serializers.ValidationError({"rni": "Este RNI ya esta registrado."})
+
+        validated_data['password'] = make_password(str(rni))
+        
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         if 'rni' in validated_data:
-            instance.password = make_password(validated_data.pop('rni'))
-
+            rni_nuevo = validated_data.get('rni')
+            instance.set_password(str(rni_nuevo))
+        
         return super().update(instance, validated_data)
 
 class UsuarioComunListSerializer(serializers.ModelSerializer):
