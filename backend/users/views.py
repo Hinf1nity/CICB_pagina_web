@@ -7,7 +7,7 @@ from utils.s3 import s3_client
 import os
 
 from .models import UsuarioComun
-from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer, SerializerPatchAdminUser
+from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer, SerializerUserAdmin
 from .permissions import IsAdminPrin, IsAdminSec, IsUser
 from rest_framework.pagination import PageNumberPagination
 
@@ -36,7 +36,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return UsuarioComunListSerializer
         if es_admin and self.action in ['create', 'update', 'partial_update', 'retrieve']:
-            return SerializerPatchAdminUser
+            return SerializerUserAdmin
         return UsuarioComunSerializer
 
     def get_queryset(self):

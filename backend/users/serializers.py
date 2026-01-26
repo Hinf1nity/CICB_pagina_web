@@ -86,7 +86,7 @@ class UsuarioComunSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'rnic', 'departamento', 
                         "fecha_inscripcion" "estado", "rol"]
 
-class SerializerPatchAdminUser(serializers.ModelSerializer):
+class SerializerUserAdmin(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
         fields = [
