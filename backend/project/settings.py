@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'IMGs',
     'stats',
     'performance_table',
+    'civil_salary',
 ]
 
 MIDDLEWARE = [

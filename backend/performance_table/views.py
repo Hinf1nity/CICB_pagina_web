@@ -6,7 +6,6 @@ from rest_framework import viewsets, filters, status
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
-from resource_chart.models import ResourceChart
 from rest_framework.pagination import PageNumberPagination
 
 
