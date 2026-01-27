@@ -35,6 +35,7 @@ export function useJobsPost() {
       if (pdfId) {
         formData.append("pdf", pdfId);
       }
+      console.log("FormData entries:", Array.from(formData.entries()));
 
       const response = await api.post("jobs/job_admin/", { body: formData });
 
@@ -215,15 +216,15 @@ export function useJobPatch() {
       appendIfChanged("estado", data.estado, data_old.estado);
 
       if (JSON.stringify(data.requisitos) !== JSON.stringify(data_old.requisitos)) {
-        data.requisitos.forEach((req, index) => {
-          formData.append(`requisitos[${index}]`, req);
+        data.requisitos.forEach((req) => {
+          formData.append(`requisitos`, req);
         });
         hasChanges = true;
       }
 
       if (JSON.stringify(data.responsabilidades) !== JSON.stringify(data_old.responsabilidades)) {
-        data.responsabilidades.forEach((res, index) => {
-          formData.append(`responsabilidades[${index}]`, res);
+        data.responsabilidades.forEach((res) => {
+          formData.append(`responsabilidades`, res);
         });
         hasChanges = true;
       }
@@ -247,14 +248,16 @@ export function useJobPatch() {
       if (!hasChanges) {
         return { message: "Sin cambios en base de datos" };
       }
-
-      const response = await api.patch(`jobs/job_admin/${id}/`, {
-        body: formData,
-      });
+      console.log("FormData entries:", formData);
+      const response = await api.patch(`jobs/job_admin/${id}/`, { body: formData });
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data: any) => {
+      if (_data.message) {
+        toast.info("No se realizaron cambios");
+        return;
+      }
       toast.success("Empleo actualizado exitosamente");
       queryClient.invalidateQueries({ queryKey: ['jobs_admin'] });
     },

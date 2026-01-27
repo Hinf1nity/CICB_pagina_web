@@ -97,6 +97,7 @@ export function AdminJobsManager() {
   const handleSave: SubmitHandler<JobData> = (data) => {
     console.log('Guardando oferta:', data);
     if (editingItem && editingItem.id !== undefined) {
+      console.log('Actualizando oferta:', editingItem);
       patchJob({ id: editingItem.id, data, data_old: editingItem }, {
         onSuccess: () => {
           setEditingItem(null);
