@@ -3,57 +3,74 @@ import { toast } from "sonner";
 import api from '../api/kyClient';
 import { type NewsData } from "../validations/newsSchema";
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
-
-export function useNoticiasAdmin() {
+ //Anadimos esto Paginacion
+type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+//Aumentamos funciones para paginacion en admin
+export function useNoticiasAdmin(page: number) {
   const {
-    data: noticias,
+    data,
     isPending,
     isError,
     error
   } = useQuery({
-    queryKey: ['noticias_admin'],
+    queryKey: ['noticias_admin', page],
     queryFn: async () => {
-      const res = await api.get("news/news_admin/").json<{ results: NewsData[] }>();
-      return res.results;
+      return api
+        .get(`news/news_admin/?page=${page}`)
+        .json<PaginatedResponse<NewsData>>();
+      //const res = await api.get("news/news_admin/").json<{ results: NewsData[] }>();
+      //return res.results;
     },
+    keepPreviousData: true,
   });
 
   // Retornamos un array vacío por defecto si es undefined para evitar crash en el .map del UI
+  //Anadimos funciones para la paginacion en admin
   return {
-    noticias: noticias ?? [],
+    noticias: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
     isPending,
     isError,
-    error
+    error,
   };
 }
-
-export function useNoticias() {
+//Cambiamos esto para la Paginacion
+export function useNoticias(page: number) {
   const {
-    data: noticias,
+    data,
     isLoading,
     isError,
     error
   } = useQuery({
-    // CAMBIO: Se agregó el sufijo _users
-    queryKey: ['noticias_users'],
-
+    queryKey: ['noticias_users', page],
     queryFn: async () => {
-      // Asumimos que 'api' es tu instancia de Ky
-      const res = await api.get("news/news/").json<{ results: NewsData[] }>();
-      return res.results;
+      return api
+        .get(`news/news/?page=${page}`)
+        .json<PaginatedResponse<NewsData>>();
     },
-
-    select: (data) => {
-      return data.map((item) => ({
+    select: (data) => ({
+      ...data,
+      results: data.results.map((item) => ({
         ...item,
         imagen_url: item.imagen?.url,
         imagen: undefined,
-      }));
-    },
+      })),
+    }),
+    keepPreviousData: true,
   });
 
   return {
-    noticias: noticias ?? [],
+    noticias: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
     isLoading,
     isError,
     error

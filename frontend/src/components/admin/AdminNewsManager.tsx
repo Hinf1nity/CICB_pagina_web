@@ -33,7 +33,6 @@ export function AdminNewsManager() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
   const { mutate, isPending } = useNewsPost();
-  const { noticias } = useNoticiasAdmin();
   const { mutate: patchNews, isPending: isPatching } = useNewsPatch();
   const { mutate: deleteNews } = useNewsDelete();
 
@@ -51,6 +50,18 @@ export function AdminNewsManager() {
     setNewsImagePreview('');
     setIsDialogOpen(true);
   };
+
+  const [page, setPage] = useState(1);
+
+    const {
+      noticias,
+      next,
+      previous,
+      count,
+    } = useNoticiasAdmin(page);
+
+  const pageSize = 20; // Paginacion se agrega esto y el count de arriba
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   const handleEdit = async (item: any) => {
       // CORRECCIÓN: Se asegura el uso de await y la función original
@@ -147,6 +158,30 @@ export function AdminNewsManager() {
                 ))}
               </TableBody>
             </Table>
+            {/* creamos la paginacion y sus flechas */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!previous}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              >
+                Anterior
+              </Button>
+
+              <span className="text-sm text-muted-foreground">
+                Página {page} de {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!next}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Siguiente
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

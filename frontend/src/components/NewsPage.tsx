@@ -12,9 +12,10 @@ import { useNoticias } from '../hooks/useNoticias';
 export function NewsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
+  const [page, setPage] = useState(1); //Anadimos esto Paginacion
   const navigate = useNavigate();
-
-  const { noticias, isLoading, error } = useNoticias();
+//Anadimos funciones Paginacion
+  const { noticias, count, next,previous,isLoading,error } = useNoticias(page);
 
   const filteredNews = useMemo(() => {
     const getTime = (s?: string) => (s ? new Date(s).getTime() : 0);
@@ -75,7 +76,8 @@ export function NewsPage() {
                 type="text"
                 placeholder="Buscar noticias..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                //onChange={(e) => {setSearchTerm(e.target.value);setPage(1);}}
+                onValueChange={(value) => {  setCategory(value);  setPage(1);}}
                 className="pl-10"
               />
             </div>
@@ -146,6 +148,29 @@ export function NewsPage() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Paginacion Anadida */}
+        <div className="flex justify-center items-center gap-4 mt-10">
+          <Button
+            variant="outline"
+            disabled={!previous}
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          >
+            Anterior
+          </Button>
+
+          <span className="text-sm text-muted-foreground">
+            Página {page} de {Math.ceil(count / 20)}
+          </span>
+
+          <Button
+            variant="outline"
+            disabled={!next}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
         </div>
 
         {filteredNews.length === 0 && (
