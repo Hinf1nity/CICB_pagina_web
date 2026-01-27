@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api/kyClient";
 import { type JobData } from "../validations/jobsSchema";
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
@@ -57,7 +57,7 @@ export function useJobs() {
 
   const fetchJobs = async () => {
     try {
-      const data: JobData[] = await api.get("jobs/job/").json();
+      const data: JobData[] = await api.get("jobs/job_users/").json();
       const formattedData: JobData[] = data.map((job) => ({
         ...job,
         requisitos:
@@ -68,7 +68,6 @@ export function useJobs() {
               .filter((r: string) => r.length > 0)
             : job.requisitos || [],
       }));
-
       setJobs(formattedData);
     } catch (err) {
       setError("Error al cargar los empleos");
@@ -77,85 +76,14 @@ export function useJobs() {
     }
   };
 
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
+  useEffect(() => { fetchJobs(); }, []);
   return { jobs, loading, error };
-}
-
-export function useJobsAdmin() {
-  const [jobs, setJobs] = useState<JobData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchJobs = async () => {
-    try {
-      const data: JobData[] = await api.get("jobs/job_admin/").json();
-      const formattedData: JobData[] = data.map((job) => ({
-        ...job,
-        requisitos:
-          typeof job.requisitos === "string"
-            ? (job.requisitos as string)
-              .split(",")
-              .map((r: string) => r.trim())
-              .filter((r: string) => r.length > 0)
-            : job.requisitos || [],
-      }));
-
-      setJobs(formattedData);
-    } catch (err) {
-      setError("Error al cargar los empleos");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  return { jobs, loading, error, refetchJobs: fetchJobs };
-}
-
-export async function useJobDetailAdmin(id: string) {
-  let pdf_url: string | null = null;
-  let pdf_id: string | null = null;
-  const data: JobData = await api.get(`jobs/job_admin/${id}/`).json();
-  if (data.pdf) {
-    const pdf_url_response = await api
-      .get(`jobs/job/${data.id}/pdf-download/`)
-      .json<{ download_url: string, pdf_id: string }>();
-    pdf_url = pdf_url_response.download_url;
-    pdf_id = pdf_url_response.pdf_id;
-  }
-  const formattedJob: JobData = {
-    ...data,
-    requisitos:
-      typeof data.requisitos === "string"
-        ? (data.requisitos as string)
-          .split(",")
-          .map((r: string) => r.trim())
-          .filter((r: string) => r.length > 0)
-        : data.requisitos || [],
-    responsabilidades:
-      typeof data.responsabilidades === "string"
-        ? (data.responsabilidades as string)
-          .split(",")
-          .map((r: string) => r.trim())
-          .filter((r: string) => r.length > 0)
-        : data.responsabilidades || [],
-    pdf: pdf_url ? pdf_url : undefined,
-    pdf_url: pdf_id ? `${pdf_id}` : undefined,
-    salario: data.salario ? data.salario : '',
-  };
-  return formattedJob;
 }
 
 export function useJobDetail(id?: string) {
   const fetchJob = async () => {
     let pdf_url: string | null = null;
-    const data: JobData = await api.get(`jobs/job/${id}/`).json();
+    const data: JobData = await api.get(`jobs/job_users/${id}/`).json();
     if (data.pdf) {
       const pdf_url_response = await api
         .get(`jobs/job/${data.id}/pdf-download/`)
@@ -182,7 +110,8 @@ export function useJobDetail(id?: string) {
     };
     return formattedJob;
   };
-  const { data: job, isLoading: loading, isError, error } = useQuery({
+
+  return useQuery({
     queryKey: ['job', id],
     queryFn: fetchJob,
     staleTime: 1000 * 60 * 60 * 5,
@@ -191,8 +120,70 @@ export function useJobDetail(id?: string) {
     refetchOnReconnect: false,
     enabled: !!id,
   });
+}
 
-  return { job, loading, isError, error };
+// --- HOOKS Y FUNCIONES PARA ADMIN ---
+
+export function useJobsAdmin() {
+  return useQuery({
+    queryKey: ['jobs_admin'],
+    queryFn: async () => {
+      const data: JobData[] = await api.get("jobs/job_admin/").json();
+      return data.map((job) => ({
+        ...job,
+        requisitos:
+          typeof job.requisitos === "string"
+            ? (job.requisitos as string)
+              .split(",")
+              .map((r: string) => r.trim())
+              .filter((r: string) => r.length > 0)
+            : job.requisitos || [],
+      }));
+    }
+  });
+}
+
+export async function useJobDetailAdmin(id: string) {
+  let pdf_url: string | null = null;
+  let pdf_id: string | null = null;
+
+  const data: JobData = await api.get(`jobs/job_admin/${id}/`).json();
+
+  if (data.pdf) {
+    try {
+      const pdf_url_response = await api
+        .get(`jobs/job/${data.id}/pdf-download/`)
+        .json<{ download_url: string, pdf_id: string }>();
+      
+      pdf_url = pdf_url_response.download_url;
+      pdf_id = pdf_url_response.pdf_id;
+    } catch (e) {
+      console.warn("Aviso: El archivo PDF físico no se encontró en el servidor (404).");
+    }
+  }
+
+  const formattedJob: JobData = {
+    ...data,
+    requisitos:
+      typeof data.requisitos === "string"
+        ? (data.requisitos as string)
+          .split(",")
+          .map((r: string) => r.trim())
+          .filter((r: string) => r.length > 0)
+        : data.requisitos || [],
+    responsabilidades:
+      typeof data.responsabilidades === "string"
+        ? (data.responsabilidades as string)
+          .split(",")
+          .map((r: string) => r.trim())
+          .filter((r: string) => r.length > 0)
+        : data.responsabilidades || [],
+    pdf: pdf_url ? pdf_url : undefined,
+    pdf_url: pdf_id ? `${pdf_id}` : undefined,
+    salario: data.salario ? data.salario : '',
+  };
+  
+  return formattedJob;
 }
 
 export function useJobPatch() {

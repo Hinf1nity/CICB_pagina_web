@@ -53,12 +53,13 @@ export function AdminNewsManager() {
   };
 
   const handleEdit = async (item: any) => {
-    const detailedItem = await useNoticiaDetailAdmin(item.id);
-    reset({
-      ...detailedItem,
-    });
-    setEditingItem(detailedItem);
-    setIsDialogOpen(true);
+      // CORRECCIÓN: Se asegura el uso de await y la función original
+      const detailedItem = await useNoticiaDetailAdmin(item.id);
+      reset({
+        ...detailedItem,
+      });
+      setEditingItem(detailedItem);
+      setIsDialogOpen(true);
   };
 
   const handleDelete = (id: number) => {

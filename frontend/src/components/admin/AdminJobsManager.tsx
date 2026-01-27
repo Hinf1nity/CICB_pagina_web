@@ -37,7 +37,7 @@ export function AdminJobsManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<JobData | null>(null);
   const { mutate: postJob, isPending: isPosting } = useJobsPost();
-  const { jobs } = useJobsAdmin();
+  const { data: jobs = [], refetch: refetchJobs } = useJobsAdmin();
   const { mutate: patchJob, isPending: isPatching } = useJobPatch();
   const { mutate: deleteJob } = useJobDelete();
   // console.log('Errors en el formulario:', errors);
@@ -60,21 +60,30 @@ export function AdminJobsManager() {
   };
 
   const handleEdit = async (item: JobData) => {
-    const formattedJob = await useJobDetailAdmin(`${item.id}`);
-    console.log('Cargando oferta para edición:', formattedJob);
-    if (formattedJob) {
-      item = {
+    try {
+      // 1. Buscamos el detalle completo
+      const formattedJob = await useJobDetailAdmin(`${item.id}`);
+      
+      if (!formattedJob) {
+        alert("No se pudo cargar la información del trabajo.");
+        return;
+      }
+
+      // 2. Preparamos el objeto de edición asegurando que los arrays existan
+      const itemToEdit = {
         ...formattedJob,
-        requisitos: formattedJob.requisitos || [""],
-        responsabilidades: formattedJob.responsabilidades || [""],
+        requisitos: formattedJob.requisitos?.length ? formattedJob.requisitos : [""],
+        responsabilidades: formattedJob.responsabilidades?.length ? formattedJob.responsabilidades : [""],
       };
+
+      // 3. Seteamos estados ANTES de abrir el diálogo
+      setEditingItem(itemToEdit);
+      reset(itemToEdit); // Esto inyecta los datos al formulario
+      setIsDialogOpen(true);
+      
+    } catch (error) {
+      console.error("Error al intentar editar:", error);
     }
-    reset({
-      ...item,
-    });
-    console.log('Editando oferta:', item);
-    setEditingItem(item);
-    setIsDialogOpen(true);
   };
 
   const handleDelete = async (id: number) => {

@@ -97,8 +97,8 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo y título */}
-          <NavLink to="/" className="flex items-center space-x-3">
-            <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full bg-white">
+          <NavLink to="/" className="flex items-center space-x-3 shrink-0">
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full bg-white shrink-0">
               <img src="/src/assets/LOGO CIC B sin fondo.png" alt="Logo CICB" className="w-full h-full object-contain" />
             </div>
             <div className="hidden md:block">
