@@ -1,18 +1,18 @@
 import csv
 import hashlib
+import os
 from django.core.management.base import BaseCommand
-from django.utils.text import slugify
 from performance_table.models import PerformanceTable, QuantifiedResource, ResourceChart
 
 class Command(BaseCommand):
-    help = "Importa proyectos (PerformanceTable y Resources) desde un CSV"
+    help = "Importa proyectos (PerformanceTable y Resources) desde un CSV o Excel"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--file",
             type=str,
             required=True,
-            help="Ruta del archivo CSV"
+            help="Ruta del archivo (CSV o Excel)"
         )
         parser.add_argument(
             "--encoding",
@@ -24,8 +24,31 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         ruta = options["file"]
         encoding = options["encoding"]
+        temp_csv_created = False
 
         self.stdout.write(f"Iniciando importación desde: {ruta}")
+
+        if ruta.lower().endswith(('.xlsx', '.xls')):
+            self.stdout.write("   > Detectado archivo Excel. Convirtiendo a CSV...")
+            try:
+                import pandas as pd
+                
+                df = pd.read_excel(ruta)
+                new_csv_path = os.path.splitext(ruta)[0] + "_temp_import.csv"
+                
+                df = df.fillna("")
+                df.to_csv(new_csv_path, index=False, encoding=encoding)
+                
+                ruta = new_csv_path
+                temp_csv_created = True
+                self.stdout.write(f"   > Conversión exitosa: {ruta}")
+                
+            except ImportError:
+                self.stdout.write(self.style.ERROR("Error: Instala pandas: pip install pandas openpyxl"))
+                return
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"Error convirtiendo Excel: {e}"))
+                return
 
         try:
             with open(ruta, newline="", encoding=encoding) as csvfile:
@@ -65,7 +88,12 @@ class Command(BaseCommand):
                     )
 
                     if created_res:
-                        self.stdout.write(f"  > Nuevo recurso creado: {recurso_nombre}")
+                        self.stdout.write(f"  > Nuevo recurso creado: {recurso_nombre} ({recurso_unidad})")
+                    else:
+                        if recurso_unidad and resource.unidad != recurso_unidad:
+                            resource.unidad = recurso_unidad
+                            resource.save()
+                            self.stdout.write(f"  > Unidad actualizada: {recurso_nombre} -> {recurso_unidad}")
 
                     qr, created_qr = QuantifiedResource.objects.get_or_create(
                         performance_table=performance_table,
@@ -81,9 +109,15 @@ class Command(BaseCommand):
                         if qr.cantidad != recurso_cantidad:
                             qr.cantidad = recurso_cantidad
                             qr.save()
-                            self.stdout.write(f"    - Actualizado: {recurso_cantidad}")
+                            self.stdout.write(f"    - Cantidad actualizada: {recurso_cantidad}")
 
         except FileNotFoundError:
             self.stdout.write(self.style.ERROR(f"No se encontró el archivo: {ruta}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error durante la importación: {str(e)}"))
+        
+        finally:
+            if temp_csv_created and os.path.exists(ruta):
+                self.stdout.write("   > Eliminando archivo CSV temporal...")
+                os.remove(ruta)
+                self.stdout.write(self.style.SUCCESS("   > Limpieza completada."))
