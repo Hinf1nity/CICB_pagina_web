@@ -13,6 +13,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUser = (newUser: string | undefined) => {
     if (user) {
+      localStorage.setItem("user_name_override", newUser || "");
       setUser({
         ...user,
         name: newUser,
@@ -23,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
+    localStorage.removeItem("user_name_override");
     setUser(null);
   };
 
@@ -45,12 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem("access");
+    const savedName = localStorage.getItem("user_name_override");
     if (token && !isTokenExpired(token)) {
       const decoded = decodeJWT(token);
       setUser({
         id: decoded.user_id,
         rol: decoded.rol,
-        name: decoded.name ? decoded.name : undefined,
+        name: savedName ? savedName : (decoded.name ? decoded.name : undefined),
       });
     } else {
       logout();

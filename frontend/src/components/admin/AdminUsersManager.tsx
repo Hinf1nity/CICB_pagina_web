@@ -38,7 +38,7 @@ export function AdminUsersManager() {
       imagen: undefined,
     },
   });
-
+  console.log('Errores del formulario:', errors);
   const filteredUsers = users.filter(user => {
     const matchesSearch =
       user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -65,11 +65,9 @@ export function AdminUsersManager() {
 
   const handleEdit = async (user: any) => {
     const detailedUser = await useUsersDetailAdmin(user.id);
-    console.log('Detalles del usuario para editar:', detailedUser);
     reset({
       ...detailedUser,
       rnic: detailedUser.rnic?.toString(),
-      mail: detailedUser.mail || undefined,
     });
     setEditingUser(detailedUser);
     setIsDialogOpen(true);
@@ -445,18 +443,18 @@ export function AdminUsersManager() {
                   };
 
                   const removeImage = () => {
-                    field.onChange(null);
+                    field.onChange(undefined);
                     setNewsImagePreview("");
                   };
 
                   return (
                     <div className="space-y-2">
-                      <Label htmlFor="image">Imagen de Perfil (Opcional)</Label>
+                      <Label htmlFor="imagen">Imagen de Perfil (Opcional)</Label>
                       <div className="flex items-center gap-4">
                         <Input
-                          id="image"
+                          id="imagen"
                           type="file"
-                          accept="image/*"
+                          accept="imagen/*"
                           onChange={handleImageChange}
                           className="hidden"
                         />
@@ -464,7 +462,7 @@ export function AdminUsersManager() {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => document.getElementById('image')?.click()}
+                          onClick={() => document.getElementById('imagen')?.click()}
                         >
                           <Upload className="w-4 h-4 mr-2" />
                           Subir Imagen
@@ -505,7 +503,7 @@ export function AdminUsersManager() {
                             </Button>
                           </div>
                         )}
-                        {!newsImagePreview && editingUser?.image && (
+                        {!newsImagePreview && editingUser?.imagen && (
                           <div className="text-muted-foreground">Imagen actual existente</div>
                         )}
                       </div>

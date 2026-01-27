@@ -7,12 +7,14 @@ from utils.s3 import s3_client
 import os
 
 from .models import UsuarioComun
-from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer, SerializerUserAdmin
+from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer, UsuarioCardSerializer, SerializerUserAdmin
 from .permissions import IsAdminPrin, IsAdminSec, IsUser
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
+
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UsuarioComunSerializer
@@ -31,7 +33,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         user = self.request.user
-        es_admin = user.is_superuser or getattr(user, "rol", None) in ["admin_ciudad", "admin_general"]
+        es_admin = user.is_superuser or getattr(user, "rol", None) in [
+            "admin_ciudad", "admin_general"]
 
         if self.action == 'list':
             return UsuarioComunListSerializer
@@ -111,5 +114,5 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class UserDetails(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = UsuarioComun.objects.all()
-    serializer_class = UsuarioComunSerializer
+    serializer_class = UsuarioCardSerializer
     permission_classes = [AllowAny]

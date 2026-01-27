@@ -5,8 +5,6 @@ from .serializers import PerformanceTableSerializer, ResourceSerializer
 from rest_framework import viewsets, filters, status
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
-
-#from resource_chart.models import ResourceChart
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -33,6 +31,7 @@ class ResourcesViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['nombre']
     permission_classes = [AllowAny]
+    pagination_class = TwentyPerPagePagination
 
     def create(self, request, *args, **kwargs):
         is_many = isinstance(request.data, list)

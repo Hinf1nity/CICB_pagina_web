@@ -13,30 +13,30 @@ export function TablePage() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
-  const {actions, loading, error}=usePerformance();
-  
-  if (loading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-muted-foreground">Cargando actividades...</p>
-    </div>
-  );
-}
+  const { actions, loading, error } = usePerformance();
 
-if (error) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-red-500">{error}</p>
-    </div>
-  );
-}
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Cargando actividades...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
 
   const filteredActions = actions.filter(action => {
-    const matchesSearch = 
-      action.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      action.actividad.toLowerCase().includes(searchTerm.toLowerCase()) ||
       action.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.recursos.some(r => r.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
+      action.recursos_info.some(r => r.recurso.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = filterCategory === 'all' || action.categoria === filterCategory;
     return matchesSearch && matchesCategory;
   });
@@ -86,7 +86,7 @@ if (error) {
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Recursos Totales</CardDescription>
-                <CardTitle>{actions.reduce((sum, a) => sum + a.recursos.length, 0)}</CardTitle>
+                <CardTitle>{actions.reduce((sum, a) => sum + a.recursos_info.length, 0)}</CardTitle>
               </CardHeader>
             </Card>
           </div>
@@ -144,13 +144,13 @@ if (error) {
                 {filteredActions.map((action) => (
                   <Fragment key={action.id}>
                     {/* Main Row */}
-                    <TableRow 
+                    <TableRow
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => action.id !== undefined && toggleRow(action.id)}
                     >
                       <TableCell>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0"
                         >
@@ -164,7 +164,7 @@ if (error) {
                       <TableCell>
                         <code className="text-primary">{action.codigo}</code>
                       </TableCell>
-                      <TableCell>{action.descripcion}</TableCell>
+                      <TableCell>{action.actividad}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{action.unidad}</Badge>
                       </TableCell>
@@ -174,7 +174,7 @@ if (error) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline">{action.recursos.length}</Badge>
+                        <Badge variant="outline">{action.recursos_info.length}</Badge>
                       </TableCell>
                     </TableRow>
 
@@ -193,12 +193,12 @@ if (error) {
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {action.recursos.map((resource) => (
-                                  <TableRow key={resource.id} className="border-b last:border-0">
-                                    <TableCell className="py-2">{resource.nombre}</TableCell>
+                                {action.recursos_info.map((resource, index) => (
+                                  <TableRow key={typeof resource.recurso === 'object' && resource.recurso.id ? resource.recurso.id : index} className="border-b last:border-0">
+                                    <TableCell className="py-2">{typeof resource.recurso === 'object' ? resource.recurso.nombre : resource.recurso}</TableCell>
                                     <TableCell className="py-2">
                                       <Badge variant="outline" className="bg-background">
-                                        {resource.unidad}
+                                        {typeof resource.recurso === 'object' ? resource.recurso.unidad : ''}
                                       </Badge>
                                     </TableCell>
                                     <TableCell className="py-2 text-right">

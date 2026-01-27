@@ -16,11 +16,13 @@ from .serializers import (
 from users.permissions import IsAdminPrin
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
 class JobViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = Job.objects.all()
+    # queryset = Job.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
 
@@ -30,7 +32,9 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
         return JobDetailSerializer
 
     def get_queryset(self):
-        return super().get_queryset().filter(estado='publicado').order_by('-fecha_publicacion')
+        queryset = Job.objects.filter(
+            estado='publicado').order_by('-fecha_publicacion')
+        return queryset
 
     @action(
         detail=True,
@@ -74,7 +78,7 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class JobAdminViewSet(viewsets.ModelViewSet):
-    #queryset = Job.objects.all()
+    # queryset = Job.objects.all()
     permission_classes = [IsAdminPrin]
     pagination_class = TwentyPerPagePagination
 
@@ -88,7 +92,8 @@ class JobAdminViewSet(viewsets.ModelViewSet):
         return JobAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = Job.objects.all().order_by('-fecha_publicacion')
+        return queryset
 
     def destroy(self, request, *args, **kwargs):
         job = self.get_object()

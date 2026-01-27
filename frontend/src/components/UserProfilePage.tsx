@@ -44,7 +44,8 @@ export function UserProfilePage() {
   const [userData, setUserData] = useState({
     id: '',
     name: '',
-    registration: '',
+    rni: '',
+    rnic: '',
     specialty: '',
     city: '',
     registrationDate: '',
@@ -202,7 +203,7 @@ export function UserProfilePage() {
       canvas.toBlob((blob) => {
         if (blob) {
           const link = document.createElement('a');
-          link.download = `QR_${userData.registration}.png`;
+          link.download = `QR_${userData.rnic}.png`;
           link.href = URL.createObjectURL(blob);
           link.click();
           URL.revokeObjectURL(link.href);
@@ -272,14 +273,14 @@ export function UserProfilePage() {
                     <Award className="w-4 h-4 mr-3 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-foreground">RNI</p>
-                      <p>{userData.registration}</p>
+                      <p>{userData.rni}</p>
                     </div>
                   </div>
                   <div className="flex items-center text-muted-foreground">
                     <IdCardLanyard className="w-4 h-4 mr-3 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-foreground">RNIC</p>
-                      <p>{userData.registration}</p>
+                      <p>{userData.rnic}</p>
                     </div>
                   </div>
                   <div className="flex items-center text-muted-foreground">
@@ -430,10 +431,10 @@ export function UserProfilePage() {
                               </Alert>)}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="registration">RNIC</Label>
+                              <Label htmlFor="rnic">RNIC</Label>
                               <Input
-                                id="registration"
-                                value={userData.registration}
+                                id="rnic"
+                                value={userData.rnic}
                                 disabled
                                 className="bg-muted"
                               />

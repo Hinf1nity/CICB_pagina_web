@@ -9,17 +9,21 @@ import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Plus, Edit, Trash2, Search, ChevronDown, ChevronRight, X, ListChecks, Package } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
-import { type PerformanceData, type Recurso, performanceSchema } from '../../validations/performanceSchema';
+import { type PerformanceData, type Recurso, performanceSchema, recursoSchema } from '../../validations/performanceSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
-import { usePerformance, usePerformancePost, usePerformancePatch, usePerformanceDelete, searchResourceByName, useResources } from '../../hooks/usePerformance';
+import {
+  usePerformance,
+  usePerformancePost,
+  usePerformancePatch,
+  usePerformanceDelete,
+  searchResourceByName,
+  useResources,
+  useResourcesPost,
+  useResourcesPatch,
+  useResourcesDelete,
+} from '../../hooks/usePerformance';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-
-interface CatalogResource {
-  id: number;
-  nombre: string;
-  unidad: string;
-}
 
 
 export function AdminPerformanceManager() {
@@ -31,16 +35,19 @@ export function AdminPerformanceManager() {
   const [resources, setResources] = useState<Recurso[]>([]);
   const [catalogSearchTerm, setCatalogSearchTerm] = useState('');
   const [isResourceCatalogDialogOpen, setIsResourceCatalogDialogOpen] = useState(false);
-  const [editingCatalogResource, setEditingCatalogResource] = useState<CatalogResource | null>(null);
+  const [editingCatalogResource, setEditingCatalogResource] = useState<Recurso | null>(null);
   const [isResourceSelectorOpen, setIsResourceSelectorOpen] = useState(false);
   const [resourceSelectorSearch, setResourceSelectorSearch] = useState('');
-  const { actions, refetch } = usePerformance();
-  const { postPerformance } = usePerformancePost();
-  const { patchPerformance } = usePerformancePatch();
-  const { deletePerformance } = usePerformanceDelete();
+  const { actions } = usePerformance();
+  const { mutate: postPerformance, isPending: isPostingPerformance } = usePerformancePost();
+  const { mutate: patchPerformance, isPending: isPatchingPerformance } = usePerformancePatch();
+  const { mutate: deletePerformance } = usePerformanceDelete();
   const { resources: searchedResources } = searchResourceByName(resourceSelectorSearch);
   const { resources: resourceCatalog } = useResources();
-  const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<PerformanceData>({
+  const { mutate: postResource, isPending: isPostingResource } = useResourcesPost();
+  const { mutate: patchResource, isPending: isPatchingResource } = useResourcesPatch();
+  const { mutate: deleteResource } = useResourcesDelete();
+  const { register, control, handleSubmit, reset, formState: { errors }, getValues, setValue } = useForm<PerformanceData>({
     resolver: zodResolver(performanceSchema),
     defaultValues: {
       codigo: '',
@@ -50,214 +57,13 @@ export function AdminPerformanceManager() {
       recursos_info: [],
     },
   });
-  // const [resourceCatalog, setResourceCatalog] = useState<Recurso[]>([
-  //   // Materiales de Construcción
-  //   { id: 1, nombre: 'Cemento Portland', unidad: 'kg' },
-  //   { id: 2, nombre: 'Cemento cola', unidad: 'kg' },
-  //   { id: 3, nombre: 'Arena', unidad: 'm3' },
-  //   { id: 4, nombre: 'Grava', unidad: 'm3' },
-  //   { id: 5, nombre: 'Agua', unidad: 'lt' },
-  //   { id: 6, nombre: 'Ladrillo gambote', unidad: 'pza' },
-  //   { id: 7, nombre: 'Fierro corrugado', unidad: 'kg' },
-  //   { id: 8, nombre: 'Alambre de amarre', unidad: 'kg' },
-  //   { id: 9, nombre: 'Madera de encofrado', unidad: 'p²' },
-  //   { id: 10, nombre: 'Clavos', unidad: 'kg' },
-  //   { id: 11, nombre: 'Yeso', unidad: 'kg' },
-  //   { id: 12, nombre: 'Calamina galvanizada #28', unidad: 'm²' },
-  //   { id: 13, nombre: 'Cumbrera galvanizada', unidad: 'm' },
-  //   { id: 14, nombre: 'Pintura látex', unidad: 'lt' },
-  //   { id: 15, nombre: 'Sellador', unidad: 'lt' },
-  //   { id: 16, nombre: 'Lija', unidad: 'plg' },
-  //   { id: 17, nombre: 'Cerámica 40x40', unidad: 'm²' },
-  //   { id: 18, nombre: 'Fragua', unidad: 'kg' },
-  //   { id: 19, nombre: 'Tubo PVC 1/2"', unidad: 'm' },
-  //   { id: 20, nombre: 'Codos PVC 1/2"', unidad: 'pza' },
-  //   { id: 21, nombre: 'Tees PVC 1/2"', unidad: 'pza' },
-  //   { id: 22, nombre: 'Pegamento PVC', unidad: 'lt' },
-  //   { id: 23, nombre: 'Cinta teflón', unidad: 'rollo' },
-  //   { id: 24, nombre: 'Madera mara', unidad: 'p²' },
-  //   { id: 25, nombre: 'Triplay 4mm', unidad: 'plg' },
-  //   { id: 26, nombre: 'Cola carpintero', unidad: 'kg' },
-  //   { id: 27, nombre: 'Laca', unidad: 'lt' },
-  //   { id: 28, nombre: 'Cable THW #14', unidad: 'm' },
-  //   { id: 29, nombre: 'Tubo PVC eléctrico 3/4"', unidad: 'm' },
-  //   { id: 30, nombre: 'Caja octogonal', unidad: 'pza' },
-  //   { id: 31, nombre: 'Interruptor simple', unidad: 'pza' },
-  //   { id: 32, nombre: 'Cinta aislante', unidad: 'rollo' },
-  //   { id: 33, nombre: 'Clavos para calamina', unidad: 'pza' },
-  //   { id: 34, nombre: 'Tijerales de madera', unidad: 'pza' },
-
-  //   // Mano de Obra
-  //   { id: 35, nombre: 'Albañil', unidad: 'hr' },
-  //   { id: 36, nombre: 'Albañil especializado', unidad: 'hr' },
-  //   { id: 37, nombre: 'Ayudante', unidad: 'hr' },
-  //   { id: 38, nombre: 'Yesero', unidad: 'hr' },
-  //   { id: 39, nombre: 'Techador', unidad: 'hr' },
-  //   { id: 40, nombre: 'Pintor', unidad: 'hr' },
-  //   { id: 41, nombre: 'Peón', unidad: 'hr' },
-  //   { id: 42, nombre: 'Ceramista', unidad: 'hr' },
-  //   { id: 43, nombre: 'Plomero', unidad: 'hr' },
-  //   { id: 44, nombre: 'Carpintero', unidad: 'hr' },
-  //   { id: 45, nombre: 'Electricista', unidad: 'hr' },
-
-  //   // Herramientas y Equipos
-  //   { id: 46, nombre: 'Pala', unidad: 'hr' },
-  //   { id: 47, nombre: 'Picota', unidad: 'hr' },
-  //   { id: 48, nombre: 'Mezcladora', unidad: 'hr' },
-  //   { id: 49, nombre: 'Vibrador', unidad: 'hr' },
-  //   { id: 50, nombre: 'Andamio', unidad: 'día' },
-  // ]);
-
-  // const [actions, setActions] = useState<Action[]>([
-  //   {
-  //     id: '1',
-  //     codigo: 'ALB-001',
-  //     descripcion: 'Muro de ladrillo gambote e=18cm (incl. mortero)',
-  //     unidad: 'm²',
-  //     categoria: 'Albañilería',
-  //     recursos: [
-  //       { id: '1-1', nombre: 'Ladrillo gambote', unidad: 'pza', cantidad: '37' },
-  //       { id: '1-2', nombre: 'Cemento', unidad: 'kg', cantidad: '12.5' },
-  //       { id: '1-3', nombre: 'Arena', unidad: 'm³', cantidad: '0.04' },
-  //       { id: '1-4', nombre: 'Agua', unidad: 'lt', cantidad: '15' },
-  //       { id: '1-5', nombre: 'Albañil', unidad: 'hr', cantidad: '1.2' },
-  //       { id: '1-6', nombre: 'Ayudante', unidad: 'hr', cantidad: '1.2' },
-  //     ],
-  //   },
-  //   {
-  //     id: '2',
-  //     codigo: 'HOA-002',
-  //     descripcion: 'Hormigón armado f\'c=210 kg/cm² (incl. encofrado)',
-  //     unidad: 'm³',
-  //     categoria: 'Hormigón Armado',
-  //     recursos: [
-  //       { id: '2-1', nombre: 'Cemento Portland', unidad: 'kg', cantidad: '350' },
-  //       { id: '2-2', nombre: 'Arena', unidad: 'm³', cantidad: '0.52' },
-  //       { id: '2-3', nombre: 'Grava', unidad: 'm³', cantidad: '0.76' },
-  //       { id: '2-4', nombre: 'Agua', unidad: 'lt', cantidad: '185' },
-  //       { id: '2-5', nombre: 'Fierro corrugado', unidad: 'kg', cantidad: '120' },
-  //       { id: '2-6', nombre: 'Alambre de amarre', unidad: 'kg', cantidad: '2.5' },
-  //       { id: '2-7', nombre: 'Madera de encofrado', unidad: 'p²', cantidad: '8' },
-  //       { id: '2-8', nombre: 'Clavos', unidad: 'kg', cantidad: '0.3' },
-  //       { id: '2-9', nombre: 'Albañil especializado', unidad: 'hr', cantidad: '8' },
-  //       { id: '2-10', nombre: 'Ayudante', unidad: 'hr', cantidad: '16' },
-  //     ],
-  //   },
-  //   {
-  //     id: '3',
-  //     codigo: 'REV-003',
-  //     descripcion: 'Revoque interior con yeso',
-  //     unidad: 'm²',
-  //     categoria: 'Revestimientos',
-  //     recursos: [
-  //       { id: '3-1', nombre: 'Yeso', unidad: 'kg', cantidad: '8' },
-  //       { id: '3-2', nombre: 'Agua', unidad: 'lt', cantidad: '6' },
-  //       { id: '3-3', nombre: 'Yesero', unidad: 'hr', cantidad: '0.4' },
-  //       { id: '3-4', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.2' },
-  //     ],
-  //   },
-  //   {
-  //     id: '4',
-  //     codigo: 'CUB-004',
-  //     descripcion: 'Cubierta de calamina galvanizada #28',
-  //     unidad: 'm²',
-  //     categoria: 'Cubiertas',
-  //     recursos: [
-  //       { id: '4-1', nombre: 'Calamina galvanizada #28', unidad: 'm²', cantidad: '1.1' },
-  //       { id: '4-2', nombre: 'Cumbrera galvanizada', unidad: 'm', cantidad: '0.15' },
-  //       { id: '4-3', nombre: 'Clavos para calamina', unidad: 'pza', cantidad: '18' },
-  //       { id: '4-4', nombre: 'Tijerales de madera', unidad: 'pza', cantidad: '0.5' },
-  //       { id: '4-5', nombre: 'Techador', unidad: 'hr', cantidad: '0.6' },
-  //       { id: '4-6', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.6' },
-  //     ],
-  //   },
-  //   {
-  //     id: '5',
-  //     codigo: 'PIN-005',
-  //     descripcion: 'Pintura látex interior (2 manos)',
-  //     unidad: 'm²',
-  //     categoria: 'Pintura',
-  //     recursos: [
-  //       { id: '5-1', nombre: 'Pintura látex', unidad: 'lt', cantidad: '0.25' },
-  //       { id: '5-2', nombre: 'Sellador', unidad: 'lt', cantidad: '0.15' },
-  //       { id: '5-3', nombre: 'Lija', unidad: 'plg', cantidad: '0.1' },
-  //       { id: '5-4', nombre: 'Pintor', unidad: 'hr', cantidad: '0.35' },
-  //     ],
-  //   },
-  //   {
-  //     id: '6',
-  //     codigo: 'EXC-006',
-  //     descripcion: 'Excavación manual en terreno semi-duro',
-  //     unidad: 'm³',
-  //     categoria: 'Movimiento de Tierras',
-  //     recursos: [
-  //       { id: '6-1', nombre: 'Pala', unidad: 'hr', cantidad: '0.1' },
-  //       { id: '6-2', nombre: 'Picota', unidad: 'hr', cantidad: '0.1' },
-  //       { id: '6-3', nombre: 'Peón', unidad: 'hr', cantidad: '4.5' },
-  //     ],
-  //   },
-  //   {
-  //     id: '7',
-  //     codigo: 'CER-007',
-  //     descripcion: 'Cerámica para piso 40x40 cm',
-  //     unidad: 'm²',
-  //     categoria: 'Pisos',
-  //     recursos: [
-  //       { id: '7-1', nombre: 'Cerámica 40x40', unidad: 'm²', cantidad: '1.05' },
-  //       { id: '7-2', nombre: 'Cemento cola', unidad: 'kg', cantidad: '5' },
-  //       { id: '7-3', nombre: 'Fragua', unidad: 'kg', cantidad: '0.5' },
-  //       { id: '7-4', nombre: 'Ceramista', unidad: 'hr', cantidad: '0.8' },
-  //       { id: '7-5', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.4' },
-  //     ],
-  //   },
-  //   {
-  //     id: '8',
-  //     codigo: 'CAN-008',
-  //     descripcion: 'Cañería PVC agua potable Ø 1/2"',
-  //     unidad: 'm',
-  //     categoria: 'Instalaciones Sanitarias',
-  //     recursos: [
-  //       { id: '8-1', nombre: 'Tubo PVC 1/2"', unidad: 'm', cantidad: '1.05' },
-  //       { id: '8-2', nombre: 'Codos PVC 1/2"', unidad: 'pza', cantidad: '0.3' },
-  //       { id: '8-3', nombre: 'Tees PVC 1/2"', unidad: 'pza', cantidad: '0.2' },
-  //       { id: '8-4', nombre: 'Pegamento PVC', unidad: 'lt', cantidad: '0.05' },
-  //       { id: '8-5', nombre: 'Cinta teflón', unidad: 'rollo', cantidad: '0.1' },
-  //       { id: '8-6', nombre: 'Plomero', unidad: 'hr', cantidad: '0.4' },
-  //       { id: '8-7', nombre: 'Ayudante', unidad: 'hr', cantidad: '0.2' },
-  //     ],
-  //   },
-  //   {
-  //     id: '9',
-  //     codigo: 'CAR-009',
-  //     descripcion: 'Carpintería de madera - puerta tablero',
-  //     unidad: 'm²',
-  //     categoria: 'Carpintería',
-  //     recursos: [
-  //       { id: '9-1', nombre: 'Madera mara', unidad: 'p²', cantidad: '5.5' },
-  //       { id: '9-2', nombre: 'Triplay 4mm', unidad: 'plg', cantidad: '1.1' },
-  //       { id: '9-3', nombre: 'Cola carpintero', unidad: 'kg', cantidad: '0.3' },
-  //       { id: '9-4', nombre: 'Clavos', unidad: 'kg', cantidad: '0.2' },
-  //       { id: '9-5', nombre: 'Laca', unidad: 'lt', cantidad: '0.4' },
-  //       { id: '9-6', nombre: 'Carpintero', unidad: 'hr', cantidad: '3' },
-  //     ],
-  //   },
-  //   {
-  //     id: '10',
-  //     codigo: 'ILE-010',
-  //     descripcion: 'Instalación eléctrica - punto de luz',
-  //     unidad: 'pto',
-  //     categoria: 'Instalaciones Eléctricas',
-  //     recursos: [
-  //       { id: '10-1', nombre: 'Cable THW #14', unidad: 'm', cantidad: '8' },
-  //       { id: '10-2', nombre: 'Tubo PVC eléctrico 3/4"', unidad: 'm', cantidad: '3' },
-  //       { id: '10-3', nombre: 'Caja octogonal', unidad: 'pza', cantidad: '1' },
-  //       { id: '10-4', nombre: 'Interruptor simple', unidad: 'pza', cantidad: '1' },
-  //       { id: '10-5', nombre: 'Cinta aislante', unidad: 'rollo', cantidad: '0.1' },
-  //       { id: '10-6', nombre: 'Electricista', unidad: 'hr', cantidad: '1.5' },
-  //     ],
-  //   },
-  // ]);
-
+  const { register: registerCatalog, handleSubmit: handleSubmitCatalog, reset: resetCatalog, formState: { errors: errorsCatalog } } = useForm<Recurso>({
+    resolver: zodResolver(recursoSchema),
+    defaultValues: {
+      nombre: '',
+      unidad: '',
+    },
+  });
 
   const filteredActions = (actions || []).filter(action => {
     const matchesSearch =
@@ -297,6 +103,7 @@ export function AdminPerformanceManager() {
   };
 
   const handleEdit = (action: PerformanceData) => {
+    console.log("Editing action:", action);
     reset({
       codigo: action.codigo,
       actividad: action.actividad,
@@ -304,27 +111,27 @@ export function AdminPerformanceManager() {
       categoria: action.categoria,
       recursos_info: action.recursos_info,
     });
-    setEditingAction(action);
-    // setResources([...action.recursos_info.map(ri => typeof ri.recurso === 'object' ? {
-    //   id: ri.recurso.id,
-    //   nombre: ri.recurso.nombre,
-    //   unidad: ri.recurso.unidad,
-    //   cantidad: ri.cantidad,
-    // } : {
-    //   id: ri.recurso,
-    //   nombre: '',
-    //   unidad: '',
-    //   cantidad: ri.cantidad,
-    // })]);
+    setEditingAction({
+      ...action,
+      recursos_info: action.recursos_info.map(ri => ({ ...ri, recurso: ri.recurso.id.toString(), cantidad: ri.cantidad })),
+    });
+    setResources([...action.recursos_info.map(ri => typeof ri.recurso === 'object' ? {
+      id: ri.recurso.id,
+      nombre: ri.recurso.nombre,
+      unidad: ri.recurso.unidad,
+    } : {
+      id: undefined,
+      nombre: '',
+      unidad: '',
+    })]);
     setIsActionDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!confirm('¿Estás seguro de eliminar esta actividad?')) return;
 
     try {
-      await deletePerformance(id);
-      refetch();
+      deletePerformance(id);
     } catch (error) {
       alert('Error al eliminar la actividad');
       console.error(error);
@@ -334,16 +141,28 @@ export function AdminPerformanceManager() {
   const handleSave = async (data: PerformanceData) => {
     try {
       if (editingAction && editingAction.id) {
-        await patchPerformance(editingAction.id.toString(), data);
+        data.recursos_info = resources.map((r, index) => ({
+          recurso: r.id!.toString(),
+          cantidad: data.recursos_info[index]?.cantidad,
+        }));
+        patchPerformance({ id: editingAction.id.toString(), data, oldData: editingAction }, {
+          onSuccess: () => {
+            setIsActionDialogOpen(false);
+            reset();
+            setEditingAction(null);
+            setResources([]);
+          }
+        });
       } else {
-        await postPerformance(data);
+        postPerformance(data, {
+          onSuccess: () => {
+            setIsActionDialogOpen(false);
+            reset();
+            setEditingAction(null);
+            setResources([]);
+          }
+        });
       }
-
-      setIsActionDialogOpen(false);
-      reset();
-      setEditingAction(null);
-      setResources([]);
-      refetch();
     } catch (error) {
       console.error("Error al guardar:", error);
       alert("Error al procesar la solicitud");
@@ -361,30 +180,58 @@ export function AdminPerformanceManager() {
     setResourceSelectorSearch('');
   };
 
-  const handleRemoveResource = (id: string) => {
+  const handleRemoveResource = (id: string, index: number) => {
     setResources(resources.filter(r => r.id?.toString() !== id));
+    console.log("Removing resource at index:", index);
+    const currentResources = getValues('recursos_info');
+    const updatedResources = currentResources.filter((_, i) => i !== index);
+    setValue('recursos_info', updatedResources);
+    console.log("Removing resource with id:", id);
   };
 
-  const handleCreateCatalogResource = () => {
-    setEditingCatalogResource(null);
-    setIsResourceCatalogDialogOpen(true);
-  };
-
-  const handleEditCatalogResource = (resource: CatalogResource) => {
+  const handleEditCatalogResource = (resource: Recurso) => {
+    resetCatalog({
+      nombre: resource.nombre,
+      unidad: resource.unidad,
+    });
     setEditingCatalogResource(resource);
     setIsResourceCatalogDialogOpen(true);
   };
 
   const handleDeleteCatalogResource = (id: string) => {
     if (confirm('¿Estás seguro de eliminar este recurso del catálogo?')) {
-      // setResourceCatalog(resourceCatalog.filter(r => r.id?.toString() !== id));
-      console.log("Eliminar recurso del catálogo:", id);
+      try {
+        deleteResource(id);
+      } catch (error) {
+        alert('Error al eliminar el recurso del catálogo');
+        console.error(error);
+      }
     }
   };
 
-  const handleSaveCatalogResource = () => {
-    setIsResourceCatalogDialogOpen(false);
-    // Lógica para guardar recurso al catálogo
+  const handleSaveCatalogResource = (data: Recurso) => {
+    if (editingCatalogResource) {
+      // Lógica para actualizar recurso existente
+      console.log("Actualizar recurso del catálogo:", editingCatalogResource.id, data);
+      patchResource({ id: editingCatalogResource.id!.toString(), data, oldData: editingCatalogResource }, {
+        onSuccess: () => {
+          console.log("Recurso actualizado con éxito");
+          setEditingCatalogResource(null);
+          setIsResourceCatalogDialogOpen(false);
+          resetCatalog();
+        }
+      });
+    } else {
+      // Lógica para crear nuevo recurso
+      console.log("Crear nuevo recurso del catálogo:", data);
+      postResource(data, {
+        onSuccess: () => {
+          console.log("Recurso creado con éxito");
+          setIsResourceCatalogDialogOpen(false);
+          resetCatalog();
+        }
+      });
+    }
   };
 
   const categories = Array.from(new Set((actions || []).map(a => a.categoria)));
@@ -565,7 +412,7 @@ export function AdminPerformanceManager() {
                 <CardTitle>Catálogo de Recursos</CardTitle>
                 <CardDescription>Administra el catálogo de recursos disponibles para las actividades</CardDescription>
               </div>
-              <Button onClick={handleCreateCatalogResource} className="bg-primary text-primary-foreground">
+              <Button onClick={() => setIsResourceCatalogDialogOpen(true)} className="bg-primary text-primary-foreground">
                 <Plus className="w-4 h-4 mr-2" />
                 Nuevo Recurso
               </Button>
@@ -757,7 +604,7 @@ export function AdminPerformanceManager() {
                   )}
                   {resources.map((resource, index) => (
                     <div key={resource.id} className="relative p-3 bg-muted/30 rounded-lg">
-                      <input type="hidden" value={resource.id}{...register(`recursos_info.${index}.recurso`)} />
+                      <input type="hidden" value={resource.id} {...register(`recursos_info.${index}.recurso`)} />
                       <div className='grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3'>
                         <div className="space-y-2">
                           <Label htmlFor={`resource-nombre-${resource.id}`}>Nombre del Recurso</Label>
@@ -795,7 +642,7 @@ export function AdminPerformanceManager() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleRemoveResource(resource.id!.toString())}
+                          onClick={() => handleRemoveResource(resource.id!.toString(), index)}
                           className="absolute top-2 right-2 text-destructive hover:text-destructive"
                         >
                           <X className="w-4 h-4" />
@@ -816,8 +663,8 @@ export function AdminPerformanceManager() {
               <Button type="button" variant="outline" onClick={() => setIsActionDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button type='submit' className="bg-primary text-primary-foreground">
-                Guardar
+              <Button type='submit' disabled={isPostingPerformance || isPatchingPerformance} className="bg-primary text-primary-foreground">
+                {editingAction ? (isPatchingPerformance ? 'Actualizando...' : 'Actualizar Rendimiento') : (isPostingPerformance ? 'Guardando...' : 'Guardar Rendimiento')}
               </Button>
             </DialogFooter>
           </form>
@@ -852,7 +699,7 @@ export function AdminPerformanceManager() {
               <>
                 {/* Agrupación dinámica por categoría */}
                 {searchedResources
-                  .map((resource) => (
+                  .map((resource: Recurso) => (
                     <button
                       key={resource.id}
                       onClick={() => handleAddResourceFromCatalog(resource)}
@@ -894,42 +741,56 @@ export function AdminPerformanceManager() {
       {/* Create/Edit Catalog Resource Dialog */}
       <Dialog open={isResourceCatalogDialogOpen} onOpenChange={setIsResourceCatalogDialogOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editingCatalogResource ? 'Editar Recurso' : 'Nuevo Recurso'}
-            </DialogTitle>
-            <DialogDescription>
-              Completa los datos del recurso para el catálogo
-            </DialogDescription>
-          </DialogHeader>
+          <form onSubmit={handleSubmitCatalog(handleSaveCatalogResource)}>
+            <DialogHeader>
+              <DialogTitle>
+                {editingCatalogResource ? 'Editar Recurso' : 'Nuevo Recurso'}
+              </DialogTitle>
+              <DialogDescription>
+                Completa los datos del recurso para el catálogo
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="catalog-name">Nombre del Recurso</Label>
-              <Input
-                id="catalog-name"
-                placeholder="Ej: Cemento Portland"
-                defaultValue={editingCatalogResource?.nombre}
-              />
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="catalog-name">Nombre del Recurso</Label>
+                <Input
+                  id="catalog-name"
+                  placeholder="Ej: Cemento Portland"
+                  {...registerCatalog("nombre")}
+                />
+                {errorsCatalog.nombre && typeof errorsCatalog.nombre.message === 'string' && (
+                  <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                    <AlertTitle className='text-sm'>Error en Recursos</AlertTitle>
+                    <AlertDescription className='text-xs'>{errorsCatalog.nombre.message}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="catalog-unit">Unidad</Label>
+                <Input
+                  id="catalog-unit"
+                  placeholder="kg, m³, hr, etc."
+                  {...registerCatalog("unidad")}
+                />
+                {errorsCatalog.unidad && typeof errorsCatalog.unidad.message === 'string' && (
+                  <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                    <AlertTitle className='text-sm'>Error en Recursos</AlertTitle>
+                    <AlertDescription className='text-xs'>{errorsCatalog.unidad.message}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="catalog-unit">Unidad</Label>
-              <Input
-                id="catalog-unit"
-                placeholder="kg, m³, hr, etc."
-                defaultValue={editingCatalogResource?.unidad}
-              />
-            </div>
-          </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsResourceCatalogDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveCatalogResource} className="bg-primary text-primary-foreground">
-              Guardar
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsResourceCatalogDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isPostingResource || isPatchingResource} className="bg-primary text-primary-foreground">
+                {editingCatalogResource ? (isPatchingResource ? 'Actualizando...' : 'Actualizar Recurso') : (isPostingResource ? 'Guardando...' : 'Guardar Recurso')}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </Tabs>

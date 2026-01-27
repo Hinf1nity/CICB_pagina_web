@@ -42,7 +42,7 @@ export function useJobsPost() {
     },
     onSuccess: () => {
       toast.success("Empleo creado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['trabajos_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs_admin'] });
     },
     onError: () => {
       toast.error("Error al crear el trabajo");
@@ -57,8 +57,8 @@ export function useJobs() {
 
   const fetchJobs = async () => {
     try {
-      const data: JobData[] = await api.get("jobs/job_users/").json();
-      const formattedData: JobData[] = data.map((job) => ({
+      const data: JobData[] = await api.get("jobs/job/").json();
+      const formattedData: JobData[] = data.results.map((job) => ({
         ...job,
         requisitos:
           typeof job.requisitos === "string"
@@ -83,7 +83,8 @@ export function useJobs() {
 export function useJobDetail(id?: string) {
   const fetchJob = async () => {
     let pdf_url: string | null = null;
-    const data: JobData = await api.get(`jobs/job_users/${id}/`).json();
+    const data: JobData = await api.get(`jobs/job/${id}/`).json();
+    console.log(data);
     if (data.pdf) {
       const pdf_url_response = await api
         .get(`jobs/job/${data.id}/pdf-download/`)
@@ -111,36 +112,36 @@ export function useJobDetail(id?: string) {
     return formattedJob;
   };
 
-  return useQuery({
-    queryKey: ['job', id],
+  const { data, isPending, error } = useQuery({
+    queryKey: ['job_user', id],
     queryFn: fetchJob,
-    staleTime: 1000 * 60 * 60 * 5,
-    gcTime: 1000 * 60 * 60 * 6,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
     enabled: !!id,
   });
+  return {
+    data,
+    isPending,
+    error,
+  };
 }
 
 // --- HOOKS Y FUNCIONES PARA ADMIN ---
 
 export function useJobsAdmin() {
-  return useQuery({
+  const {
+    data,
+    isPending,
+  } = useQuery({
     queryKey: ['jobs_admin'],
     queryFn: async () => {
       const data: JobData[] = await api.get("jobs/job_admin/").json();
-      return data.map((job) => ({
-        ...job,
-        requisitos:
-          typeof job.requisitos === "string"
-            ? (job.requisitos as string)
-              .split(",")
-              .map((r: string) => r.trim())
-              .filter((r: string) => r.length > 0)
-            : job.requisitos || [],
-      }));
-    }
+      console.log(data);
+      return data.results
+    },
   });
+  return {
+    data: data ?? [],
+    isPending,
+  };
 }
 
 export async function useJobDetailAdmin(id: string) {
@@ -154,7 +155,7 @@ export async function useJobDetailAdmin(id: string) {
       const pdf_url_response = await api
         .get(`jobs/job/${data.id}/pdf-download/`)
         .json<{ download_url: string, pdf_id: string }>();
-      
+
       pdf_url = pdf_url_response.download_url;
       pdf_id = pdf_url_response.pdf_id;
     } catch (e) {
@@ -182,7 +183,7 @@ export async function useJobDetailAdmin(id: string) {
     pdf_url: pdf_id ? `${pdf_id}` : undefined,
     salario: data.salario ? data.salario : '',
   };
-  
+
   return formattedJob;
 }
 
@@ -255,7 +256,7 @@ export function useJobPatch() {
     },
     onSuccess: () => {
       toast.success("Empleo actualizado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['trabajos_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs_admin'] });
     },
     onError: () => {
       toast.error("Error al actualizar el empleo");
@@ -273,7 +274,7 @@ export function useJobDelete() {
     },
     onSuccess: () => {
       toast.success("Empleo eliminado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['trabajos_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs_admin'] });
     },
     onError: () => {
       toast.error("Error al eliminar el empleo");

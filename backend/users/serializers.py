@@ -35,20 +35,20 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         refresh = self.get_token(user)
         data = {"refresh": str(refresh), "access": str(refresh.access_token)}
-        data['rol'] = getattr(user, 'rol', 'Usuario')
         return data
 
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
         token['rol'] = getattr(user, 'rol', 'Usuario')
+        if hasattr(user, 'nombre'):
+            token['name'] = user.nombre
         return token
 
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
         refresh = RefreshToken(attrs['refresh'])
-        # data = super().validate(attrs)
         print("Refreshing token for:", refresh.payload)
         rol = refresh.payload.get('rol')
         user_id = refresh.payload.get('user_id')
@@ -72,53 +72,67 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
         access_token = refresh.access_token
         access_token['rol'] = rol
+        if hasattr(user, 'nombre'):
+            access_token['name'] = refresh.payload.get('name')
         data = {"access": str(access_token)}
         return data
+
 
 class UsuarioComunSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
         fields = [
-            'id', 'rnic', 'nombre', 'especialidad', 
+            'id', 'rnic', 'nombre', 'especialidad',
             'celular', 'registro_empleado', 'mail', "departamento",
-            "fecha_inscripcion"
+            "fecha_inscripcion", "imagen", "certificaciones", "estado", 'rni'
         ]
-        read_only_fields = ['id', 'rnic', 'departamento', 
-                        "fecha_inscripcion" "estado", "rol"]
+        read_only_fields = ['id', 'rnic', 'rni', 'departamento',
+                            "fecha_inscripcion", "estado", "rol"]
+
 
 class SerializerUserAdmin(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
         fields = [
-            'nombre', 'rnic', 'rni', 'departamento', 'especialidad',
+            'id', 'nombre', 'rnic', 'rni', 'departamento', 'especialidad',
             'celular', 'imagen', 'registro_empleado', 'estado',
-            'certificaciones', 'mail', 'rol',
+            'certificaciones', 'fecha_inscripcion'
         ]
         read_only_fields = ['rnic']
 
     def create(self, validated_data):
         rni = validated_data.get('rni')
-        
+
         if not rni:
             raise serializers.ValidationError(
                 {"rni": "Este campo es requerido para crear el usuario y su contraseña."})
 
         if UsuarioComun.objects.filter(rni=rni).exists():
-            raise serializers.ValidationError({"rni": "Este RNI ya esta registrado."})
+            raise serializers.ValidationError(
+                {"rni": "Este RNI ya esta registrado."})
 
         validated_data['password'] = make_password(str(rni))
-        
+
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         if 'rni' in validated_data:
             rni_nuevo = validated_data.get('rni')
             instance.set_password(str(rni_nuevo))
-        
+
         return super().update(instance, validated_data)
+
 
 class UsuarioComunListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioComun
         fields = ['id', 'nombre', 'rnic', 'rni', 'fecha_inscripcion', 'celular',
                   'especialidad', 'departamento', 'registro_empleado', 'estado']
+
+
+class UsuarioCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UsuarioComun
+        fields = ['id', 'nombre', 'rnic', 'rni', 'imagen',
+                  'especialidad', 'celular', 'mail', 'estado', 'certificaciones']
+        read_only_fields = fields

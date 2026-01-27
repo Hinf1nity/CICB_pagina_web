@@ -14,11 +14,13 @@ from .serializers import (
 )
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
 class YearbookViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = Yearbook.objects.all()
+    # queryset = Yearbook.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
 
@@ -34,7 +36,7 @@ class YearbookViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class YearbookAdminViewSet(viewsets.ModelViewSet):
-    #queryset = Yearbook.objects.all()
+    # queryset = Yearbook.objects.all()
     permission_classes = [IsAdminPrin]
     pagination_class = TwentyPerPagePagination
 
@@ -45,7 +47,8 @@ class YearbookAdminViewSet(viewsets.ModelViewSet):
         return YearbookAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = Yearbook.objects.all().order_by('-fecha_publicacion')
+        return queryset
 
     @action(
         detail=True,

@@ -56,8 +56,13 @@ export function AdminAnnouncementsPage() {
 
   const handleEdit = async (item: GenericData) => {
     const data = await useItemDetailAdmin(item.id!, "announcements");
-    setEditingItem(item);
     reset({
+      ...item,
+      fecha_publicacion: item.fecha_publicacion ? new Date(item.fecha_publicacion).toISOString().split('T')[0] : '',
+      pdf: data?.pdf,
+      pdf_url: data?.pdf_url,
+    });
+    setEditingItem({
       ...item,
       fecha_publicacion: item.fecha_publicacion ? new Date(item.fecha_publicacion).toISOString().split('T')[0] : '',
       pdf: data?.pdf,
@@ -74,6 +79,8 @@ export function AdminAnnouncementsPage() {
 
   const handleSave: SubmitHandler<GenericData> = (data) => {
     if (editingItem?.id) {
+      console.log('Patching item with data:', data);
+      console.log('Old item data:', editingItem);
       patchItem({ id: editingItem.id, data, data_old: editingItem, type: "announcements" }, {
         onSuccess: () => {
           setIsDialogOpen(false);
@@ -169,6 +176,16 @@ export function AdminAnnouncementsPage() {
                         {item.estado === 'activa' && (
                           <Badge className="bg-green-600 text-white hover:bg-green-700 border-none px-3">
                             Activa
+                          </Badge>
+                        )}
+                        {item.estado === 'borrador' && (
+                          <Badge className="bg-yellow-500 text-white hover:bg-yellow-600 border-none px-3">
+                            Borrador
+                          </Badge>
+                        )}
+                        {item.estado === 'cerrada' && (
+                          <Badge className="bg-gray-500 text-white hover:bg-gray-600 border-none px-3">
+                            Cerrada
                           </Badge>
                         )}
                       </div>
@@ -311,7 +328,7 @@ export function AdminAnnouncementsPage() {
                   const isUrl = typeof file === 'string' && file.startsWith('http');
                   return (
                     <div className="space-y-2">
-                      <Label>Documento PDF (Anuario)</Label>
+                      <Label>Documento PDF (Reglamento)</Label>
                       {isUrl && (
                         <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
                           <div className="flex items-center gap-2">

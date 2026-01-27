@@ -13,7 +13,8 @@ export function useNoticiasAdmin() {
   } = useQuery({
     queryKey: ['noticias_admin'],
     queryFn: async () => {
-      return await api.get("news/news_admin/").json<NewsData[]>();
+      const res = await api.get("news/news_admin/").json<{ results: NewsData[] }>();
+      return res.results;
     },
   });
 
@@ -34,10 +35,12 @@ export function useNoticias() {
     error
   } = useQuery({
     // CAMBIO: Se agregó el sufijo _users
-    queryKey: ['noticias_users'], 
+    queryKey: ['noticias_users'],
 
     queryFn: async () => {
-      return await api.get("news/news/").json<NewsData[]>();
+      // Asumimos que 'api' es tu instancia de Ky
+      const res = await api.get("news/news/").json<{ results: NewsData[] }>();
+      return res.results;
     },
 
     select: (data) => {
@@ -96,7 +99,7 @@ export function useNoticiaDetail(id?: string) {
 
   const { data: noticia, isLoading: loading, isError, error } = useQuery({
     // CAMBIO: Se agregó el sufijo _users
-    queryKey: ['noticia_users', id], 
+    queryKey: ['noticia_users', id],
     queryFn: fetchNoticias,
     staleTime: 1000 * 60 * 15 * 1,
     gcTime: 1000 * 60 * 15 * 2,

@@ -16,7 +16,7 @@ export function useItems(type: "yearbooks" | "regulation" | "announcements") {
 
       const response: GenericData[] = await api.get(`${url}/${url}/`).json();
 
-      setItems(response.map(item => ({
+      setItems(response.results.map(item => ({
         ...item,
         pdf_url: item.pdf?.url,
         pdf: undefined,
@@ -48,7 +48,7 @@ export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements"
 
       const response: GenericData[] = await api.get(`${url}/${url}_admin/`).json();
 
-      setItems(response.map(item => ({
+      setItems(response.results.map(item => ({
         ...item,
         pdf_url: item.pdf?.url,
         pdf: undefined,
@@ -160,15 +160,20 @@ export function useItemPatch() {
       }
 
       if (!hasChanges) {
-        return null;
+        return { message: "Sin cambios en base de datos" };
       }
 
       const response = await api.patch(`${endpoint}/${endpoint}_admin/${id}/`, { body: formData });
       return response;
     },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
-      toast.success("Elemento actualizado exitosamente");
+    onSuccess: (_data: any, variables) => {
+      if (!_data.message) {
+        queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+        toast.success("Elemento actualizado exitosamente");
+      } else {
+        toast.info("No se detectaron cambios para actualizar");
+      }
+
     },
     onError: () => {
       toast.error("Error al actualizar el elemento");

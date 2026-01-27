@@ -9,7 +9,7 @@ import { useJobDetail } from '../hooks/useJobs';
 export function JobDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { job, loading, error } = useJobDetail(id);
+  const { data: job, isPending: loading, error } = useJobDetail(id);
   const getTypeColor = (jobType: string) => {
 
     const colors: Record<string, string> = {
@@ -25,7 +25,7 @@ export function JobDetailPage() {
   };
 
   if (loading) return <p className="text-center mt-10">Cargando empleo...</p>;
-  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
+  if (error) return <p className="text-center text-red-500 mt-10">{error instanceof Error ? error.message : String(error)}</p>;
   if (!job?.id) return <p className="text-center mt-10 text-muted-foreground">No se encontró el empleo solicitado.</p>;
 
   return (

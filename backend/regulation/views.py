@@ -14,11 +14,13 @@ from .serializers import (
 )
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
 class RegulationViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = Regulation.objects.all()
+    # queryset = Regulation.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
 
@@ -34,7 +36,7 @@ class RegulationViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RegulationAdminViewSet(viewsets.ModelViewSet):
-    #queryset = Regulation.objects.all()
+    # queryset = Regulation.objects.all()
     permission_classes = [IsAdminPrin]
     pagination_class = TwentyPerPagePagination
 
@@ -45,7 +47,8 @@ class RegulationAdminViewSet(viewsets.ModelViewSet):
         return RegulationAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = Regulation.objects.all().order_by('-fecha_publicacion')
+        return queryset
 
     @action(
         detail=True,

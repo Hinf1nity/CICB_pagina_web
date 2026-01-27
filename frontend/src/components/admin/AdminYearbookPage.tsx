@@ -59,7 +59,12 @@ export function AdminYearbookPage() {
       pdf_url: data?.pdf_url,
       pdf: data?.pdf,
     });
-    setEditingItem(item);
+    setEditingItem({
+      ...item,
+      fecha_publicacion: item.fecha_publicacion ? new Date(item.fecha_publicacion).toISOString().split('T')[0] : '',
+      pdf_url: data?.pdf_url,
+      pdf: data?.pdf,
+    });
     setIsDialogOpen(true);
   };
 

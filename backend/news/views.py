@@ -20,11 +20,13 @@ import os
 from users.permissions import IsAdminPrin
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = News.objects.all()
+    # queryset = News.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
 
@@ -119,7 +121,7 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class NewsAdminViewSet(viewsets.ModelViewSet):
-    #queryset = News.objects.all()
+    # queryset = News.objects.all()
     permission_classes = [IsAdminPrin]
     pagination_class = TwentyPerPagePagination
 
@@ -133,7 +135,8 @@ class NewsAdminViewSet(viewsets.ModelViewSet):
         return NewsAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = News.objects.all().order_by("-fecha_publicacion")
+        return queryset
 
     def destroy(self, request, *args, **kwargs):
         new = self.get_object()

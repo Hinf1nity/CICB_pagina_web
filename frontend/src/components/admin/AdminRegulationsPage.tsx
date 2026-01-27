@@ -88,7 +88,12 @@ export function AdminRegulationsPage() {
       pdf: data?.pdf,
       pdf_url: data?.pdf_url,
     });
-    setEditingItem(regulation);
+    setEditingItem({
+      ...regulation,
+      fecha_publicacion: regulation.fecha_publicacion ? new Date(regulation.fecha_publicacion).toISOString().split('T')[0] : '',
+      pdf: data?.pdf,
+      pdf_url: data?.pdf_url,
+    });
     setIsDialogOpen(true);
   };
 

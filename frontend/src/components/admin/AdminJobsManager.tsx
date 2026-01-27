@@ -37,7 +37,7 @@ export function AdminJobsManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<JobData | null>(null);
   const { mutate: postJob, isPending: isPosting } = useJobsPost();
-  const { data: jobs = [], refetch: refetchJobs } = useJobsAdmin();
+  const { data: jobs } = useJobsAdmin();
   const { mutate: patchJob, isPending: isPatching } = useJobPatch();
   const { mutate: deleteJob } = useJobDelete();
   // console.log('Errors en el formulario:', errors);
@@ -63,7 +63,7 @@ export function AdminJobsManager() {
     try {
       // 1. Buscamos el detalle completo
       const formattedJob = await useJobDetailAdmin(`${item.id}`);
-      
+
       if (!formattedJob) {
         alert("No se pudo cargar la información del trabajo.");
         return;
@@ -80,7 +80,7 @@ export function AdminJobsManager() {
       setEditingItem(itemToEdit);
       reset(itemToEdit); // Esto inyecta los datos al formulario
       setIsDialogOpen(true);
-      
+
     } catch (error) {
       console.error("Error al intentar editar:", error);
     }

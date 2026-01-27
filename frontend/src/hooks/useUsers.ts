@@ -11,8 +11,8 @@ export function useUsersAdmin() {
   const [error, setError] = useState<string | null>(null);
   const fetchUsers = async () => {
     try {
-      const data: UserData[] = await api.get("users/").json();
-      setUsers(data);
+      const data: UserData[] = await api.get("users/?page=1").json();
+      setUsers(data.results || []);
     } catch (err) {
       setError("Error al cargar los usuarios");
     } finally {
@@ -34,6 +34,21 @@ export async function useUsersDetailAdmin(id: number) {
     console.log('Respuesta de la descarga de imagen:', imageDataRes);
     data.imagen_url = `${imageDataRes.img_id}`;
     data.imagen = imageDataRes.download_url;
+  } else {
+    data.imagen = undefined;
+  }
+
+  return data;
+}
+
+export async function useUsersDetailCard(id: number) {
+  const data: UserData = await api.get(`users/details/${id}/`).json();
+  if (data.imagen) {
+    const imageDataRes = await api.get(`users/${data.id}/img-download`)
+      .json<{ download_url: string, img_id: string }>();
+    console.log('Respuesta de la descarga de imagen:', imageDataRes);
+    data.imagen_url = `${imageDataRes.img_id}`;
+    data.imagen = imageDataRes.download_url;
   }
 
   return data;
@@ -45,6 +60,7 @@ export function useUserProfileQuery(userId?: string) {
     // 1. Fetch básico
     queryFn: async () => {
       const data: UserData = await api.get(`users/${userId}/`).json();
+      console.log('Datos obtenidos del usuario:', data);
       if (data.imagen) {
         const imageDataRes = await api.get(`users/${data.id}/img-download`)
           .json<{ download_url: string, img_id: string }>();
@@ -63,12 +79,12 @@ export function useUserProfileQuery(userId?: string) {
       const hasPassedAniversary = (new Date().getMonth() > new Date(data.fecha_inscripcion).getMonth()) ||
         (new Date().getMonth() === new Date(data.fecha_inscripcion).getMonth() && new Date().getDate() >= new Date(data.fecha_inscripcion).getDate());
       const experienceYears = hasPassedAniversary ? yearsDifference : yearsDifference - 1;
-
       // Formateo de UI (Lo que muestras en las tarjetas)
       const uiData = {
         id: data.id?.toString() || '',
         name: data.nombre,
-        registration: data.rni,
+        rni: data.rni.toString(),
+        rnic: data.rnic,
         specialty: `Ing. ${data.especialidad.charAt(0).toUpperCase() + data.especialidad.slice(1).toLowerCase()}` || 'No especificada',
         city: data.departamento || 'No especificada',
         registrationDate: data.fecha_inscripcion,
@@ -83,7 +99,7 @@ export function useUserProfileQuery(userId?: string) {
           anio: cert.anio
         })) || []
       };
-
+      console.log('Datos formateados para UI:', uiData);
       // Datos para el Formulario (Lo que va al reset)
       const formData = {
         nombre: data.nombre,
@@ -95,6 +111,8 @@ export function useUserProfileQuery(userId?: string) {
         imagen: data.imagen || undefined,
         imagen_url: data.imagen_url || '',
       };
+
+      data.imagen = data.imagen || undefined;
 
       return { raw: data, uiData, formData };
     }
@@ -151,6 +169,7 @@ export function useUsersPatch() {
       appendIfChanged("nombre", data.nombre, data_old.nombre);
       appendIfChanged("rni", data.rni?.toString(), data_old.rni?.toString());
       appendIfChanged("especialidad", data.especialidad, data_old.especialidad);
+      appendIfChanged("estado", data.estado, data_old.estado);
       appendIfChanged("celular", data.celular?.toString(), data_old.celular?.toString());
       appendIfChanged("departamento", data.departamento, data_old.departamento);
       appendIfChanged("registro_empleado", data.registro_empleado, data_old.registro_empleado);
@@ -188,9 +207,14 @@ export function useUsersPatch() {
 
       return response.json();
     },
-    onSuccess: () => {
-      toast.success("Usuario actualizado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['users_admin'] });
+    onSuccess: (_data: any) => {
+      if (_data.message === "Sin cambios en base de datos") {
+        toast.info("No se realizaron cambios en el usuario");
+        return;
+      } else {
+        toast.success("Usuario actualizado exitosamente");
+        queryClient.invalidateQueries({ queryKey: ['users_admin'] });
+      }
     },
     onError: () => {
       toast.error("Error al actualizar el usuario");
@@ -224,6 +248,8 @@ export function useUserPatchUserProfile() {
         hasChanges = true;
       }
 
+      console.log('Comparando imágenes:', data.imagen, data_old.imagen);
+
       if (data.imagen !== data_old.imagen) {
         if (data_old.imagen_url) {
           const uploadRes = await presignedUrlPatch(
@@ -239,7 +265,6 @@ export function useUserPatchUserProfile() {
         }
         hasChanges = true;
       }
-
       if (!hasChanges) {
         return { message: "Sin cambios en base de datos" };
       }
@@ -258,8 +283,9 @@ export function useUserPatchUserProfile() {
       toast.success("Perfil actualizado exitosamente");
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     },
-    onError: () => {
+    onError: (err) => {
       toast.error("Error al actualizar el perfil");
+      console.error('Error en useUserPatchUserProfile:', err);
     }
   });
 }
