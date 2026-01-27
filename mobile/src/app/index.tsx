@@ -7,16 +7,16 @@ import { useRouter, Stack } from 'expo-router';
 
 // --- DATOS DEPARTAMENTOS ---
 const DEPARTMENTS = [
-  { name: 'Nacional', icon: 'engineering', active: true },
-  { name: 'La Paz', icon: 'location-city', active: false },
-  { name: 'Santa Cruz', icon: 'forest', active: false },
-  { name: 'Cochabamba', icon: 'agriculture', active: false }, // agriculture no existe en MaterialIcons standard, cambiamos a similar
-  { name: 'Oruro', icon: 'landscape', active: false },
-  { name: 'Potosí', icon: 'diamond', active: false },
-  { name: 'Tarija', icon: 'wine-bar', active: false },
-  { name: 'Chuquisaca', icon: 'account-balance', active: false },
-  { name: 'Beni', icon: 'water', active: false },
-  { name: 'Pando', icon: 'nature-people', active: false },
+  { name: 'Bolivia', image: require('../../assets/LOGO CIC B sin fondo.png'), active: true },
+  { name: 'La Paz', image: require('../../assets/cicLaPaz.png'), active: false },
+  { name: 'Santa Cruz', image: require('../../assets/cicSantaCruz.png'), active: false },
+  { name: 'Cochabamba', image: require('../../assets/cicCochabamba.png'), active: false }, // agriculture no existe en MaterialIcons standard, cambiamos a similar
+  { name: 'Oruro', image: require('../../assets/cicOruro.png'), active: false },
+  { name: 'Potosí', image: require('../../assets/cicPotosi.png'), active: false },
+  { name: 'Tarija', image: require('../../assets/cicTarija.png'), active: false },
+  { name: 'Chuquisaca', image: require('../../assets/cicChuquisaca.png'), active: false },
+  { name: 'Beni', image: require('../../assets/cicBeni.png'), active: false },
+  { name: 'Pando', image: require('../../assets/cicPando.png'), active: false },
 ];
 
 export default function MenuScreen() {
@@ -57,16 +57,21 @@ export default function MenuScreen() {
                 {/* Grid de Departamentos */}
                 <View className="flex-row flex-wrap justify-center gap-y-6">
                     {DEPARTMENTS.map((dept, index) => (
-                        <View key={index} className="w-[20%] items-center justify-center">
-                            <View className={`items-center justify-center ${dept.active ? 'opacity-100' : 'opacity-80'}`}>
+                        <View key={index} className="w-[25%] items-center justify-center">
+                            <View className="w-10 h-10 items-center justify-center mb-1">
                                 <MaterialIcons 
                                     // @ts-ignore: icon name dynamic
                                     name={dept.icon} 
                                     size={22} 
-                                    color={dept.active ? '#00bfa5' : 'white'} 
+                                    color={dept.active ? '#0f3e33' : 'white'} 
                                     style={{ marginBottom: 4 }}
                                 />
-                                <Text className="text-[9px] font-bold uppercase tracking-wider text-center text-white/90">
+                                <Image
+                                    source={dept.image}
+                                    className={`w-9 h-9 mb-1 ${dept.active ? 'opacity-100' : 'opacity-80'}`}
+                                    resizeMode="contain"
+                                />
+                                <Text numberOfLines={2} ellipsizeMode="tail" className="text-[9px] font-semibold uppercase text-center text-white/90 leading-tight">
                                     {dept.name}
                                 </Text>
                             </View>
@@ -82,7 +87,7 @@ export default function MenuScreen() {
                     <View className="items-center">
                         {/* Icono Principal */}
                         <View className="size-16 bg-secondary/10 rounded-2xl items-center justify-center mb-6">
-                            <MaterialIcons name="calculate" size={36} color="#00bfa5" />
+                            <MaterialIcons name="calculate" size={36} color="#0f3e33" />
                         </View>
 
                         {/* Título */}
