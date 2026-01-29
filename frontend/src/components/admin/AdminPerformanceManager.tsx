@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -24,6 +24,7 @@ import {
   useResourcesDelete,
 } from '../../hooks/usePerformance';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { useDebounce } from 'use-debounce';
 
 
 export function AdminPerformanceManager() {
@@ -38,12 +39,25 @@ export function AdminPerformanceManager() {
   const [editingCatalogResource, setEditingCatalogResource] = useState<Recurso | null>(null);
   const [isResourceSelectorOpen, setIsResourceSelectorOpen] = useState(false);
   const [resourceSelectorSearch, setResourceSelectorSearch] = useState('');
-  const { actions } = usePerformance();
+  const [resourcePage, setResourcePage] = useState(1);
+  const [actionPage, setActionPage] = useState(1);
+  const [debouncedSearchTermActions] = useDebounce(searchTerm, 500);
+  useEffect(() => {
+    setActionPage(1); // Reset to first page on new search or filter
+  }, [debouncedSearchTermActions, filterCategory]);
+  const [debouncedCatalogSearchTerm] = useDebounce(catalogSearchTerm, 500);
+  useEffect(() => {
+    setResourcePage(1); // Reset to first page on new search
+  }, [debouncedCatalogSearchTerm]);
+  const { actions, count: countActions, next: nextAction, previous: previousAction, categories_names } = usePerformance(actionPage, debouncedSearchTermActions, filterCategory);
+  const pageSize = 20; // Paginacion se agrega esto y el count de arriba
+  const totalPagesActions = countActions ? Math.ceil(countActions / pageSize) : 1;
   const { mutate: postPerformance, isPending: isPostingPerformance } = usePerformancePost();
   const { mutate: patchPerformance, isPending: isPatchingPerformance } = usePerformancePatch();
   const { mutate: deletePerformance } = usePerformanceDelete();
   const { resources: searchedResources } = searchResourceByName(resourceSelectorSearch);
-  const { resources: resourceCatalog } = useResources();
+  const { resources: resourceCatalog, count: countResources, next: nextResource, previous: previousResource } = useResources(resourcePage, debouncedCatalogSearchTerm);
+  const totalPagesResources = countResources ? Math.ceil(countResources / pageSize) : 1;
   const { mutate: postResource, isPending: isPostingResource } = useResourcesPost();
   const { mutate: patchResource, isPending: isPatchingResource } = useResourcesPatch();
   const { mutate: deleteResource } = useResourcesDelete();
@@ -63,20 +77,6 @@ export function AdminPerformanceManager() {
       nombre: '',
       unidad: '',
     },
-  });
-
-  const filteredActions = (actions || []).filter(action => {
-    const matchesSearch =
-      action.actividad.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.recursos_info.some(r => typeof r.recurso === 'object' && r.recurso !== null && r.recurso.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = filterCategory === 'all' || action.categoria === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const filteredCatalog = resourceCatalog.filter(resource => {
-    const matchesSearch = resource.nombre.toLowerCase().includes(catalogSearchTerm.toLowerCase());
-    return matchesSearch;
   });
 
   const toggleRow = (id: number) => {
@@ -234,8 +234,6 @@ export function AdminPerformanceManager() {
     }
   };
 
-  const categories = Array.from(new Set((actions || []).map(a => a.categoria)));
-
   return (
     <Tabs defaultValue="activities" className="space-y-6">
       <TabsList className="grid w-full grid-cols-2 max-w-md">
@@ -282,7 +280,7 @@ export function AdminPerformanceManager() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las categorías</SelectItem>
-                  {categories.map(cat => (
+                  {categories_names.map(cat => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
                 </SelectContent>
@@ -290,7 +288,7 @@ export function AdminPerformanceManager() {
             </div>
 
             <div className="mt-4 text-muted-foreground">
-              Mostrando {filteredActions.length} de {actions.length} actividades
+              Mostrando {1 + (actionPage - 1) * pageSize}-{Math.min(actionPage * pageSize, countActions)} de {countActions} noticias
             </div>
           </CardHeader>
 
@@ -309,7 +307,7 @@ export function AdminPerformanceManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredActions.map((action) => (
+                  {actions.map((action) => (
                     <Fragment key={action.id}>
                       {/* Main Row */}
                       <TableRow>
@@ -392,9 +390,33 @@ export function AdminPerformanceManager() {
                   ))}
                 </TableBody>
               </Table>
+              {/* creamos la paginacion y sus flechas */}
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!previousAction}
+                  onClick={() => setActionPage((p) => Math.max(p - 1, 1))}
+                >
+                  Anterior
+                </Button>
+
+                <span className="text-sm text-muted-foreground">
+                  Página {actionPage} de {totalPagesActions}
+                </span>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!nextAction}
+                  onClick={() => setActionPage((p) => p + 1)}
+                >
+                  Siguiente
+                </Button>
+              </div>
             </div>
 
-            {filteredActions.length === 0 && (
+            {countActions === 0 && (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No se encontraron actividades que coincidan con tu búsqueda.</p>
               </div>
@@ -433,7 +455,7 @@ export function AdminPerformanceManager() {
             </div>
 
             <div className="mt-4 text-muted-foreground">
-              Mostrando {filteredCatalog.length} de {resourceCatalog.length} recursos
+              Mostrando {1 + (resourcePage - 1) * pageSize}-{Math.min(resourcePage * pageSize, countResources)} de {countResources} recursos
             </div>
           </CardHeader>
 
@@ -448,7 +470,7 @@ export function AdminPerformanceManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCatalog.map((resource) => (
+                  {resourceCatalog.map((resource) => (
                     <TableRow key={resource.id}>
                       <TableCell>{resource.nombre}</TableCell>
                       <TableCell>
@@ -468,9 +490,33 @@ export function AdminPerformanceManager() {
                   ))}
                 </TableBody>
               </Table>
+              {/* creamos la paginacion y sus flechas */}
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!previousResource}
+                  onClick={() => setResourcePage((p) => Math.max(p - 1, 1))}
+                >
+                  Anterior
+                </Button>
+
+                <span className="text-sm text-muted-foreground">
+                  Página {resourcePage} de {totalPagesResources}
+                </span>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!nextResource}
+                  onClick={() => setResourcePage((p) => p + 1)}
+                >
+                  Siguiente
+                </Button>
+              </div>
             </div>
 
-            {filteredCatalog.length === 0 && (
+            {countResources === 0 && (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No se encontraron recursos que coincidan con tu búsqueda.</p>
               </div>

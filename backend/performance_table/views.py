@@ -1,7 +1,7 @@
 
 from .models import PerformanceTable, ResourceChart
 from .serializers import PerformanceTableSerializer, ResourceSerializer
-
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, status
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
@@ -12,10 +12,34 @@ class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
 
+class TwentyPerPagePaginationPerformance(PageNumberPagination):
+    page_size = 20
+
+    def get_paginated_response(self, data):
+        total_resources = ResourceChart.objects.count()
+        total_categories = PerformanceTable.objects.values(
+            'categoria').distinct().count()
+        categories_names = PerformanceTable.objects.values_list(
+            'categoria', flat=True).distinct()
+
+        return Response({
+            'count': self.page.paginator.count,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data,
+            'total_resources': total_resources,
+            'total_categories': total_categories,
+            'categories_names': list(categories_names),
+        })
+
+
 class PerformanceTableViewSet(viewsets.ModelViewSet):
     queryset = PerformanceTable.objects.all().order_by('-id')
     serializer_class = PerformanceTableSerializer
-    pagination_class = TwentyPerPagePagination
+    pagination_class = TwentyPerPagePaginationPerformance
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['categoria']
+    search_fields = ['actividad', 'codigo', 'recursos__nombre']
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -28,7 +52,7 @@ class PerformanceTableViewSet(viewsets.ModelViewSet):
 class ResourcesViewSet(viewsets.ModelViewSet):
     queryset = ResourceChart.objects.all()
     serializer_class = ResourceSerializer
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ['nombre']
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination

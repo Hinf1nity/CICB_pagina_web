@@ -213,9 +213,6 @@ export function JobDetailPage() {
 
                 <Separator className="my-6" />
 
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mb-3">
-                  Postular Ahora
-                </Button>
                 <Button
                   variant="outline"
                   className="w-full"

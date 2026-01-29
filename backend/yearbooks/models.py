@@ -1,6 +1,7 @@
 from django.db import models
 from PDFs.models import PDF
 
+
 class Yearbook(models.Model):
 
     estados = [

@@ -1,19 +1,27 @@
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
-import { Search, Download, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Card, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { usePerformance } from '../hooks/usePerformance';
+import { useDebounce } from 'use-debounce';
 
 export function TablePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [page, setPage] = useState(1);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  useEffect(() => {
+    setPage(1); // Reset to first page on new search
+  }, [debouncedSearchTerm, filterCategory]);
 
-  const { actions, loading, error } = usePerformance();
+  const { actions, loading, error, count, next, previous, total_categories, total_resources } = usePerformance(page, debouncedSearchTerm, filterCategory);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   if (loading) {
     return (
@@ -31,16 +39,6 @@ export function TablePage() {
     );
   }
 
-
-  const filteredActions = actions.filter(action => {
-    const matchesSearch =
-      action.actividad.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.recursos_info.some(r => r.recurso.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = filterCategory === 'all' || action.categoria === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
-
   const toggleRow = (id: number) => {
     const newExpanded = new Set(expandedRows);
     if (newExpanded.has(id)) {
@@ -49,10 +47,6 @@ export function TablePage() {
       newExpanded.add(id);
     }
     setExpandedRows(newExpanded);
-  };
-
-  const handleExport = () => {
-    console.log('Exportando tabla de rendimientos...');
   };
 
   const categories = Array.from(new Set(actions.map(a => a.categoria)));
@@ -74,19 +68,19 @@ export function TablePage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Total de Actividades</CardDescription>
-                <CardTitle>{actions.length}</CardTitle>
+                <CardTitle>{count}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Categorías</CardDescription>
-                <CardTitle>{categories.length}</CardTitle>
+                <CardTitle>{total_categories}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Recursos Totales</CardDescription>
-                <CardTitle>{actions.reduce((sum, a) => sum + a.recursos_info.length, 0)}</CardTitle>
+                <CardTitle>{total_resources}</CardTitle>
               </CardHeader>
             </Card>
           </div>
@@ -114,13 +108,9 @@ export function TablePage() {
                 ))}
               </SelectContent>
             </Select>
-            {/* <Button onClick={handleExport} variant="outline" className="whitespace-nowrap">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
-            </Button> */}
           </div>
           <div className="text-muted-foreground">
-            Mostrando {filteredActions.length} de {actions.length} actividades
+            Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} actividades
           </div>
         </div>
       </div>
@@ -141,7 +131,7 @@ export function TablePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredActions.map((action) => (
+                {actions.map((action) => (
                   <Fragment key={action.id}>
                     {/* Main Row */}
                     <TableRow
@@ -218,11 +208,35 @@ export function TablePage() {
             </Table>
           </div>
 
-          {filteredActions.length === 0 && (
+          {count === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No se encontraron actividades que coincidan con tu búsqueda.</p>
             </div>
           )}
+        </div>
+        {/* creamos la paginacion y sus flechas */}
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!previous}
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          >
+            Anterior
+          </Button>
+
+          <span className="text-sm text-muted-foreground">
+            Página {page} de {totalPages}
+          </span>
+
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!next}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
         </div>
 
         {/* Legend */}

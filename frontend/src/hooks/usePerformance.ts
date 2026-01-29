@@ -1,8 +1,18 @@
 import api from "../api/kyClient";
 import { type PerformanceData, type Recurso } from "../validations/performanceSchema";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
+
+interface PaginatedResponse<T> {
+    results: T[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+    total_resources?: number;
+    total_categories?: number;
+    categories_names?: string[];
+}
 
 export function usePerformancePost() {
     const queryClient = useQueryClient();
@@ -48,45 +58,63 @@ export function useResourcesPost() {
     });
 }
 
-export function usePerformance() {
+export function usePerformance(page: number = 1, search: string = '', category: string = '') {
     const {
-        data: actions, isLoading: loading,
+        data, isLoading,
         error,
     } = useQuery({
-        queryKey: ['performance'],
+        queryKey: ['performance', page, search, category],
         queryFn: async () => {
-            const data = await api.get("performance/performance/").json<{
-                results: PerformanceData[];
-            }>();
-            return data.results;
+            const params = new URLSearchParams({
+                page: page.toString(),
+                ...(search && { search: search }),
+                ...(category !== "all" && { categoria: category }),
+            });
+            const data = await api.get(`performance/performance/?${params.toString()}`).json<PaginatedResponse<PerformanceData>>();
+            return data;
         },
+        placeholderData: keepPreviousData,
+        enabled: search.trim().length > 4 || search.trim().length === 0,
     });
 
     return {
-        actions: actions || [],
-        loading,
+        actions: data?.results || [],
+        loading: isLoading,
+        count: data?.count ?? 0,
+        next: data?.next,
+        previous: data?.previous,
+        total_resources: data?.total_resources ?? 0,
+        total_categories: data?.total_categories ?? 0,
+        categories_names: data?.categories_names ?? [],
         error: error ? "No se pudo obtener las tablas" : null,
     };
 }
 
-export function useResources() {
+export function useResources(page: number = 1, search: string = '') {
     const {
-        data: resources,
-        isLoading: loading,
+        data,
+        isLoading,
         error,
     } = useQuery({
-        queryKey: ['resources'],
+        queryKey: ['resources', page, search],
         queryFn: async () => {
-            const data = await api.get("performance/resources/").json<{
-                results: Recurso[];
-            }>();
-            return data.results;
+            const params = new URLSearchParams({
+                page: page.toString(),
+                ...(search && { search: search }),
+            });
+            const data = await api.get(`performance/resources/?${params.toString()}`).json<PaginatedResponse<Recurso>>();
+            return data;
         },
+        placeholderData: keepPreviousData,
+        enabled: search.trim().length > 4 || search.trim().length === 0,
     });
 
     return {
-        resources: resources || [],
-        loading,
+        resources: data?.results || [],
+        count: data?.count ?? 0,
+        next: data?.next,
+        previous: data?.previous,
+        loading: isLoading,
         error: error ? "No se pudo obtener los recursos" : null,
     };
 }
@@ -226,7 +254,6 @@ export function searchResourceByName(query: string) {
             const data: Recurso[] = await api.get(`performance/resources/`, {
                 searchParams: { search: search },
             }).json();
-            console.log(data.results);
             return data.results;
         },
         enabled: search.trim().length > 2,

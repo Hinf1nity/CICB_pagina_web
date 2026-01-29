@@ -1,29 +1,45 @@
-import { useEffect, useState } from 'react';
 import api from '../api/kyClient';
 import { type UserData } from '../validations/userSchema';
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export function useUsersAdmin() {
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const fetchUsers = async () => {
-    try {
-      const data: UserData[] = await api.get("users/?page=1").json();
-      setUsers(data.results || []);
-    } catch (err) {
-      setError("Error al cargar los usuarios");
-    } finally {
-      setLoading(false);
-    }
-  };
+interface PaginatedResponse {
+  results: UserData[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-  return { users, loading, error, refetchUsers: fetchUsers };
+export function useUsersAdmin(page: number = 1, search: string = '', state: string = '') {
+  const {
+    data,
+    isLoading,
+    error,
+    isFetching,
+  } = useQuery({
+    queryKey: ['users_admin', page, search, state],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search: search }),
+        ...(state !== "all" && { estado: state }),
+      });
+      const data: PaginatedResponse = await api.get(`users/?${params.toString()}`).json();
+      return data;
+    },
+    placeholderData: keepPreviousData,
+    enabled: search.trim().length > 4 || search.trim().length === 0,
+  });
+  return {
+    users: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
+    isLoading,
+    isSearching: isFetching && search !== '',
+    error,
+  };
 }
 
 export async function useUsersDetailAdmin(id: number) {

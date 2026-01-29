@@ -53,24 +53,24 @@ export function AdminNewsManager() {
 
   const [page, setPage] = useState(1);
 
-    const {
-      noticias,
-      next,
-      previous,
-      count,
-    } = useNoticiasAdmin(page);
+  const {
+    noticias,
+    next,
+    previous,
+    count,
+  } = useNoticiasAdmin(page);
 
   const pageSize = 20; // Paginacion se agrega esto y el count de arriba
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   const handleEdit = async (item: any) => {
-      // CORRECCIÓN: Se asegura el uso de await y la función original
-      const detailedItem = await useNoticiaDetailAdmin(item.id);
-      reset({
-        ...detailedItem,
-      });
-      setEditingItem(detailedItem);
-      setIsDialogOpen(true);
+    // CORRECCIÓN: Se asegura el uso de await y la función original
+    const detailedItem = await useNoticiaDetailAdmin(item.id);
+    reset({
+      ...detailedItem,
+    });
+    setEditingItem(detailedItem);
+    setIsDialogOpen(true);
   };
 
   const handleDelete = (id: number) => {
@@ -114,6 +114,9 @@ export function AdminNewsManager() {
               <Plus className="w-4 h-4 mr-2" />
               Nueva Noticia
             </Button>
+          </div>
+          <div className="mt-4 text-muted-foreground">
+            Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} noticias
           </div>
         </CardHeader>
         <CardContent>

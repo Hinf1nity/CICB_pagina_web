@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status, mixins
+from rest_framework import viewsets, filters, status, mixins
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,6 +20,9 @@ class TwentyPerPagePagination(PageNumberPagination):
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UsuarioComunSerializer
     pagination_class = TwentyPerPagePagination
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['estado']
+    search_fields = ['nombre', 'rni', 'celular']
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create", "update", "partial_update", "destroy"]:

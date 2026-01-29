@@ -2,8 +2,18 @@ import { useState, useEffect } from "react";
 import api from "../api/kyClient";
 import type { GenericData } from "../validations/genericSchema";
 import { presignedUrlPatch, presignedUrlPost } from "./presignedUrl";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+interface PaginatedResponse {
+  results: GenericData[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+  published_count: number;
+  draft_count: number;
+  archived_count?: number;
+}
 
 export function useItems(type: "yearbooks" | "regulation" | "announcements") {
   const [items, setItems] = useState<GenericData[]>([]);
@@ -37,37 +47,50 @@ export function useItems(type: "yearbooks" | "regulation" | "announcements") {
   return { items, loading, refetchItems: () => fetchItems(type) };
 }
 
-export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements") {
-  const [items, setItems] = useState<GenericData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchItems = async (type: "yearbooks" | "regulation" | "announcements") => {
-    try {
-      setLoading(true);
-      const url = type === "announcements" ? "calls" : type
-
-      const response: GenericData[] = await api.get(`${url}/${url}_admin/`).json();
-
-      setItems(response.results.map(item => ({
+export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements", page: number = 1, search: string = '') {
+  const {
+    data,
+    isPending,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: [type + "_admin", page, search],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search: search }),
+      });
+      const url = type === "announcements" ? "calls" : type;
+      return api
+        .get(`${url}/${url}_admin/?${params.toString()}`)
+        .json<PaginatedResponse>();
+    },
+    select: (data) => ({
+      ...data,
+      results: data.results.map((item) => ({
         ...item,
         pdf_url: item.pdf?.url,
         pdf: undefined,
-      })));
+      })),
+    }),
+    placeholderData: keepPreviousData,
+    enabled: search.trim().length > 3 || search.trim().length === 0,
+  });
 
-    } catch (error) {
-      console.error("Error obteniendo datos:", error);
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    items: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
+    published_count: data?.published_count ?? 0,
+    draft_count: data?.draft_count ?? 0,
+    archived_count: data?.archived_count ?? 0,
+    isPending,
+    isError,
+    error,
   };
-
-  useEffect(() => {
-    fetchItems(type);
-  }, [type]);
-
-  return { items, loading, refetchItems: () => fetchItems(type) };
 }
+
 
 export async function useItemDetailAdmin(id: number, type: "yearbooks" | "regulation" | "announcements") {
   const data: { pdf_url: string, pdf: string } = {
@@ -102,10 +125,7 @@ export function useItemPost() {
       formData.append("nombre", data.nombre);
       formData.append("descripcion", data.descripcion);
       formData.append("estado", data.estado);
-
-      if (type !== "announcements") {
-        formData.append("fecha_publicacion", data.fecha_publicacion);
-      }
+      formData.append("fecha_publicacion", data.fecha_publicacion);
 
       if (finalPdfId) formData.append("pdf", finalPdfId.toString());
 

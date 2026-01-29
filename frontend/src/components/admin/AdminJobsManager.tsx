@@ -36,8 +36,11 @@ export function AdminJobsManager() {
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<JobData | null>(null);
+  const [page, setPage] = useState(1);
+  const { count, next, previous, data: jobs } = useJobsAdmin(page);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
   const { mutate: postJob, isPending: isPosting } = useJobsPost();
-  const { data: jobs } = useJobsAdmin();
   const { mutate: patchJob, isPending: isPatching } = useJobPatch();
   const { mutate: deleteJob } = useJobDelete();
   // console.log('Errors en el formulario:', errors);
@@ -115,6 +118,14 @@ export function AdminJobsManager() {
     }
   };
 
+  const handleToggleStatus = (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'publicado' ? 'borrador' : 'publicado';
+    console.log(`Cambiando estado del trabajo ${id} de ${currentStatus} a ${newStatus}`);
+    const data = { estado: newStatus } as JobData;
+    const data_odl = { estado: currentStatus } as JobData;
+    patchJob({ id, data, data_old: data_odl });
+  }
+
   return (
     <>
       <Card>
@@ -128,6 +139,9 @@ export function AdminJobsManager() {
               <Plus className="w-4 h-4 mr-2" />
               Nueva Oferta
             </Button>
+          </div>
+          <div className="mt-4 text-muted-foreground">
+            Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} trabajos
           </div>
         </CardHeader>
         <CardContent>
@@ -155,7 +169,7 @@ export function AdminJobsManager() {
                     <TableCell>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => item.id !== undefined && handleToggleStatus(item.id, item.estado)}>
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
@@ -170,6 +184,30 @@ export function AdminJobsManager() {
                 ))}
               </TableBody>
             </Table>
+            {/* creamos la paginacion y sus flechas */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!previous}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              >
+                Anterior
+              </Button>
+
+              <span className="text-sm text-muted-foreground">
+                Página {page} de {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!next}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Siguiente
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

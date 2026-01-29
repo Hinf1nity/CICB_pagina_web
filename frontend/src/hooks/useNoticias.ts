@@ -1,14 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import api from '../api/kyClient';
 import { type NewsData } from "../validations/newsSchema";
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
- //Anadimos esto Paginacion
-type PaginatedResponse<T> = {
+//Anadimos esto Paginacion
+type PaginatedResponse = {
   count: number;
   next: string | null;
   previous: string | null;
-  results: T[];
+  results: NewsData[];
 };
 //Aumentamos funciones para paginacion en admin
 export function useNoticiasAdmin(page: number) {
@@ -22,11 +22,11 @@ export function useNoticiasAdmin(page: number) {
     queryFn: async () => {
       return api
         .get(`news/news_admin/?page=${page}`)
-        .json<PaginatedResponse<NewsData>>();
+        .json<PaginatedResponse>();
       //const res = await api.get("news/news_admin/").json<{ results: NewsData[] }>();
       //return res.results;
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   // Retornamos un array vacío por defecto si es undefined para evitar crash en el .map del UI
@@ -53,7 +53,7 @@ export function useNoticias(page: number) {
     queryFn: async () => {
       return api
         .get(`news/news/?page=${page}`)
-        .json<PaginatedResponse<NewsData>>();
+        .json<PaginatedResponse>();
     },
     select: (data) => ({
       ...data,
@@ -63,7 +63,7 @@ export function useNoticias(page: number) {
         imagen: undefined,
       })),
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   return {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -39,13 +39,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete, useItemDetailAdmin } from '../../hooks/useItems';
+import { useDebounce } from 'use-debounce';
 
 export function AdminRegulationsPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
-  const { items: regulations } = useItemsAdmin("regulation");
+  const [page, setPage] = useState(1);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
+  const { items: regulations, count, published_count, draft_count, archived_count, next, previous } = useItemsAdmin("regulation", page, debouncedSearchTerm);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
   const { mutate: postItem, isPending: isPosting } = useItemPost();
   const { mutate: patchItem, isPending: isPatching } = useItemPatch();
   const { mutate: deleteItem } = useItemDelete();
@@ -55,9 +63,9 @@ export function AdminRegulationsPage() {
       defaultValues: {
         nombre: '',
         descripcion: '',
-        fecha_publicacion: '',
+        fecha_publicacion: new Date().toISOString().split('T')[0],
         pdf: undefined,
-        estado: '',
+        estado: 'borrador',
       }
     }
   );
@@ -66,9 +74,9 @@ export function AdminRegulationsPage() {
     reset({
       nombre: '',
       descripcion: '',
-      fecha_publicacion: '',
+      fecha_publicacion: new Date().toISOString().split('T')[0],
       pdf: undefined,
-      estado: '',
+      estado: 'borrador',
     })
     setEditingItem(null);
     setIsDialogOpen(true);
@@ -118,13 +126,6 @@ export function AdminRegulationsPage() {
     }
   };
 
-  const filteredRegulations = regulations.filter(regulation => {
-    const matchesSearch = regulation.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      regulation.fecha_publicacion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      regulation.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'vigente': return 'bg-[#3C8D50] text-white';
@@ -171,7 +172,7 @@ export function AdminRegulationsPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Buscar reglamentos por título, fecha de publicación o descripción..."
+              placeholder="Buscar reglamentos por título, fecha de publicación(AAAA-MM-DD) o descripción..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -238,6 +239,7 @@ export function AdminRegulationsPage() {
                         id="fecha_publicacion"
                         type="date"
                         {...register("fecha_publicacion")}
+                        disabled
                       />
                       {errors.fecha_publicacion && (
                         <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -382,7 +384,7 @@ export function AdminRegulationsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground mb-1">Total Reglamentos</p>
-                  <p className="text-3xl">{regulations.length}</p>
+                  <p className="text-3xl">{count}</p>
                 </div>
                 <FileText className="w-8 h-8 text-[#0B3D2E]" />
               </div>
@@ -395,7 +397,7 @@ export function AdminRegulationsPage() {
                 <div>
                   <p className="text-muted-foreground mb-1">Vigentes</p>
                   <p className="text-3xl">
-                    {regulations.filter(r => r.estado === 'vigente').length}
+                    {published_count}
                   </p>
                 </div>
                 <CheckCircle2 className="w-8 h-8 text-[#3C8D50]" />
@@ -409,7 +411,7 @@ export function AdminRegulationsPage() {
                 <div>
                   <p className="text-muted-foreground mb-1">Borradores</p>
                   <p className="text-3xl">
-                    {regulations.filter(r => r.estado === 'borrador').length}
+                    {draft_count}
                   </p>
                 </div>
                 <Edit className="w-8 h-8 text-yellow-500" />
@@ -423,7 +425,7 @@ export function AdminRegulationsPage() {
                 <div>
                   <p className="text-muted-foreground mb-1">Archivados</p>
                   <p className="text-3xl">
-                    {regulations.filter(r => r.estado === 'archivado').length}
+                    {archived_count}
                   </p>
                 </div>
                 <Calendar className="w-8 h-8 text-gray-500" />
@@ -437,12 +439,12 @@ export function AdminRegulationsPage() {
           <CardHeader>
             <CardTitle>Reglamentos Registrados</CardTitle>
             <CardDescription>
-              {filteredRegulations.length} reglamento(s) encontrado(s)
+              Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} reglamentos
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {filteredRegulations.map((regulation) => (
+              {regulations.map((regulation) => (
                 <div
                   key={regulation.id}
                   className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -493,7 +495,32 @@ export function AdminRegulationsPage() {
                 </div>
               ))}
 
-              {filteredRegulations.length === 0 && (
+              {/* creamos la paginacion y sus flechas */}
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!previous}
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                >
+                  Anterior
+                </Button>
+
+                <span className="text-sm text-muted-foreground">
+                  Página {page} de {totalPages}
+                </span>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!next}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Siguiente
+                </Button>
+              </div>
+
+              {regulations.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No se encontraron reglamentos</p>

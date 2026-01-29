@@ -2,8 +2,15 @@ import { useState, useEffect } from "react";
 import api from "../api/kyClient";
 import { type JobData } from "../validations/jobsSchema";
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+interface PaginatedResponse {
+  results: JobData[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
 
 export function useJobsPost() {
   const queryClient = useQueryClient();
@@ -127,20 +134,26 @@ export function useJobDetail(id?: string) {
 
 // --- HOOKS Y FUNCIONES PARA ADMIN ---
 
-export function useJobsAdmin() {
+export function useJobsAdmin(page: number = 1) {
   const {
     data,
     isPending,
+    error,
   } = useQuery({
-    queryKey: ['jobs_admin'],
+    queryKey: ['jobs_admin', page],
     queryFn: async () => {
-      const data: JobData[] = await api.get("jobs/job_admin/").json();
+      const data: PaginatedResponse = await api.get(`jobs/job_admin/?page=${page}`).json();
       console.log(data);
-      return data.results
+      return data
     },
+    placeholderData: keepPreviousData,
   });
   return {
-    data: data ?? [],
+    data: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
+    error,
     isPending,
   };
 }

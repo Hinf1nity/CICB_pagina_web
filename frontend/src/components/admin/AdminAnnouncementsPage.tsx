@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -18,23 +18,30 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
 import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete, useItemDetailAdmin } from '../../hooks/useItems';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { useDebounce } from 'use-debounce';
 
 export function AdminAnnouncementsPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
-
-  const { items: announcements, loading } = useItemsAdmin("announcements");
+  const [page, setPage] = useState(1);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
+  const { items: announcements, isPending: loading, count, published_count, draft_count, archived_count, next, previous } = useItemsAdmin("announcements", page, debouncedSearchTerm);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
   const { mutate: postItem, isPending: isPosting } = useItemPost();
   const { mutate: patchItem, isPending: isPatching } = useItemPatch();
   const { mutate: deleteItem } = useItemDelete();
 
   const stats = {
-    total: announcements.length,
-    activas: announcements.filter(a => a.estado === 'activa').length,
-    borradores: announcements.filter(a => a.estado === 'borrador').length,
-    cerradas: announcements.filter(a => a.estado === 'cerrada').length,
+    total: count,
+    activas: published_count,
+    borradores: draft_count,
+    cerradas: archived_count,
   };
 
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm<GenericData>({
@@ -152,88 +159,108 @@ export function AdminAnnouncementsPage() {
           <CardHeader>
             <CardTitle>Convocatorias Registradas</CardTitle>
             <CardDescription>
-              {announcements.length} convocatoria(s) encontrada(s)
+              Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} convocatorias
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             <div className="space-y-4">
-              {announcements
-                .filter(a =>
-                  a.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-                )
-                .map((item) => (
-                  <div
-                    key={item.id}
-                    className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow flex items-start justify-between gap-4"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-foreground text-base font-medium">
-                          {item.nombre}
-                        </h3>
+              {announcements.map((item) => (
+                <div
+                  key={item.id}
+                  className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow flex items-start justify-between gap-4"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-foreground text-base font-medium">
+                        {item.nombre}
+                      </h3>
 
-                        {item.estado === 'activa' && (
-                          <Badge className="bg-green-600 text-white hover:bg-green-700 border-none px-3">
-                            Activa
-                          </Badge>
-                        )}
-                        {item.estado === 'borrador' && (
-                          <Badge className="bg-yellow-500 text-white hover:bg-yellow-600 border-none px-3">
-                            Borrador
-                          </Badge>
-                        )}
-                        {item.estado === 'cerrada' && (
-                          <Badge className="bg-gray-500 text-white hover:bg-gray-600 border-none px-3">
-                            Cerrada
-                          </Badge>
-                        )}
-                      </div>
-
-                      <p className="text-muted-foreground mb-3">
-                        {item.descripcion}
-                      </p>
-
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        Fecha de Publicación: {new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}
-                      </div>
+                      {item.estado === 'activa' && (
+                        <Badge className="bg-green-600 text-white hover:bg-green-700 border-none px-3">
+                          Activa
+                        </Badge>
+                      )}
+                      {item.estado === 'borrador' && (
+                        <Badge className="bg-yellow-500 text-white hover:bg-yellow-600 border-none px-3">
+                          Borrador
+                        </Badge>
+                      )}
+                      {item.estado === 'cerrada' && (
+                        <Badge className="bg-gray-500 text-white hover:bg-gray-600 border-none px-3">
+                          Cerrada
+                        </Badge>
+                      )}
                     </div>
 
-                    <div className="flex gap-2">
-                      {item.pdf_url && (
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            window.open(item.pdf_url as string, '_blank')
-                          }
-                          className="border-gray-200"
-                        >
-                          <Download className="w-4 h-4 text-gray-500" />
-                        </Button>
-                      )}
+                    <p className="text-muted-foreground mb-3">
+                      {item.descripcion}
+                    </p>
 
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleEdit(item)}
-                        className="border-gray-200"
-                      >
-                        <Edit className="w-4 h-4 text-gray-500" />
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => item.id && handleDelete(item.id)}
-                        className="border-gray-200 hover:bg-red-50 hover:border-red-200"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      Fecha de Publicación: {new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}
                     </div>
                   </div>
-                ))}
+
+                  <div className="flex gap-2">
+                    {item.pdf_url && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          window.open(item.pdf_url as string, '_blank')
+                        }
+                        className="border-gray-200"
+                      >
+                        <Download className="w-4 h-4 text-gray-500" />
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleEdit(item)}
+                      className="border-gray-200"
+                    >
+                      <Edit className="w-4 h-4 text-gray-500" />
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => item.id && handleDelete(item.id)}
+                      className="border-gray-200 hover:bg-red-50 hover:border-red-200"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {/* creamos la paginacion y sus flechas */}
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!previous}
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                >
+                  Anterior
+                </Button>
+
+                <span className="text-sm text-muted-foreground">
+                  Página {page} de {totalPages}
+                </span>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!next}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Siguiente
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -252,8 +279,9 @@ export function AdminAnnouncementsPage() {
 
             <div className="space-y-5">
               <div className="space-y-2">
-                <Label className="text-[#003D33] font-semibold">Título</Label>
+                <Label htmlFor="nombre">Título</Label>
                 <Input
+                  id="nombre"
                   {...register("nombre")}
                   placeholder="Título de la convocatoria..."
                 />
@@ -266,8 +294,9 @@ export function AdminAnnouncementsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[#003D33] font-semibold">Descripción</Label>
+                <Label htmlFor="descripcion">Descripción</Label>
                 <Textarea
+                  id="descripcion"
                   {...register("descripcion")}
                   placeholder="Descripción detallada..."
                   rows={4}
@@ -282,8 +311,8 @@ export function AdminAnnouncementsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[#003D33] font-semibold">Fecha de Publicación</Label>
-                  <Input type="date" {...register("fecha_publicacion")} />
+                  <Label htmlFor="fecha_publicacion" >Fecha de Publicación</Label>
+                  <Input id="fecha_publicacion" type="date" {...register("fecha_publicacion")} disabled />
                   {errors.fecha_publicacion && (
                     <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                       <AlertTitle className='text-sm'>Error en la Fecha de Publicación</AlertTitle>
@@ -292,7 +321,7 @@ export function AdminAnnouncementsPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[#003D33] font-semibold">Estado</Label>
+                  <Label htmlFor="estado">Estado</Label>
                   <Controller
                     control={control}
                     name="estado"

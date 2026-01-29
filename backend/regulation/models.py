@@ -1,12 +1,13 @@
 from django.db import models
 from PDFs.models import PDF
 
+
 class Regulation(models.Model):
 
     estados = [
         ("borrador", "Borrador"),
         ("vigente", "Vigente"),
-        ("archivado","Archivado"),
+        ("archivado", "Archivado"),
     ]
 
     nombre = models.CharField(max_length=255)
