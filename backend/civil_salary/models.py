@@ -6,21 +6,29 @@ class IncidenciasLaborales(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=5)
 
 
-class CategoriaRendimiento(models.Model):
-    nombre = models.CharField(max_length=100, unique=True)
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=100)  # Ej: Estructuras, Geotecnia
 
     def __str__(self):
         return self.nombre
 
 
-class ItemRendimiento(models.Model):
+class Nivel(models.Model):
     categoria = models.ForeignKey(
-        CategoriaRendimiento,
-        related_name='items',
-        on_delete=models.CASCADE
-    )
-    descripcion = models.CharField(max_length=255)
-    valor = models.DecimalField(max_digits=12, decimal_places=4)
+        Categoria, related_name='niveles', on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=100)  # Ej: Senior, Junior
 
     def __str__(self):
-        return f"{self.categoria.nombre} - {self.descripcion}"
+        return f"{self.categoria.nombre} - {self.nombre}"
+
+
+class Elemento(models.Model):
+    nivel = models.ForeignKey(
+        Nivel, related_name='elementos', on_delete=models.CASCADE)
+    detalle = models.CharField(max_length=255)  # Ej: Cálculo de zapatas
+    unidad = models.CharField(max_length=20)   # Ej: m2, Global, Hora
+    # El valor sin multiplicar
+    valor = models.DecimalField(max_digits=12, decimal_places=3)
+
+    def __str__(self):
+        return f"{self.detalle} ({self.unidad})"

@@ -16,10 +16,10 @@ class Command(BaseCommand):
         }
 
         incidencias_formacion = {
-            "licenciatura": 1.00,
-            "diplomado": 1.02,
-            "maestria": 1.06,
-            "doctorado": 1.10,
+            "Licenciatura": 1.00,
+            "Diplomado": 1.02,
+            "Maestría": 1.06,
+            "Doctorado": 1.10,
         }
 
         incidencias_fce = {
@@ -47,9 +47,9 @@ class Command(BaseCommand):
         }
 
         incidencia_trabajo = {
-            "diseño": 1.00,
-            "supervisión": 1.05,
-            "avaluo": 1.10,
+            "Diseño, planificación y ejecución": 1.00,
+            "Supervisión, fiscalización y asesoría": 1.05,
+            "Avalúo, peritaje y especialidad": 1.10,
         }
 
         incidencias = {
