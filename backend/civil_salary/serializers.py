@@ -18,7 +18,7 @@ class CategoriaSerializer(serializers.Serializer):
     niveles = NivelSerializer(many=True)  # N niveles
 
 
-class ReporteGeneralSerializer(serializers.Serializer):
+class CalculateArancelesSerializer(serializers.Serializer):
     DEPARTAMENTOS = [
         ('La Paz', 'La Paz'),
         ('Cochabamba', 'Cochabamba'),
@@ -30,12 +30,12 @@ class ReporteGeneralSerializer(serializers.Serializer):
         ('Beni', 'Beni'),
         ('Pando', 'Pando'),
     ]
-    FORMACION_ACADEMICA = [
-        ('Licenciatura', 'Licenciatura'),
-        ('Diplomado', 'Diplomado'),
-        ('Maestría', 'Maestría'),
-        ('Doctorado', 'Doctorado'),
-    ]
+
+    def get_formacion_choices():
+        # Usamos .distinct() por si acaso hay duplicados
+        nombres = IncidenciasLaborales.objects.filter(
+            nombre__startswith='form_').values_list('nombre', flat=True)
+        return [(n.replace('form_', ''), n.replace('form_', '').capitalize()) for n in nombres]
     UBICACION = [
         ('ciudad', 'Ciudad'),
         ('campo', 'Campo'),
@@ -44,7 +44,7 @@ class ReporteGeneralSerializer(serializers.Serializer):
     departamento = serializers.ChoiceField(
         choices=DEPARTAMENTOS, write_only=True)
     formacion = serializers.ChoiceField(
-        choices=FORMACION_ACADEMICA, write_only=True)
+        choices=get_formacion_choices(), write_only=True)
     ubicacion = serializers.ChoiceField(choices=UBICACION, write_only=True)
     actividad = serializers.CharField(write_only=True)
     mensual = serializers.FloatField(read_only=True)
@@ -86,11 +86,11 @@ class ReporteGeneralSerializer(serializers.Serializer):
         ipc_departamento = IncidenciasLaborales.objects.get(
             nombre=f"ipc_{data['departamento']}").valor
         factor_formacion = IncidenciasLaborales.objects.get(
-            nombre=f"{data['formacion']}").valor
+            nombre=f"form_{data['formacion']}").valor
         factor_antiguedad = IncidenciasLaborales.objects.get(
             nombre=f"{antiguedad}_{data['ubicacion'].lower()}").valor
         factor_tipo_actividad = IncidenciasLaborales.objects.get(
-            nombre=f"{data['actividad']}").valor
+            nombre=f"actividad_{data['actividad']}").valor
         factor_departamental = float(
             fce_departamento) * (float(ipc_departamento) / float(ipc_nacional))
         arancel_calculado = float(salario_base) * float(factor_antiguedad) * float(factor_formacion) * \

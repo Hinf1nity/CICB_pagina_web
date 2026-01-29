@@ -16,10 +16,11 @@ class Command(BaseCommand):
         }
 
         incidencias_formacion = {
-            "Licenciatura": 1.00,
-            "Diplomado": 1.02,
-            "Maestría": 1.06,
-            "Doctorado": 1.10,
+            "form_Licenciatura": 1.00,
+            "form_Diplomado": 1.02,
+            "form_Especialidad": 1.04,
+            "form_Maestría": 1.06,
+            "form_Doctorado": 1.10,
         }
 
         incidencias_fce = {
@@ -46,10 +47,10 @@ class Command(BaseCommand):
             "ipc_Pando": 146.58,
         }
 
-        incidencia_trabajo = {
-            "Diseño, planificación y ejecución": 1.00,
-            "Supervisión, fiscalización y asesoría": 1.05,
-            "Avalúo, peritaje y especialidad": 1.10,
+        incidencia_actividad = {
+            "actividad_Diseño, planificación y ejecución": 1.00,
+            "actividad_Supervisión, fiscalización y asesoría": 1.05,
+            "actividad_Avalúo, peritaje y especialidad": 1.10,
         }
 
         incidencias = {
@@ -59,7 +60,7 @@ class Command(BaseCommand):
             **incidencias_formacion,
             **incidencias_fce,
             **incidencia_ipc_departamental,
-            **incidencia_trabajo,
+            **incidencia_actividad,
         }
 
         for incidencia, valor in incidencias.items():
