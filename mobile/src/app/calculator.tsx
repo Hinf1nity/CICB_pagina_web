@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+ import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { api } from '../lib/api';
 
 // Componentes modulares
 import { FormInput } from '../components/forms/FormInput';
@@ -35,7 +36,7 @@ const ACTIVIDADES: SelectOption[] = [
 ];
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   // Estado básico para el ejemplo
   // --- ESTADOS DEL FORMULARIO ---
   const [antiguedad, setAntiguedad] = useState('');
@@ -44,6 +45,32 @@ export default function HomeScreen() {
   const [location, setLocation] = useState<'ciudad' | 'campo'>('ciudad');
   const [actividad, setActividad] = useState('');
 
+  const handleCalculate = async () => {
+    try {
+      const payload = {
+        antiguedad: Number(antiguedad),
+        departamento,
+        formacion: grado,
+        ubicacion: location,
+        actividad,
+      };
+
+      const response = await api
+        .post('aranceles/', {
+          json: payload,
+        })
+        .json();
+      router.push({
+        pathname: '/summary',
+        params: {
+          result: JSON.stringify(response),
+        },
+      });
+    } catch (error) {
+      console.error('Error al calcular aranceles:', error);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background-light dark:bg-background-dark" edges={['top']}>
       <StatusBar barStyle="dark-content" />
@@ -51,7 +78,7 @@ export default function HomeScreen() {
       {/* Header Personalizado */}
       <View className="flex-row items-center bg-white dark:bg-card-dark p-4 border-b border-border-light dark:border-border-dark sticky top-0 z-10">
         <Pressable className="size-10 items-center justify-center rounded-full active:bg-gray-100 dark:active:bg-gray-800"
-          onPress={() => navigation.goBack()}>
+          onPress={() => router.back()}>
           <MaterialIcons name="arrow-back-ios" size={20} color="#0f3e33" />
         </Pressable>
         <View className="flex-1 px-2">
@@ -149,7 +176,7 @@ export default function HomeScreen() {
         {/* Fixed Bottom Action Bar */}
         <View className="absolute bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-card-dark/90 border-t border-border-light dark:border-border-dark">
           <Pressable 
-            onPress={() => navigation.navigate('summary' as never)}
+            onPress={handleCalculate}
             className="flex-row w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 shadow-lg active:scale-[0.98] active:opacity-90"
           >
             <MaterialIcons name="calculate" size={24} color="white" />

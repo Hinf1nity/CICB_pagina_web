@@ -2,17 +2,32 @@ import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DetailRowItem } from './DetailRowItem';
-import { Category } from '../data/detailData'; // Ajusta la ruta
+
+export interface DetailRow {
+  label: string;
+  subLabel?: string;
+  price: string;
+}
+
+export interface Category {
+  id: string;
+  title: string;
+  items?: DetailRow[];
+  subCategories?: Category[]; // Para acordeones anidados
+  isOpen?: boolean; // Estado inicial
+}
 
 interface AccordionProps {
   data: Category;
-  isNested?: boolean; // Para cambiar estilos si es un acordeón hijo
+  isNested?: boolean;
 }
 
 export const Accordion = ({ data, isNested = false }: AccordionProps) => {
   const [isOpen, setIsOpen] = useState(data.isOpen || false);
 
-  // Estilos dinámicos según si es padre o hijo (anidado)
+  // Configuración del punto verde pastel
+  const dotColor = "#b2f2bb"; // Verde claro pastel (puedes usar #d1fae5 para uno más sutil)
+
   const containerStyle = isNested
     ? "bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/5 mb-2"
     : `bg-white dark:bg-card-dark rounded-xl border overflow-hidden shadow-sm mb-3 ${
@@ -20,8 +35,6 @@ export const Accordion = ({ data, isNested = false }: AccordionProps) => {
       }`;
 
   const headerBg = isOpen && !isNested ? 'bg-secondary/5 dark:bg-secondary/10' : '';
-  const iconColor = isNested ? '#00bfa5' : (isOpen ? '#00bfa5' : '#0f3e33'); // Secondary vs Primary
-  const iconBg = isNested ? '' : (isOpen ? 'bg-secondary text-white' : 'bg-primary/5 text-primary');
 
   return (
     <View className={containerStyle}>
@@ -30,12 +43,16 @@ export const Accordion = ({ data, isNested = false }: AccordionProps) => {
         className={`flex-row items-center justify-between p-4 ${headerBg}`}
       >
         <View className="flex-row items-center gap-3">
-          {/* Icono (Solo si no es anidado o si quieres icono en hijos tambien) */}
-          <View className={`items-center justify-center ${isNested ? '' : 'size-10 rounded-lg'} ${iconBg}`}>
-            <MaterialIcons 
-              name={data.icon} 
-              size={isNested ? 20 : 24} 
-              color={isNested ? '#00bfa5' : (isOpen ? 'white' : (process.env.EXPO_PUBLIC_THEME === 'dark' ? '#34d399' : '#0f3e33'))} 
+          
+          {/* SUSTITUCIÓN: Icono por Punto Verde Pastel */}
+          <View className="items-center justify-center">
+            <View 
+              style={{ 
+                width: isNested ? 8 : 12, 
+                height: isNested ? 8 : 12, 
+                borderRadius: 6, 
+                backgroundColor: dotColor 
+              }} 
             />
           </View>
           
@@ -48,6 +65,7 @@ export const Accordion = ({ data, isNested = false }: AccordionProps) => {
           </Text>
         </View>
         
+        {/* Mantenemos la flecha de expansión para indicar interactividad */}
         <MaterialIcons 
           name="expand-more" 
           size={24} 
@@ -56,16 +74,12 @@ export const Accordion = ({ data, isNested = false }: AccordionProps) => {
         />
       </Pressable>
 
-      {/* Contenido Desplegable */}
       {isOpen && (
         <View className={`px-4 pb-4 ${isNested ? 'pt-0' : ''}`}>
-          
-          {/* Renderizar Filas Simples */}
           {data.items?.map((item, index) => (
             <DetailRowItem key={index} {...item} />
           ))}
 
-          {/* Renderizar Subcategorías (Acordeones anidados) */}
           {data.subCategories?.map((subCat) => (
             <Accordion key={subCat.id} data={subCat} isNested={true} />
           ))}

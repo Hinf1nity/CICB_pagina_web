@@ -7,7 +7,7 @@ import { useRouter, Stack } from 'expo-router';
 
 // --- DATOS DEPARTAMENTOS ---
 const DEPARTMENTS = [
-  { name: 'Bolivia', image: require('../../assets/LOGO CIC B sin fondo.png'), active: true },
+  { name: 'Bolivia', image: require('../../assets/LOGO CIC B sin fondo.png'), active: false },
   { name: 'La Paz', image: require('../../assets/cicLaPaz.png'), active: false },
   { name: 'Santa Cruz', image: require('../../assets/cicSantaCruz.png'), active: false },
   { name: 'Cochabamba', image: require('../../assets/cicCochabamba.png'), active: false }, // agriculture no existe en MaterialIcons standard, cambiamos a similar
