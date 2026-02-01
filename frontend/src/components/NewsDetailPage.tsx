@@ -63,8 +63,8 @@ export function NewsDetailPage() {
         {/* Featured Image */}
         <div className="mb-8 rounded-lg overflow-hidden shadow-lg">
           <ImageWithFallback
-            src={noticia.imagen_url}
-            alt={noticia.titulo}
+            src={noticia?.imagen_url}
+            alt={noticia?.titulo}
             className="w-full h-[400px] object-cover"
           />
         </div>
@@ -72,12 +72,12 @@ export function NewsDetailPage() {
         {/* Article Header */}
         <div className="mb-8">
           <div className="flex flex-wrap items-center gap-4 mb-4">
-            <Badge className={getCategoryColor(noticia.categoria)}>
-              {noticia.categoria}
+            <Badge className={getCategoryColor(noticia?.categoria ?? '')}>
+              {noticia?.categoria}
             </Badge>
             <div className="flex items-center text-muted-foreground">
               <Calendar className="w-4 h-4 mr-2" />
-              <span>{new Date(noticia.fecha_publicacion).toLocaleDateString('es-BO', {
+              <span>{new Date(noticia?.fecha_publicacion ?? '').toLocaleDateString('es-BO', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -88,7 +88,7 @@ export function NewsDetailPage() {
               <span>{noticias.author}</span>
             </div> */}
           </div>
-          <h1 className="text-foreground mb-4">{noticia.titulo}</h1>
+          <h1 className="text-foreground mb-4">{noticia?.titulo}</h1>
         </div>
 
         <Separator className="mb-8" />
@@ -96,11 +96,11 @@ export function NewsDetailPage() {
         {/* Article Content */}
         <div
           className="prose prose-lg max-w-none mb-12 text-foreground"
-          dangerouslySetInnerHTML={{ __html: noticia.descripcion }}
+          dangerouslySetInnerHTML={{ __html: noticia?.descripcion ?? '' }}
         />
 
         {/* PDF Document Section */}
-        {noticia.pdf_url && (
+        {noticia?.pdf_url && (
           <Card className="mb-8">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -112,7 +112,7 @@ export function NewsDetailPage() {
                   </div>
                 </div>
                 <Button
-                  onClick={() => window.open(noticia.pdf_url, '_blank')}
+                  onClick={() => window.open(noticia?.pdf_url, '_blank')}
                   className="bg-accent text-accent-foreground hover:bg-accent/90"
                 >
                   <Download className="w-4 h-4 mr-2" />
