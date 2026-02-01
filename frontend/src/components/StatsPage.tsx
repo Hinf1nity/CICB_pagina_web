@@ -29,13 +29,11 @@ export function StatsPage() {
   // const [selectedYear, setSelectedYear] = useState('2025');
 
   const {
-    specialties,
-    departments,
-    employment,
-    evolution,
-    loading,
+    data,
+    isLoading: loading,
     error
   } = useStatsData();
+  const { specialties = [], departments = [], employment = [], evolution = [] } = data || {};
 
   const COLORS = {
     primary: '#0B3D2E',
@@ -67,9 +65,9 @@ export function StatsPage() {
     );
   }
 
-  const totalEngineers = (departments || []).reduce((sum, d) => sum + d.engineers, 0);
-  const totalEmployed = (employment || []).find(d => d.name === 'Con Trabajo')?.value || 0;
-  const totalUnemployed = (employment || []).find(d => d.name === 'Sin Trabajo')?.value || 0;
+  const totalEngineers = (departments || []).reduce((sum: number, d: Department) => sum + d.engineers, 0);
+  const totalEmployed = (employment || []).find((d: Employment) => d.name === 'Con Trabajo')?.value || 0;
+  const totalUnemployed = (employment || []).find((d: Employment) => d.name === 'Sin Trabajo')?.value || 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -161,7 +159,7 @@ export function StatsPage() {
                   <YAxis style={{ fontSize: '12px' }} />
                   <Tooltip />
                   <Bar dataKey="count" name="Cantidad" fill={COLORS.primary} radius={[8, 8, 0, 0]}>
-                    {(specialties || []).map((_, index: number) => (
+                    {(specialties || []).map((_: Specialty, index: number) => (
                       <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Bar>

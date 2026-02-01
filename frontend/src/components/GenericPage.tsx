@@ -2,6 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { FileText, BookOpen, Bell, Calendar } from "lucide-react";
 import { useItems } from "../hooks/useItems";
 import type { GenericData } from "../validations/genericSchema";
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 interface GenericPageProps {
   title: string;
@@ -10,7 +12,10 @@ interface GenericPageProps {
 }
 
 export function GenericPage({ title, description, type }: GenericPageProps) {
-  const { items, loading } = useItems(type);
+  const [page, setPage] = useState(1);
+  const { items, isPending, isError, error, next, previous, count } = useItems(type, page);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
   console.log(`Loaded ${type}:`, items);
 
   const getIcon = () => {
@@ -43,7 +48,7 @@ export function GenericPage({ title, description, type }: GenericPageProps) {
 
       {/* Contenido */}
       <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
+        {isPending ? (
           <p>Cargando información...</p>
         ) : (
           items.map((item: GenericData) => (
@@ -70,6 +75,32 @@ export function GenericPage({ title, description, type }: GenericPageProps) {
           ))
         )}
       </div>
+      {!isPending && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          {/* creamos la paginacion y sus flechas */}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!previous}
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          >
+            Anterior
+          </Button>
+
+          <span className="text-sm text-muted-foreground">
+            Página {page} de {totalPages}
+          </span>
+
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!next}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

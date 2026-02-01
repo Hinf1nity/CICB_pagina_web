@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import api from "../api/kyClient";
 import type { GenericData } from "../validations/genericSchema";
 import { presignedUrlPatch, presignedUrlPost } from "./presignedUrl";
@@ -15,36 +14,43 @@ interface PaginatedResponse {
   archived_count?: number;
 }
 
-export function useItems(type: "yearbooks" | "regulation" | "announcements") {
-  const [items, setItems] = useState<GenericData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchItems = async (type: "yearbooks" | "regulation" | "announcements") => {
-    try {
-      setLoading(true);
-      const url = type === "announcements" ? "calls" : type
-
-      const response: GenericData[] = await api.get(`${url}/${url}/`).json();
-
-      setItems(response.results.map(item => ({
+export function useItems(type: "yearbooks" | "regulation" | "announcements", page: number = 1) {
+  const {
+    data,
+    isPending,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: [type, page],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+      });
+      const url = type === "announcements" ? "calls" : type;
+      return api
+        .get(`${url}/${url}/?${params.toString()}`)
+        .json<PaginatedResponse>();
+    },
+    select: (data) => ({
+      ...data,
+      results: data.results.map((item) => ({
         ...item,
         pdf_url: item.pdf?.url,
         pdf: undefined,
-      })));
+      })),
+    }),
+    placeholderData: keepPreviousData,
+  });
 
-    } catch (error) {
-      console.error("Error obteniendo datos:", error);
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    items: data?.results ?? [],
+    next: data?.next,
+    previous: data?.previous,
+    count: data?.count ?? 0,
+    isPending,
+    isError,
+    error,
   };
-
-  useEffect(() => {
-    fetchItems(type);
-  }, [type]);
-
-  return { items, loading, refetchItems: () => fetchItems(type) };
 }
 
 export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements", page: number = 1, search: string = '') {

@@ -1,2 +1,4 @@
 .env
 .devcontainer
+.expo
+node_modules

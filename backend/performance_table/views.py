@@ -34,12 +34,15 @@ class TwentyPerPagePaginationPerformance(PageNumberPagination):
 
 
 class PerformanceTableViewSet(viewsets.ModelViewSet):
-    queryset = PerformanceTable.objects.all().order_by('-id')
     serializer_class = PerformanceTableSerializer
     pagination_class = TwentyPerPagePaginationPerformance
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['categoria']
     search_fields = ['actividad', 'codigo', 'recursos__nombre']
+
+    def get_queryset(self):
+        queryset = PerformanceTable.objects.all().order_by('-id')
+        return queryset
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -50,12 +53,15 @@ class PerformanceTableViewSet(viewsets.ModelViewSet):
 
 
 class ResourcesViewSet(viewsets.ModelViewSet):
-    queryset = ResourceChart.objects.all()
     serializer_class = ResourceSerializer
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ['nombre']
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
+
+    def get_queryset(self):
+        queryset = ResourceChart.objects.all().order_by('-id')
+        return queryset
 
     def create(self, request, *args, **kwargs):
         is_many = isinstance(request.data, list)

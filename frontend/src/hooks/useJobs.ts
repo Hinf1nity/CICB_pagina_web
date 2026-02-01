@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import api from "../api/kyClient";
 import { type JobData } from "../validations/jobsSchema";
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
@@ -58,34 +57,33 @@ export function useJobsPost() {
   });
 }
 
-export function useJobs() {
-  const [jobs, setJobs] = useState<JobData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchJobs = async () => {
-    try {
-      const data: JobData[] = await api.get("jobs/job/").json();
-      const formattedData: JobData[] = data.results.map((job) => ({
-        ...job,
-        requisitos:
-          typeof job.requisitos === "string"
-            ? (job.requisitos as string)
-              .split(",")
-              .map((r: string) => r.trim())
-              .filter((r: string) => r.length > 0)
-            : job.requisitos || [],
-      }));
-      setJobs(formattedData);
-    } catch (err) {
-      setError("Error al cargar los empleos");
-    } finally {
-      setLoading(false);
-    }
+export function useJobs(page: number = 1, search: string = '') {
+  const {
+    data,
+    isPending,
+    error,
+  } = useQuery({
+    queryKey: ['jobs_user', page, search],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search: search }),
+      });
+      const data: PaginatedResponse = await api.get(`jobs/job/?${params.toString()}`).json();
+      console.log(data);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+    enabled: search.trim().length > 3 || search.trim().length === 0,
+  });
+  return {
+    jobs: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
+    loading: isPending,
+    error,
   };
-
-  useEffect(() => { fetchJobs(); }, []);
-  return { jobs, loading, error };
 }
 
 export function useJobDetail(id?: string) {

@@ -78,7 +78,7 @@ export function useNoticias(page: number) {
 }
 
 export async function useNoticiaDetailAdmin(id?: string) {
-  const data: NewsData = await api.get(`news/news_admin/${id}`).json();
+  const data: NewsData = await api.get(`news/news_admin/${id}/`).json();
   if (data.pdf) {
     const pdf_url_response = await api
       .get(`news/news/${data.id}/pdf-download/`)
@@ -98,7 +98,7 @@ export async function useNoticiaDetailAdmin(id?: string) {
 
 export function useNoticiaDetail(id?: string) {
   const fetchNoticias = async () => {
-    const data: NewsData = await api.get(`news/news/${id}`).json();
+    const data: NewsData = await api.get(`news/news/${id}/`).json();
     if (data.pdf) {
       const pdf_url_response = await api
         .get(`news/news/${data.id}/pdf-download/`)
@@ -118,10 +118,6 @@ export function useNoticiaDetail(id?: string) {
     // CAMBIO: Se agregó el sufijo _users
     queryKey: ['noticia_users', id],
     queryFn: fetchNoticias,
-    staleTime: 1000 * 60 * 15 * 1,
-    gcTime: 1000 * 60 * 15 * 2,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
     enabled: !!id,
   });
 

@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, filters, status
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -25,6 +26,8 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
     # queryset = Job.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ['titulo']
 
     def get_serializer_class(self):
         if self.action == 'list':

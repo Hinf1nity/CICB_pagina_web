@@ -12,7 +12,7 @@ export function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
   // Datos de ejemplo - en producción vendrían de una API o estado global
 
-  const { noticias } = useNoticias();
+  // const { noticias } = useNoticias();
 
   const { noticia, loading, error } = useNoticiaDetail(id);
   if (loading) {
@@ -133,7 +133,7 @@ export function NewsDetailPage() {
         )}
 
         {/* Related News */}
-        <div>
+        {/* <div>
           <h3 className="text-foreground mb-4">Noticias Relacionadas</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2].filter(id_filter => id_filter !== Number(id)).slice(0, 3).map((id_map) => {
@@ -166,7 +166,7 @@ export function NewsDetailPage() {
               );
             })}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
