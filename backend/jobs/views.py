@@ -37,6 +37,8 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = Job.objects.filter(
             estado='publicado').order_by('-fecha_publicacion')
+        if not self.action in ['list', 'retrieve']:
+            queryset = Job.objects.all().order_by('-fecha_publicacion')
         return queryset
 
     @action(

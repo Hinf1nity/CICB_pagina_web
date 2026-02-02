@@ -100,6 +100,14 @@ export function AdminNewsManager() {
     }
   };
 
+  const handleToggleStatus = (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'publicado' ? 'borrador' : 'publicado';
+    console.log(`Cambiando estado de la noticia ${id} de ${currentStatus} a ${newStatus}`);
+    const data = { estado: newStatus } as NewsData;
+    const data_odl = { estado: currentStatus } as NewsData;
+    patchNews({ id: id.toString(), data, data_old: data_odl });
+  }
+
 
   return (
     <>
@@ -146,7 +154,7 @@ export function AdminNewsManager() {
                     <TableCell>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => item.id !== undefined && handleToggleStatus(item.id, item.estado)}>
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>

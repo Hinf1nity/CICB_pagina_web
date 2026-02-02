@@ -38,6 +38,11 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = News.objects.filter(estado="publicado").select_related(
             'imagen').order_by("-fecha_publicacion")
+
+        # If it's a custom action, return all objects
+        if self.action not in ['list', 'retrieve']:
+            queryset = News.objects.all().order_by("-fecha_publicacion")
+
         return queryset
 
     @action(

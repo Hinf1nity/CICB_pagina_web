@@ -112,7 +112,7 @@ export function Navbar() {
           </NavLink>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden 2xl:flex items-center space-x-1">
             {navItems.map((item) => (
               <Button
                 key={item.path}
@@ -176,7 +176,7 @@ export function Navbar() {
           {/* Mobile menu button - usando Sheet */}
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
-              <button className="lg:hidden p-2 rounded hover:bg-primary/80">
+              <button className="2xl:hidden p-2 rounded hover:bg-primary/80">
                 <Menu className="w-6 h-6" />
               </button>
             </SheetTrigger>
