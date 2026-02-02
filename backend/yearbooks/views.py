@@ -120,7 +120,6 @@ class YearbookAdminViewSet(viewsets.ModelViewSet):
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                 Key=ruta,
             )
-            yearbook.pdf = None
-            yearbook.save()
             pdf.delete()
-        return super().destroy(request, *args, **kwargs)
+        self.perform_destroy(yearbook)
+        return Response(status=status.HTTP_204_NO_CONTENT)

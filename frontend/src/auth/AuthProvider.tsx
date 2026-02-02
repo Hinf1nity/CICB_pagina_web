@@ -4,8 +4,10 @@ import { decodeJWT, isTokenExpired } from "../api/auth.utils";
 import { authService } from "../api/auth";
 import { hasPermission as checkPermission } from "../api/auth.roles";
 import type { User } from "../api/auth.types";
+import { useQueryClient } from '@tanstack/react-query';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -25,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     localStorage.removeItem("user_name_override");
+    queryClient.removeQueries({ queryKey: ['admin'] });
     setUser(null);
   };
 

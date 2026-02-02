@@ -139,7 +139,7 @@ export function AdminUsersManager() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
                 type="text"
-                placeholder="Buscar por nombre, registro o celular..."
+                placeholder="Buscar por nombre, RNI o celular..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"

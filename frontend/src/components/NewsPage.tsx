@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -8,26 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Search, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNoticias } from '../hooks/useNoticias';
+import { useDebounce } from 'use-debounce';
 
 export function NewsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
   const [page, setPage] = useState(1); //Anadimos esto Paginacion
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  useEffect(() => {
+    setPage(1); // Reset to first page on new search
+  }, [debouncedSearchTerm, category]);
   const navigate = useNavigate();
-//Anadimos funciones Paginacion
-  const { noticias, count, next,previous,isLoading,error } = useNoticias(page);
-
-  const filteredNews = useMemo(() => {
-    const getTime = (s?: string) => (s ? new Date(s).getTime() : 0);
-    return noticias.filter((item) => {
-      const matchesSearch =
-        item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.resumen.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = category === 'all' || item.categoria === category;
-      return matchesSearch && matchesCategory;
-    })
-      .sort((a, b) => getTime(b.fecha_publicacion) - getTime(a.fecha_publicacion));
-  }, [noticias, searchTerm, category]);
+  //Anadimos funciones Paginacion
+  const { noticias, count, next, previous, isLoading, error } = useNoticias(page, debouncedSearchTerm, category);
 
   if (isLoading) {
     return (
@@ -76,8 +69,7 @@ export function NewsPage() {
                 type="text"
                 placeholder="Buscar noticias..."
                 value={searchTerm}
-                //onChange={(e) => {setSearchTerm(e.target.value);setPage(1);}}
-                onValueChange={(value) => {  setCategory(value);  setPage(1);}}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -101,7 +93,7 @@ export function NewsPage() {
       {/* News Grid */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNews.map((item) => {
+          {noticias.map((item) => {
             return (
               <Card
                 key={item.id}
@@ -151,29 +143,31 @@ export function NewsPage() {
         </div>
 
         {/* Paginacion Anadida */}
-        <div className="flex justify-center items-center gap-4 mt-10">
-          <Button
-            variant="outline"
-            disabled={!previous}
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-          >
-            Anterior
-          </Button>
+        {noticias.length > 0 && (
+          <div className="flex justify-center items-center gap-4 mt-10">
+            <Button
+              variant="outline"
+              disabled={!previous}
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            >
+              Anterior
+            </Button>
 
-          <span className="text-sm text-muted-foreground">
-            Página {page} de {Math.ceil(count / 20)}
-          </span>
+            <span className="text-sm text-muted-foreground">
+              Página {page} de {Math.ceil(count / 20)}
+            </span>
 
-          <Button
-            variant="outline"
-            disabled={!next}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Siguiente
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              disabled={!next}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Siguiente
+            </Button>
+          </div>
+        )}
 
-        {filteredNews.length === 0 && (
+        {noticias.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No se encontraron noticias que coincidan con tu búsqueda.</p>
           </div>

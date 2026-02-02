@@ -96,7 +96,7 @@ class SerializerUserAdmin(serializers.ModelSerializer):
         fields = [
             'id', 'nombre', 'rnic', 'rni', 'departamento', 'especialidad',
             'celular', 'imagen', 'registro_empleado', 'estado',
-            'certificaciones', 'fecha_inscripcion'
+            'fecha_inscripcion'
         ]
         read_only_fields = ['rnic']
 

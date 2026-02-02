@@ -49,7 +49,7 @@ export function useJobsPost() {
     },
     onSuccess: () => {
       toast.success("Empleo creado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['jobs_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'admin'] });
     },
     onError: () => {
       toast.error("Error al crear el trabajo");
@@ -138,7 +138,7 @@ export function useJobsAdmin(page: number = 1) {
     isPending,
     error,
   } = useQuery({
-    queryKey: ['jobs_admin', page],
+    queryKey: ['jobs', 'admin', page],
     queryFn: async () => {
       const data: PaginatedResponse = await api.get(`jobs/job_admin/?page=${page}`).json();
       console.log(data);
@@ -270,7 +270,7 @@ export function useJobPatch() {
         return;
       }
       toast.success("Empleo actualizado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['jobs_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'admin'] });
     },
     onError: () => {
       toast.error("Error al actualizar el empleo");
@@ -288,7 +288,7 @@ export function useJobDelete() {
     },
     onSuccess: () => {
       toast.success("Empleo eliminado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['jobs_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'admin'] });
     },
     onError: () => {
       toast.error("Error al eliminar el empleo");

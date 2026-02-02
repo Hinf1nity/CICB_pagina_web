@@ -11,7 +11,7 @@ interface PaginatedResponse {
   previous: string | null;
   published_count: number;
   draft_count: number;
-  archived_count?: number;
+  archive_count?: number;
 }
 
 export function useItems(type: "yearbooks" | "regulation" | "announcements", page: number = 1) {
@@ -60,7 +60,7 @@ export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements"
     isError,
     error,
   } = useQuery({
-    queryKey: [type + "_admin", page, search],
+    queryKey: [type, 'admin', page, search],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -90,7 +90,7 @@ export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements"
     previous: data?.previous,
     published_count: data?.published_count ?? 0,
     draft_count: data?.draft_count ?? 0,
-    archived_count: data?.archived_count ?? 0,
+    archived_count: data?.archive_count ?? 0,
     isPending,
     isError,
     error,
@@ -134,12 +134,13 @@ export function useItemPost() {
       formData.append("fecha_publicacion", data.fecha_publicacion);
 
       if (finalPdfId) formData.append("pdf", finalPdfId.toString());
+      console.log("FormData to be sent:", Array.from(formData.entries()));
 
       const response = await api.post(`${endpoint}/${endpoint}_admin/`, { body: formData });
       return response;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+      queryClient.invalidateQueries({ queryKey: [variables.type, 'admin'] });
       toast.success("Elemento creado exitosamente");
     },
     onError: () => {
@@ -194,7 +195,7 @@ export function useItemPatch() {
     },
     onSuccess: (_data: any, variables) => {
       if (!_data.message) {
-        queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+        queryClient.invalidateQueries({ queryKey: [variables.type, 'admin'] });
         toast.success("Elemento actualizado exitosamente");
       } else {
         toast.info("No se detectaron cambios para actualizar");
@@ -216,7 +217,7 @@ export function useItemDelete() {
       return await api.delete(`${endpoint}/${endpoint}_admin/${id}/`);
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+      queryClient.invalidateQueries({ queryKey: [variables.type, 'admin'] });
       toast.success("Elemento eliminado exitosamente");
     },
     onError: () => {

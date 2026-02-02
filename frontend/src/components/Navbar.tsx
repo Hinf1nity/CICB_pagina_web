@@ -13,6 +13,8 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetTitle,
+  SheetDescription,
   SheetTrigger,
 } from './ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -181,6 +183,12 @@ export function Navbar() {
               </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-80 p-0">
+              <div className="sr-only">
+                <SheetTitle>Menú de Navegación</SheetTitle>
+                <SheetDescription>
+                  Accede a las diferentes secciones del Colegio de Ingenieros Civiles de Bolivia.
+                </SheetDescription>
+              </div>
               <div className="flex flex-col h-full">
                 {/* Header del drawer con info del usuario */}
                 <div className="bg-primary text-primary-foreground p-6">

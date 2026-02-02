@@ -1,3 +1,4 @@
+import { HTTPError } from 'ky';
 import api from '../api/kyClient';
 import { type UserData } from '../validations/userSchema';
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
@@ -12,13 +13,14 @@ interface PaginatedResponse {
 }
 
 export function useUsersAdmin(page: number = 1, search: string = '', state: string = '') {
+  const token = localStorage.getItem("access");
   const {
     data,
     isLoading,
     error,
     isFetching,
   } = useQuery({
-    queryKey: ['users_admin', page, search, state],
+    queryKey: ['users', 'admin', page, search, state, token],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -29,7 +31,7 @@ export function useUsersAdmin(page: number = 1, search: string = '', state: stri
       return data;
     },
     placeholderData: keepPreviousData,
-    enabled: search.trim().length > 4 || search.trim().length === 0,
+    enabled: !!token && (search.trim().length > 4 || search.trim().length === 0),
   });
   return {
     users: data?.results ?? [],
@@ -45,9 +47,8 @@ export function useUsersAdmin(page: number = 1, search: string = '', state: stri
 export async function useUsersDetailAdmin(id: number) {
   const data: UserData = await api.get(`users/${id}/`).json();
   if (data.imagen) {
-    const imageDataRes = await api.get(`users/${data.id}/img-download`)
+    const imageDataRes = await api.get(`users/${data.id}/img-download/`)
       .json<{ download_url: string, img_id: string }>();
-    console.log('Respuesta de la descarga de imagen:', imageDataRes);
     data.imagen_url = `${imageDataRes.img_id}`;
     data.imagen = imageDataRes.download_url;
   } else {
@@ -60,9 +61,8 @@ export async function useUsersDetailAdmin(id: number) {
 export async function useUsersDetailCard(id: number) {
   const data: UserData = await api.get(`users/details/${id}/`).json();
   if (data.imagen) {
-    const imageDataRes = await api.get(`users/${data.id}/img-download`)
+    const imageDataRes = await api.get(`users/${data.id}/img-download/`)
       .json<{ download_url: string, img_id: string }>();
-    console.log('Respuesta de la descarga de imagen:', imageDataRes);
     data.imagen_url = `${imageDataRes.img_id}`;
     data.imagen = imageDataRes.download_url;
   }
@@ -76,11 +76,9 @@ export function useUserProfileQuery(userId?: string) {
     // 1. Fetch básico
     queryFn: async () => {
       const data: UserData = await api.get(`users/${userId}/`).json();
-      console.log('Datos obtenidos del usuario:', data);
       if (data.imagen) {
-        const imageDataRes = await api.get(`users/${data.id}/img-download`)
+        const imageDataRes = await api.get(`users/${data.id}/img-download/`)
           .json<{ download_url: string, img_id: string }>();
-        console.log('Respuesta de la descarga de imagen:', imageDataRes);
         data.imagen_url = `${imageDataRes.img_id}`;
         data.imagen = imageDataRes.download_url;
       }
@@ -115,7 +113,6 @@ export function useUserProfileQuery(userId?: string) {
           anio: cert.anio
         })) || []
       };
-      console.log('Datos formateados para UI:', uiData);
       // Datos para el Formulario (Lo que va al reset)
       const formData = {
         nombre: data.nombre,
@@ -140,27 +137,40 @@ export function useUsersPost() {
 
   return useMutation({
     mutationFn: async (data: UserData) => {
-      const formData = new FormData();
-      formData.append("nombre", data.nombre);
-      formData.append("rni", data.rni.toString());
-      if (data.especialidad) formData.append("especialidad", data.especialidad);
-      formData.append("celular", data.celular.toString());
-      formData.append("estado", data.estado);
-      formData.append("departamento", data.departamento);
-      if (data.registro_empleado !== undefined) formData.append("registro_empleado", data.registro_empleado);
-      formData.append("fecha_inscripcion", data.fecha_inscripcion);
-      if (data.imagen) {
-        const imageId = await presignedUrlPost(data.imagen as File);
-        formData.append("imagen", imageId);
+      try {
+        const formData = new FormData();
+        formData.append("nombre", data.nombre);
+        formData.append("rni", data.rni.toString());
+        if (data.especialidad) formData.append("especialidad", data.especialidad);
+        formData.append("celular", data.celular.toString());
+        formData.append("estado", data.estado);
+        formData.append("departamento", data.departamento);
+        if (data.registro_empleado !== undefined) formData.append("registro_empleado", data.registro_empleado);
+        formData.append("fecha_inscripcion", data.fecha_inscripcion);
+        if (data.imagen) {
+          const imageId = await presignedUrlPost(data.imagen as File);
+          formData.append("imagen", imageId);
+        }
+        const response = await api.post('users/', { body: formData });
+        return response.json();
+      } catch (error) {
+        if (error instanceof HTTPError) {
+          const errorBody = await error.response.json();
+          const message = errorBody.rni?.[0] || 'Error en el registro del usuario';
+          throw new Error(message);
+        }
+        throw error;
       }
-      const response = await api.post('users/', { body: formData });
-      return response.json();
     },
     onSuccess: () => {
       toast.success("Usuario creado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['users_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['users', 'admin'] });
     },
-    onError: () => {
+    onError: (error: any) => {
+      if (error.message === 'Este RNI ya esta registrado.') {
+        toast.error("Este RNI ya está registrado.");
+        return;
+      }
       toast.error("Error al crear el usuario");
     }
   });
@@ -229,7 +239,7 @@ export function useUsersPatch() {
         return;
       } else {
         toast.success("Usuario actualizado exitosamente");
-        queryClient.invalidateQueries({ queryKey: ['users_admin'] });
+        queryClient.invalidateQueries({ queryKey: ['users', 'admin'] });
       }
     },
     onError: () => {
@@ -263,8 +273,6 @@ export function useUserPatchUserProfile() {
         formData.append("certificaciones", JSON.stringify(data.certificaciones || []));
         hasChanges = true;
       }
-
-      console.log('Comparando imágenes:', data.imagen, data_old.imagen);
 
       if (data.imagen !== data_old.imagen) {
         if (data_old.imagen_url) {
@@ -316,7 +324,7 @@ export function useUserDelete() {
     },
     onSuccess: () => {
       toast.success("Usuario eliminado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['users_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['users', 'admin'] });
     },
     onError: () => {
       toast.error("Error al eliminar el usuario");

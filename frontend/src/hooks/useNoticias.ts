@@ -18,7 +18,7 @@ export function useNoticiasAdmin(page: number) {
     isError,
     error
   } = useQuery({
-    queryKey: ['noticias_admin', page],
+    queryKey: ['noticias', 'admin', page],
     queryFn: async () => {
       return api
         .get(`news/news_admin/?page=${page}`)
@@ -42,17 +42,22 @@ export function useNoticiasAdmin(page: number) {
   };
 }
 //Cambiamos esto para la Paginacion
-export function useNoticias(page: number) {
+export function useNoticias(page: number, search: string = '', category: string = '') {
   const {
     data,
     isLoading,
     isError,
     error
   } = useQuery({
-    queryKey: ['noticias_users', page],
+    queryKey: ['noticias_users', page, search, category],
     queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search: search }),
+        ...(category !== "all" && { categoria: category }),
+      });
       return api
-        .get(`news/news/?page=${page}`)
+        .get(`news/news/?${params.toString()}`)
         .json<PaginatedResponse>();
     },
     select: (data) => ({
@@ -64,6 +69,7 @@ export function useNoticias(page: number) {
       })),
     }),
     placeholderData: keepPreviousData,
+    enabled: search.trim().length > 4 || search.trim().length === 0,
   });
 
   return {
@@ -162,7 +168,7 @@ export function useNewsPost() {
     },
     onSuccess: () => {
       toast.success("Noticia creada exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['noticias', 'admin'] });
     },
     onError: () => {
       toast.error("Error al crear la noticia");
@@ -250,7 +256,7 @@ export function useNewsPatch() {
     },
     onSuccess: () => {
       toast.success("Noticia actualizada exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['noticias', 'admin'] });
     },
     onError: () => {
       toast.error("Error al actualizar la noticia");
@@ -268,7 +274,7 @@ export function useNewsDelete() {
     },
     onSuccess: () => {
       toast.success("Noticia eliminada exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['noticias', 'admin'] });
     },
     onError: () => {
       toast.error("Error al eliminar la noticia");

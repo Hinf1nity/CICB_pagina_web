@@ -122,7 +122,6 @@ class CallAdminViewSet(viewsets.ModelViewSet):
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                 Key=ruta,
             )
-            call.pdf = None
-            call.save()
             pdf.delete()
-        return super().destroy(request, *args, **kwargs)
+        self.perform_destroy(call)
+        return Response(status=status.HTTP_204_NO_CONTENT)
