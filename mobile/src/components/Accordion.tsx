@@ -26,7 +26,7 @@ export const Accordion = ({ data, isNested = false }: AccordionProps) => {
   const [isOpen, setIsOpen] = useState(data.isOpen || false);
 
   // Configuración del punto verde pastel
-  const dotColor = "#b2f2bb"; // Verde claro pastel (puedes usar #d1fae5 para uno más sutil)
+  const dotColor = "#b2f2bb"; 
 
   const containerStyle = isNested
     ? "bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/5 mb-2"
@@ -76,11 +76,11 @@ export const Accordion = ({ data, isNested = false }: AccordionProps) => {
 
       {isOpen && (
         <View className={`px-4 pb-4 ${isNested ? 'pt-0' : ''}`}>
-          {data.items?.map((item, index) => (
-            <DetailRowItem key={index} {...item} />
+          {data.items?.map((item, index) => (                    //acordeon simple
+            <DetailRowItem key={index} {...item} />             
           ))}
 
-          {data.subCategories?.map((subCat) => (
+          {data.subCategories?.map((subCat) => (                 //acordeon complejo con sub catgorias (anidado)
             <Accordion key={subCat.id} data={subCat} isNested={true} />
           ))}
         </View>
