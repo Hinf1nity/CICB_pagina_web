@@ -527,7 +527,10 @@ export function AdminPerformanceManager() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <form onSubmit={handleSubmit(handleSave)}>
             <DialogHeader>
               <DialogTitle>
@@ -747,6 +750,7 @@ export function AdminPerformanceManager() {
                 {searchedResources
                   .map((resource: Recurso) => (
                     <button
+                      type='button'
                       key={resource.id}
                       onClick={() => handleAddResourceFromCatalog(resource)}
                       className="w-full text-left px-4 py-3 hover:bg-accent transition-colors border-b last:border-b-0"

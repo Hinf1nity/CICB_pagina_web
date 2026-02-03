@@ -317,7 +317,7 @@ export function UserProfilePage() {
                 <div className="bg-white p-4 rounded-lg shadow-sm">
                   <QRCodeSVG
                     id="qr-code-svg"
-                    value={`https://localhost/tarjeta_usuario/${userData.id}`}
+                    value={`${window.location.origin}/tarjeta_usuario/${userData.id}`}
                     size={180}
                     level="H"
                     includeMargin={true}

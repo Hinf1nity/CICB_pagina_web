@@ -128,9 +128,9 @@ export function AdminAnnouncementsPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
 
-        <div className="flex gap-4 mb-6 items-center">
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Buscar convocatorias por título o fecha..."
               value={searchTerm}
@@ -140,7 +140,6 @@ export function AdminAnnouncementsPage() {
           </div>
           <Button
             onClick={handleCreate}
-            className="bg-primary text-primary-foreground"
           >
             <Plus className="w-4 h-4 mr-2" /> Nueva Convocatoria
           </Button>
@@ -228,7 +227,7 @@ export function AdminAnnouncementsPage() {
 
                     <Button
                       variant="outline"
-                      size="icon"
+                      size="sm"
                       onClick={() => item.id && handleDelete(item.id)}
                       className="border-gray-200 hover:bg-red-50 hover:border-red-200"
                     >

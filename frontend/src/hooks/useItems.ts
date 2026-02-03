@@ -143,8 +143,8 @@ export function useItemPost() {
       queryClient.invalidateQueries({ queryKey: [variables.type, 'admin'] });
       toast.success("Elemento creado exitosamente");
     },
-    onError: () => {
-      toast.error("Error al crear el elemento");
+    onError: (error) => {
+      toast.error(`Error al crear el elemento: ${(error as Error)}`);
     }
   });
 }

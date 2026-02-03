@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
 import { useJobDetail } from '../hooks/useJobs';
+import { toast } from 'sonner';
 
 export function JobDetailPage() {
   const navigate = useNavigate();
@@ -27,6 +28,33 @@ export function JobDetailPage() {
   if (loading) return <p className="text-center mt-10">Cargando empleo...</p>;
   if (error) return <p className="text-center text-red-500 mt-10">{error instanceof Error ? error.message : String(error)}</p>;
   if (!job?.id) return <p className="text-center mt-10 text-muted-foreground">No se encontró el empleo solicitado.</p>;
+
+  const copiarEnlace = async () => {
+    const url = window.location.href;
+
+    // 1. Intentar con la API moderna
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('¡Enlace copiado!');
+      } catch (err) {
+        console.error('Error al copiar: ', err);
+      }
+    } else {
+      // 2. Fallback para contextos no seguros o navegadores viejos
+      const textArea = document.createElement("textarea");
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast.success('¡Enlace copiado!');
+      } catch (err) {
+        console.error('No se pudo copiar ni con fallback', err);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -216,10 +244,7 @@ export function JobDetailPage() {
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('Enlace copiado al portapapeles');
-                  }}
+                  onClick={copiarEnlace}
                 >
                   Compartir Oferta
                 </Button>
