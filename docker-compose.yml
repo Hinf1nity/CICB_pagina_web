@@ -54,7 +54,7 @@ services:
     environment:
       - REACT_NATIVE_PACKAGER_HOSTNAME=${REACT_NATIVE_PACKAGER_HOSTNAME}
       - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
-      - VITE_API_URL=${VITE_API_URL} # Si necesitas conectar con el backend
+      - EXPO_PUBLIC_API_URL=${REACT_NATIVE_PACKAGER_HOSTNAME} # Si necesitas conectar con el backend
     stdin_open: true # Necesario para comandos interactivos
     tty: true # Necesario para ver el QR y logs de colores
 

@@ -1,4 +1,5 @@
 import ky from 'ky';
 
 export const api = ky.create({
-  prefixUrl: 'http://192.168.0.100:8000/api',});
+  prefixUrl: `http://${process.env.EXPO_PUBLIC_API_URL}:8000/api`,
+});
