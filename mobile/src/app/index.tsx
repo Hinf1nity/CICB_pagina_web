@@ -49,7 +49,7 @@ export default function MenuScreen() {
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
             
             {/* --- HEADER --- */}
-            <View className="pt-4 px-6 pb-2">
+            <View className="pt-6 px-3 pb-2">
                 <Text className="text-white text-xl font-extrabold tracking-[0.2em] text-center mb-8 drop-shadow-md">
                     CICB BOLIVIA
                 </Text>
@@ -58,7 +58,7 @@ export default function MenuScreen() {
                 <View className="flex-row flex-wrap justify-center gap-y-6">
                     {DEPARTMENTS.map((dept, index) => (
                         <View key={index} className="w-[25%] items-center justify-center">
-                            <View className="w-10 h-10 items-center justify-center mb-1">
+                            <View className="w-10 h-10 items-center justify-center mb-5">
                                 <MaterialIcons 
                                     // @ts-ignore: icon name dynamic
                                     name={dept.icon} 
@@ -68,7 +68,7 @@ export default function MenuScreen() {
                                 />
                                 <Image
                                     source={dept.image}
-                                    className={`w-9 h-9 mb-1 ${dept.active ? 'opacity-100' : 'opacity-80'}`}
+                                    className={`w-11 h-11 mb-1 ${dept.active ? 'opacity-100' : 'opacity-80'}`}
                                     resizeMode="contain"
                                 />
                                 <Text numberOfLines={2} ellipsizeMode="tail" className="text-[9px] font-semibold uppercase text-center text-white/90 leading-tight">
@@ -81,7 +81,7 @@ export default function MenuScreen() {
             </View>
 
             {/* --- TARJETA CENTRAL (Glassmorphism) --- */}
-            <View className="px-6 mt-8">
+            <View className="px-6 mt-2">
                 {/* Contenedor simulando el blur y borde blanco */}
                 <View className="bg-white/95 dark:bg-zinc-900/95 p-8 rounded-[40px] shadow-2xl shadow-primary/30 border border-white/40 dark:border-zinc-800">
                     <View className="items-center">
@@ -119,7 +119,7 @@ export default function MenuScreen() {
                     Colegio de Ingenieros Civiles de Bolivia
                 </Text>
                 <Text className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
-                    Gestión Institucional 2024-2025
+                    Gestión Institucional 2024-2026
                 </Text>
             </View>
 

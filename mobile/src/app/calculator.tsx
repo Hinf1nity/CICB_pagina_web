@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, StatusBar, Alert, KeyboardAvoidingView, Platform } from 'react-native'; //Alertas para evitar el no llenado
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; //Imports que ayudan a la modificacion del boton fijo
+import React, { useState, useEffect } from 'react'; //Importamos el UseEffect, adicion de ActivityIndicator a los imports para evitar errores
+import { View, Text, ScrollView, Pressable, StatusBar, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'; 
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { api } from '../lib/api';
@@ -23,28 +23,51 @@ const DEPARTAMENTOS: SelectOption[] = [
   { label: 'Pando', value: 'Pando' },
 ];
 
-const GRADOS: SelectOption[] = [
-  { label: 'Licenciatura', value: 'Licenciatura' },
-  { label: 'Especialidad', value: 'Especialidad' },
-  { label: 'Maestría', value: 'Maestría' },
-  { label: 'Doctorado', value: 'Doctorado' },
-];
-
-const ACTIVIDADES: SelectOption[] = [
-  { label: 'Diseño', value: 'Diseño, planificación y ejecución' },
-  { label: 'Supervisión', value: 'Supervisión, fiscalización y asesoría' },
-  { label: 'Avalúo', value: 'Avalúo, peritaje y especialidad' },
-];
-
 export default function HomeScreen() {
   const router = useRouter();
-  // --- ESTADOS DEL FORMULARIO ---
+
   const [antiguedad, setAntiguedad] = useState('');
   const [departamento, setDepartamento] = useState('');
   const [grado, setGrado] = useState('');
   const [location, setLocation] = useState<'ciudad' | 'campo'>('ciudad');
   const [actividad, setActividad] = useState('');
   const insets = useSafeAreaInsets(); //Identificacion del area de los botones
+  //Nuevos Estados para el servidor 
+  const [gradosOptions, setGradosOptions] = useState<SelectOption[]>([]);
+  const [actividadesOptions, setActividadesOptions] = useState<SelectOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true); //Se muestra una carga
+
+  //Obtener el datos del backend para el GET
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        // Realizamos el GET a la ruta correspondiente
+        const response: any = await api.get('aranceles/aranceles/').json();
+
+        // Transformamos los strings del backend al formato como se usa el select
+        const mappedGrados = response.formaciones.map((f: string) => ({
+          label: f,
+          value: f
+        }));
+
+        const mappedActividades = response.actividades.map((a: string) => ({
+          label: a.split(',')[0], // Usamos la primera palabra para evitar la extension
+          value: a
+        }));
+
+        setGradosOptions(mappedGrados);
+        setActividadesOptions(mappedActividades);
+      } catch (error) {
+        console.error('Error al obtener datos iniciales:', error);
+        Alert.alert('Error de conexión', 'No se pudieron cargar las opciones del servidor.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   //Alertas para el espacio no llenado 
   const handleCalculate = async () => {
@@ -97,7 +120,6 @@ return (
       <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" /> 
       
       <View className="flex-1">
-        {/* EL KEYBOARDAVOIDINGVIEW AHORA SOLO ENVUELVE EL CONTENIDO SCROLLABLE PARA QUE NO MUEVA EL BOTÓN INFERIOR */}
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -111,20 +133,25 @@ return (
               <MaterialIcons name="arrow-back-ios" size={20} color="#0f3e33" />
             </Pressable>
             <View className="flex-1 px-2">
-              <Text className="text-center text-lg font-bold leading-tight text-primary dark:text-white">Formulario de Cálculo</Text>
+              <Text className="text-center text-lg font-bold leading-tight text-primary dark:text-white uppercase">Formulario de Cálculo</Text>
               <Text className="text-center text-[10px] uppercase tracking-widest text-accent font-semibold mt-0.5">CICB Bolivia</Text>
             </View>
-            <Pressable className="size-10 items-center justify-center rounded-full active:bg-gray-100 dark:active:bg-gray-800">
-              <MaterialIcons name="info-outline" size={24} color="#0f3e33" />
-            </Pressable>
           </View>
 
           {/* Main Form Content */}
           <ScrollView
             className="flex-1 p-4"
-            contentContainerStyle={{ paddingBottom: 40 }} //CONTENIDO ADAPTABLE SIN DEPENDER DEL INSET AQUÍ
+            contentContainerStyle={{ paddingBottom: 40 }} //CONTENIDO ADAPTABLE 
             showsVerticalScrollIndicator={false}
           >
+            {/* Indicador de carga de espera para el GET*/}
+            {isLoading ? (
+              <View className="py-20">
+                <ActivityIndicator size="large" color="#3c8d50"/>
+                <Text className="text-center mt-4 text-gray-500">Cargando opciones...</Text>
+              </View>
+            ) : (
+              <>
             {/* Sección: Info Profesional */}
             <View className="mb-2">
               <View className="flex-row items-center gap-2 px-1 pb-4">
@@ -146,8 +173,9 @@ return (
               />
               {/* Select DEPARTAMENTO */}
               <FormSelect label="Departamento" placeholder="Seleccione un departamento" value={departamento} onChange={setDepartamento} options={DEPARTAMENTOS} />
-              {/* Select GRADO */}
-              <FormSelect label="Grado de Formación" placeholder="Seleccione su grado" value={grado} onChange={setGrado} options={GRADOS} />
+              
+              {/* Uso de gradosOptions que viene del backend */}
+              <FormSelect label="Grado de Formación" placeholder="Seleccione su grado" value={grado} onChange={setGrado} options={gradosOptions} />
             </View>
 
             {/* Sección: Detalles de Actividad */}
@@ -157,8 +185,9 @@ return (
                 <Text className="text-lg font-bold text-primary dark:text-white">Detalles de la Actividad</Text>
               </View>
               <LocationToggle value={location} onChange={setLocation} />
-              {/* Select ACTIVIDAD */}
-              <FormSelect label="Tipo de Actividad" placeholder="Seleccione el servicio" value={actividad} onChange={setActividad} options={ACTIVIDADES} />
+              
+              {/* Uso de actividadesOptions para que la info retorne del backend */}
+              <FormSelect label="Tipo de Actividad" placeholder="Seleccione el servicio" value={actividad} onChange={setActividad} options={actividadesOptions} />
             </View>
 
             {/* Info Alert Box */}
@@ -168,13 +197,14 @@ return (
                 Los Aranceles Profesionales se fundamentan en la Ley N° 1449 por lo tanto, son de cumplimiento obligatorio para la población en general y para todos los profesionales <Text className="font-bold">Ingenieros Civiles de Bolivia.</Text>
               </Text>
             </View>
+            </>
+            )}
           </ScrollView>
         </KeyboardAvoidingView>
 
-        {/* EL BOTÓN ESTÁ AHORA FUERA DEL KEYBOARDAVOIDINGVIEW PARA QUE NO "FLOTE" AL USAR EL TECLADO */}
         <View 
           style={{ 
-            // MEJORA DEL BOTON: DETECTA SI EL DISPOSITIVO USA GESTOS O BOTONES FÍSICOS
+            // Deteccion de botones en la pantalla
             paddingBottom: insets.bottom > 0 ? insets.bottom : 16, 
             paddingTop: 12 
           }} 
@@ -182,7 +212,8 @@ return (
         >
           <Pressable
             onPress={handleCalculate}
-            className="flex-row w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 shadow-lg active:scale-[0.98] active:opacity-90"
+            disabled={isLoading}
+            className={`flex-row w-full items-center justify-center gap-2 rounded-xl py-4 shadow-lg active:scale-[0.98] active:opacity-90 ${isLoading ? 'bg-gray-400' : 'bg-primary'}`}
           >
             <MaterialIcons name="calculate" size={24} color="white" />
             <Text className="text-base font-bold text-white">Calcular Honorarios</Text>

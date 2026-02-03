@@ -57,7 +57,7 @@ export default function SummaryDetailScreen() {
               <MaterialIcons name="arrow-back-ios" size={20} color="white" />
             </Pressable>
             <View>
-              <Text className="text-white text-lg font-bold leading-tight">
+              <Text className=" text-center text-white text-lg font-bold leading-tight uppercase">
                 Detalle de Aranceles
               </Text>
               <Text className="text-white/80 text-[10px] uppercase tracking-widest">
@@ -65,9 +65,6 @@ export default function SummaryDetailScreen() {
               </Text>
             </View>
           </View>
-          <Pressable className="size-10 items-center justify-center rounded-lg active:bg-white/10">
-            <MaterialIcons name="share" size={22} color="white" />
-          </Pressable>
         </View>
 
         {/* --- STATS DASHBOARD --- */}
@@ -75,17 +72,17 @@ export default function SummaryDetailScreen() {
           <View className="flex-row gap-2">
             <StatCard
               label="Arancel Mensual"
-              value={data?.mensual ? data.mensual.toFixed(2) : '0.00'}
+              value={data?.mensual ? data.mensual.toFixed(0) : '0'}
               currency="BOB"
             />
             <StatCard
               label="Arancel por Dia"
-              value={data?.diario ? data.diario.toFixed(2) : '0.00'}
+              value={data?.diario ? data.diario.toFixed(0) : '0'}
               currency="BOB"
             />
             <StatCard
               label="Arancel Por Hora"
-              value={data?.hora ? data.hora.toFixed(2) : '0.00'}
+              value={data?.hora ? data.hora.toFixed(0) : '0'}
               currency="BOB"
             />
           </View>
@@ -167,7 +164,7 @@ export default function SummaryDetailScreen() {
         {/* --- TÍTULO DE SECCIÓN --- */}
         <View className="px-4 mb-3 flex-row items-center justify-between">
           <Text className="text-primary dark:text-secondary text-xs font-bold uppercase tracking-widest">
-            Desglose por Especialidad
+            Desglose por Trabajo
           </Text>
           <Text className="text-[10px] text-gray-400 font-medium">Gestión 2024</Text>
         </View>
