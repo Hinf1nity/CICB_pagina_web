@@ -66,7 +66,7 @@ class CalculateArancelesSerializer(serializers.Serializer):
             for nivel in trabajo['niveles']:
                 for elemento in nivel['elementos']:
                     valor_base = float(elemento['valor'])
-                    elemento['valor'] = round(valor_base * hora, 3)
+                    elemento['valor'] = round(valor_base * hora, 0)
         data['trabajos'] = trabajos_data
         return super().validate(data)
 
@@ -91,11 +91,11 @@ class CalculateArancelesSerializer(serializers.Serializer):
             nombre=f"{antiguedad}_{data['ubicacion'].lower()}").valor
         factor_tipo_actividad = IncidenciasLaborales.objects.get(
             nombre=f"actividad_{data['actividad']}").valor
-        factor_departamental = float(
-            fce_departamento) * (float(ipc_departamento) / float(ipc_nacional))
+        factor_departamental = round(float(
+            fce_departamento) * (float(ipc_departamento) / float(ipc_nacional)), 2)
         arancel_calculado = float(salario_base) * float(factor_antiguedad) * float(factor_formacion) * \
             float(factor_departamental) * float(factor_tipo_actividad)
-        arancel_calculado = round(arancel_calculado, 3)
-        arancel_hora = round(arancel_calculado / 240, 3)
-        arancel_dia = round(arancel_hora * 8, 3)
+        arancel_calculado = round(arancel_calculado, 0)
+        arancel_hora = round(arancel_calculado / 240, 0)
+        arancel_dia = round(arancel_hora * 8, 0)
         return arancel_calculado, arancel_hora, arancel_dia
