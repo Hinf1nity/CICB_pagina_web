@@ -12,6 +12,8 @@
     "@expo-google-fonts/public-sans": "^0.4.2",
     "@expo/metro-config": "~54.0.14",
     "@expo/vector-icons": "^15.0.3",
+    "@react-native-community/netinfo": "11.4.1",
+    "@tanstack/react-query": "^5.90.20",
     "babel-preset-expo": "~54.0.10",
     "expo": "~54.0.32",
     "expo-constants": "~18.0.13",

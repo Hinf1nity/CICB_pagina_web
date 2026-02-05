@@ -18,7 +18,7 @@ class Command(BaseCommand):
         incidencias_formacion = {
             "form_Licenciatura": 1.00,
             "form_Diplomado": 1.02,
-            "form_Especialidad": 1.04,
+            "form_Especialidad": 1.03,
             "form_Maestría": 1.06,
             "form_Doctorado": 1.10,
         }
@@ -50,7 +50,7 @@ class Command(BaseCommand):
         incidencia_actividad = {
             "actividad_Diseño, planificación y ejecución": 1.00,
             "actividad_Supervisión, fiscalización y asesoría": 1.05,
-            "actividad_Avalúo, peritaje y especialidad": 1.10,
+            "actividad_Avalúo, peritaje, especialidad y docencia": 1.10,
         }
 
         incidencias = {
