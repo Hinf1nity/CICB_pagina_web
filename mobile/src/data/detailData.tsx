@@ -93,7 +93,7 @@ export const parseTrabajosToCategories = (trabajos: Trabajo[]): Category[] => { 
         title: trabajo.nombre.toUpperCase(),
         items: trabajo.niveles[0].elementos.map((el) => ({
           label: el.detalle,
-          price: `${el.valor.toFixed(2)} BOB/${el.unidad}`,
+          price: `${el.valor.toFixed(0)} BOB/${el.unidad}`,
         })),
       };
     }
@@ -107,7 +107,7 @@ export const parseTrabajosToCategories = (trabajos: Trabajo[]): Category[] => { 
         title: nivel.nombre.toUpperCase(),
         items: nivel.elementos.map((el) => ({
           label: el.detalle,
-          price: `${el.valor.toFixed(2)} BOB/${el.unidad}`,
+          price: `${el.valor.toFixed(0)} BOB/${el.unidad}`,
         })),
       })),
     };

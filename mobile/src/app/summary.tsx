@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'; //Verificar que el busacador funcione en todas sus etapas, simple y complejo junto con sus especificacioness
 import { View, Text, ScrollView, TextInput, Pressable, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -39,7 +39,58 @@ export default function SummaryDetailScreen() {
   const data = result ? (JSON.parse(result as string) as ArancelResponse) : null;
   const categories = data ? parseTrabajosToCategories(data.trabajos) : []; //render de datos parseados
 
+  const [searchQuery, setSearchQuery] = React.useState(''); // Estado para realizar la busqueda
   console.log(data);
+
+  // --- LOGICA DE FILTRADO PROFUNDO MEJORADA ---
+  const filteredCategories = React.useMemo(() => {
+    if (!searchQuery.trim()) return categories;
+
+    const query = searchQuery.toLowerCase();
+
+    // Función auxiliar para evitar errores de undefined/null
+    const includesQuery = (text?: string | number) => {
+      if (text === null || text === undefined) return false;
+      return text.toString().toLowerCase().includes(query);
+    };
+
+    return categories
+      .map((cat) => {
+        // 1. Filtrar los ítems internos (Subtítulos)
+        const filteredItems = (cat.items || [])
+          .map((item) => {
+            // 2. Filtrar los niveles (Especificaciones donde suele estar "Relevamiento")
+            const filteredLevels = (item.levels || [])
+              .map((level) => {
+                // 3. Buscar en los elementos finales (detalle, valor, unidad)
+                const elementsMatch = level.elements?.some((el) =>
+                  includesQuery(el.detalle) ||
+                  includesQuery(el.valor) ||
+                  includesQuery(el.unidad)
+                );
+
+                const levelNameMatch = includesQuery(level.name);
+
+                // Si el nivel coincide, lo mantenemos
+                return levelNameMatch || elementsMatch ? level : null;
+              })
+              .filter(Boolean); // Quitamos los niveles que no coinciden
+
+            // Un ítem es válido si su título coincide O si tiene niveles filtrados dentro
+            const itemMatches = includesQuery(item.title) || filteredLevels.length > 0;
+
+            return itemMatches ? { ...item, levels: filteredLevels } : null;
+          })
+          .filter(Boolean); // Quitamos los ítems que no coinciden
+
+        // La categoría es válida si su título coincide O tiene ítems filtrados dentro
+        const categoryMatches = includesQuery(cat.title) || filteredItems.length > 0;
+
+        return categoryMatches ? { ...cat, items: filteredItems } : null;
+      })
+      .filter(Boolean); // Quitamos las categorías vacías
+  }, [searchQuery, categories]);
+  
 
   return (
     <View className="flex-1 bg-background-light dark:bg-background-dark">
@@ -116,64 +167,86 @@ export default function SummaryDetailScreen() {
               placeholder="Filtrar categorías o tareas..."
               placeholderTextColor="#9ca3af"
               className="flex-1 ml-3 text-base text-gray-800 dark:text-white h-full"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              clearButtonMode="while-editing"
             />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => setSearchQuery('')}>
+                <MaterialIcons name="close" size={20} color="#9ca3af" />
+              </Pressable>
+            )}
           </View>
         </View>
 
-        {/* Acordeon de la tipologia de edificaciones */}
-        <View className="px-4 mb-6">
-          <Accordion_1
-            title="TIPOLOGIA DE LAS EDIFICACIONES"
-            items={[
-              {
-                title: 'BASICA',
-                description:
-                  'Igual o menor a 60m² de superficie construida / 1 nivel de altura de hasta 3.5m (sin subsuelo).',
-              },
-              {
-                title: 'SIMPLE',
-                description:
-                  'Hasta 450m² de superficie construida / Hasta 3 niveles positivos, puede contar o no con niveles negativos en función a la topografía.',
-              },
-              {
-                title: 'MEDIANA',
-                description:
-                  'Hasta 4 niveles positivos y niveles negativos en función a la topografía.',
-              },
-              {
-                title: 'MEDIANAMENTE COMPLEJA',
-                description:
-                  'Mayor o igual a 5 niveles positivos y los niveles negativos en función a la topografía.',
-              },
-              {
-                title: 'COMPLEJA',
-                description:
-                  'Mayor o igual a 5 niveles positivos y los niveles negativos en función a la topografía.',
-              },
-              {
-                title: 'ESPECIALES',
-                description: 'Cualquier superficie construida.',
-              },
-            ]}
-          />
-          <Text className="text-[9px] text-gray-400 mt-2 px-1 italic">
-            Fuente: Norma Boliviana de Edificaciones R.M. 186.
-          </Text>
-        </View>
+        {/* Acordeon de la tipologia de edificaciones - SOLO SE MUESTRA SI NO HAY BÚSQUEDA ACTIVA */}
+        {searchQuery === '' && (
+          <View className="px-4 mb-6">
+            <Accordion_1
+              title="TIPOLOGIA DE LAS EDIFICACIONES"
+              items={[
+                {
+                  title: 'BASICA',
+                  description:
+                    'Igual o menor a 60m² de superficie construida / 1 nivel de altura de hasta 3.5m (sin subsuelo).',
+                },
+                {
+                  title: 'SIMPLE',
+                  description:
+                    'Hasta 450m² de superficie construida / Hasta 3 niveles positivos, puede contar o no con niveles negativos en función a la topografía.',
+                },
+                {
+                  title: 'MEDIANA',
+                  description:
+                    'Hasta 4 niveles positivos y niveles negativos en función a la topografía.',
+                },
+                {
+                  title: 'MEDIANAMENTE COMPLEJA',
+                  description:
+                    'Mayor o igual a 5 niveles positivos y los niveles negativos en función a la topografía.',
+                },
+                {
+                  title: 'COMPLEJA',
+                  description:
+                    'Mayor o igual a 5 niveles positivos y los niveles negativos en función a la topografía.',
+                },
+                {
+                  title: 'ESPECIALES',
+                  description: 'Cualquier superficie construida.',
+                },
+              ]}
+            />
+            <Text className="text-[9px] text-gray-400 mt-2 px-1 italic">
+              Fuente: Norma Boliviana de Edificaciones R.M. 186.
+            </Text>
+          </View>
+        )}
 
         {/* --- TÍTULO DE SECCIÓN --- */}
         <View className="px-4 mb-3 flex-row items-center justify-between">
           <Text className="text-primary dark:text-secondary text-xs font-bold uppercase tracking-widest">
-            Desglose por Trabajo
+            {searchQuery ? 'Resultados Encontrados' : 'Desglose por Trabajo'}
           </Text>
           <Text className="text-[10px] text-gray-400 font-medium">Gestión 2024</Text>
         </View>
 
-        {/* --- LISTA DE ACORDEONES --- */}
+        {/* --- LISTA DE ACORDEONES FILTRADOS --- */}
         <View className="px-4 gap-3">
-          {categories.map((cat) => (
-            <Accordion key={cat.id} data={cat} />
-          ))}
+          {filteredCategories.length > 0 ? (
+            filteredCategories.map((cat) => (
+              <Accordion 
+                key={cat.id} 
+                data={cat} 
+                // Sugerencia: pasar searchQuery para resaltar texto si tu componente Accordion lo permite
+                searchTerm={searchQuery} 
+              />
+            ))
+          ) : (
+            <View className="py-10 items-center">
+              <MaterialIcons name="search-off" size={48} color="#9ca3af" />
+              <Text className="text-gray-500 mt-2 font-medium">No se encontraron resultados para "{searchQuery}"</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>

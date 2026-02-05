@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; //Importamos el UseEffect, adicion de ActivityIndicator a los imports para evitar errores
+import React, { useState, useEffect } from 'react'; //Importamos el UseEffect, adicion de ActivityIndicator a los imports para evitar errores, usaremos useQuery para los gets
 import { View, Text, ScrollView, Pressable, StatusBar, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'; 
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import { useRouter } from 'expo-router';
