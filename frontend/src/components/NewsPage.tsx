@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -21,6 +21,8 @@ export function NewsPage() {
   const navigate = useNavigate();
   //Anadimos funciones Paginacion
   const { noticias, count, next, previous, isLoading, error } = useNoticias(page, debouncedSearchTerm, category);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   if (isLoading) {
     return (
@@ -33,7 +35,7 @@ export function NewsPage() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">Error al cargar noticias: {error}</p>
+        <p className="text-red-500">Hubo un error al cargar las noticias.</p>
       </div>
     );
   }
@@ -88,6 +90,10 @@ export function NewsPage() {
             </Select>
           </div>
         </div>
+      </div>
+
+      <div className="text-muted-foreground mt-4 max-w-7xl mx-auto px-4">
+        Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} noticias
       </div>
 
       {/* News Grid */}
@@ -154,7 +160,7 @@ export function NewsPage() {
             </Button>
 
             <span className="text-sm text-muted-foreground">
-              Página {page} de {Math.ceil(count / 20)}
+              Página {page} de {totalPages}
             </span>
 
             <Button

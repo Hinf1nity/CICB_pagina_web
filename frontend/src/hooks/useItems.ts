@@ -14,17 +14,19 @@ interface PaginatedResponse {
   archive_count?: number;
 }
 
-export function useItems(type: "yearbooks" | "regulation" | "announcements", page: number = 1) {
+export function useItems(type: "yearbooks" | "regulation" | "announcements", page: number = 1, search: string = '', category: string = 'all') {
   const {
     data,
     isPending,
     isError,
     error,
   } = useQuery({
-    queryKey: [type, page],
+    queryKey: [type, page, search, category],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
+        ...(search && { search: search }),
+        ...(category !== 'all' && { categoria: category }),
       });
       const url = type === "announcements" ? "calls" : type;
       return api
@@ -53,18 +55,19 @@ export function useItems(type: "yearbooks" | "regulation" | "announcements", pag
   };
 }
 
-export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements", page: number = 1, search: string = '') {
+export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements", page: number = 1, search: string = '', category: string = 'all') {
   const {
     data,
     isPending,
     isError,
     error,
   } = useQuery({
-    queryKey: [type, 'admin', page, search],
+    queryKey: [type, 'admin', page, search, category],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
         ...(search && { search: search }),
+        ...(category !== 'all' && { categoria: category }),
       });
       const url = type === "announcements" ? "calls" : type;
       return api
@@ -132,6 +135,7 @@ export function useItemPost() {
       formData.append("descripcion", data.descripcion);
       formData.append("estado", data.estado);
       formData.append("fecha_publicacion", data.fecha_publicacion);
+      if (data.categoria) formData.append("categoria", data.categoria);
 
       if (finalPdfId) formData.append("pdf", finalPdfId.toString());
       console.log("FormData to be sent:", Array.from(formData.entries()));
@@ -169,6 +173,7 @@ export function useItemPatch() {
       appendIfChanged("descripcion", data.descripcion, data_old.descripcion);
       appendIfChanged("estado", data.estado, data_old.estado);
       appendIfChanged("fecha_publicacion", data.fecha_publicacion, data_old.fecha_publicacion);
+      appendIfChanged("categoria", data.categoria || '', data_old.categoria || '');
 
       if (data.pdf !== data_old.pdf) {
         hasChanges = true;

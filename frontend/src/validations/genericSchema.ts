@@ -1,6 +1,17 @@
 import { z } from "zod";
 
 const estados = ["borrador", "publicado", "archivado", "vigente", "activa", "cerrada"];
+const categorias = [
+  "all",
+  "reglamento",
+  "estatuto",
+  "ley",
+  "decreto",
+  "resolucion",
+  "documentacion junta",
+  "documentacion directorio",
+  "otro",
+];
 
 export const genericSchema = z.object({
   id: z.number().optional(),
@@ -13,6 +24,7 @@ export const genericSchema = z.object({
     .refine((file) => file.type === "application/pdf", "Debe ser un PDF")
     .refine((file) => file.size <= 10 * 1024 * 1024, "El PDF no debe superar los 10MB").or(z.string()).optional(),
   estado: z.enum(estados, { message: "El estado debe ser 'borrador' o 'publicado'" }),
+  categoria: z.enum(categorias, { message: "La categoría no es válida" }).optional(),
 });
 
 export type GenericData = z.infer<typeof genericSchema>;

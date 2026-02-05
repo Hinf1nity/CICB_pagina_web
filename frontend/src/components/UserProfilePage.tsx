@@ -45,7 +45,7 @@ export function UserProfilePage() {
     id: '',
     name: '',
     rni: '',
-    rnic: '',
+    rnic: '' as string | undefined,
     specialty: '',
     city: '',
     registrationDate: '',

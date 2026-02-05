@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, X } from 'lucide-react';
 import { DynamicList } from '../DynamicList';
+import { Link } from 'react-router-dom';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useJobsPost, useJobPatch, useJobsAdmin, useJobDetailAdmin, useJobDelete } from '../../hooks/useJobs';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -159,7 +160,20 @@ export function AdminJobsManager() {
               <TableBody>
                 {jobs.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.titulo}</TableCell>
+                    <TableCell>
+                      {item.estado === 'borrador' ? (
+                        <span className="text-gray-500 italic">{item.titulo}</span>
+                      ) : (
+                        <Link
+                          to={`/trabajos/${item.id}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {item.titulo}
+                        </Link>
+                      )}
+                    </TableCell>
                     <TableCell>{item.nombre_empresa}</TableCell>
                     <TableCell>
                       <Badge className={item.estado === 'publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>

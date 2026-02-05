@@ -18,7 +18,7 @@ export function NewsDetailPage() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Cargando noticias...</p>
+        <p className="text-muted-foreground">Cargando noticia...</p>
       </div>
     );
   }
@@ -26,7 +26,7 @@ export function NewsDetailPage() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">Error al cargar noticias: {error}</p>
+        <p className="text-red-500">Hubo un error al cargar la noticia.</p>
       </div>
     );
   }
@@ -65,7 +65,7 @@ export function NewsDetailPage() {
           <ImageWithFallback
             src={noticia?.imagen_url}
             alt={noticia?.titulo}
-            className="w-full h-[400px] object-cover"
+            className="w-full aspect-ratio min-[900px]:h-[420px] object-cover"
           />
         </div>
 
@@ -124,7 +124,7 @@ export function NewsDetailPage() {
               <div className="border rounded-lg overflow-hidden bg-muted">
                 <iframe
                   src={noticia.pdf_url}
-                  className="w-full h-[600px]"
+                  className="w-full aspect-ratio h-[600px]"
                   title="Documento PDF"
                 />
               </div>

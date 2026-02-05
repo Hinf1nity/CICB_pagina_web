@@ -39,7 +39,7 @@ export function Navbar() {
     { path: '/estadisticas', label: 'Estadísticas' },
     { path: '/tabla', label: 'Tabla' },
     { path: '/anuario', label: 'Anuario' },
-    { path: '/reglamentos', label: 'Reglamentos' },
+    { path: '/normativa', label: 'Normativa' },
     { path: '/convocatorias', label: 'Convocatorias' },
   ];
 

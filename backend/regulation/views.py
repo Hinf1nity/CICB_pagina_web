@@ -43,6 +43,9 @@ class RegulationViewSet(viewsets.ReadOnlyModelViewSet):
     # queryset = Regulation.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['categoria']
+    search_fields = ['nombre']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -60,6 +63,7 @@ class RegulationAdminViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminPrin]
     pagination_class = TwentyPerPagePaginationAdmin
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['categoria']
     search_fields = ['nombre', 'fecha_publicacion']
 
     def get_serializer_class(self):

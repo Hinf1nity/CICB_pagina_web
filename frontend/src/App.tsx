@@ -73,9 +73,9 @@ function AppRoutes() {
             type="yearbooks"
           />
         } />
-        <Route path="/reglamentos" element={
+        <Route path="/normativa" element={
           <GenericPage
-            title="Reglamentos"
+            title="Normativa"
             description="Accede a los reglamentos y normativas del CICB"
             type="regulation"
           />

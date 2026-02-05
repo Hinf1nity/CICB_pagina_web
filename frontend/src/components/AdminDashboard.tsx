@@ -54,9 +54,9 @@ export function AdminDashboard() {
     },
     {
       id: "/admin/regulaciones",
-      title: "Gestión de Reglamentos",
+      title: "Gestión de Normativas",
       description:
-        "Publica y actualiza reglamentos, normativas y documentos oficiales",
+        "Publica y actualiza normativas, reglamentos y documentos oficiales",
       icon: FileText,
       color: "text-[#1B5E3A]",
       bgColor: "bg-[#1B5E3A]/10",

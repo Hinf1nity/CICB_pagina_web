@@ -44,14 +44,15 @@ import { useDebounce } from 'use-debounce';
 export function AdminRegulationsPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [category, setCategory] = useState('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
   const [page, setPage] = useState(1);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearchTerm]);
-  const { items: regulations, count, published_count, draft_count, archived_count, next, previous } = useItemsAdmin("regulation", page, debouncedSearchTerm);
+  }, [debouncedSearchTerm, category]);
+  const { items: regulations, count, published_count, draft_count, archived_count, next, previous } = useItemsAdmin("regulation", page, debouncedSearchTerm, category);
   const pageSize = 20;
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
   const { mutate: postItem, isPending: isPosting } = useItemPost();
@@ -66,6 +67,7 @@ export function AdminRegulationsPage() {
         fecha_publicacion: new Date().toISOString().split('T')[0],
         pdf: undefined,
         estado: 'borrador',
+        categoria: 'otro',
       }
     }
   );
@@ -77,6 +79,7 @@ export function AdminRegulationsPage() {
       fecha_publicacion: new Date().toISOString().split('T')[0],
       pdf: undefined,
       estado: 'borrador',
+      categoria: 'otro',
     })
     setEditingItem(null);
     setIsDialogOpen(true);
@@ -144,6 +147,20 @@ export function AdminRegulationsPage() {
     }
   };
 
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'reglamento': return 'bg-blue-100 text-blue-800';
+      case 'estatuto': return 'bg-green-100 text-green-800';
+      case "ley": return 'bg-purple-100 text-purple-800';
+      case "decreto": return 'bg-yellow-100 text-yellow-800';
+      case "resolucion": return 'bg-red-100 text-red-800';
+      case "documentacion junta": return 'bg-indigo-100 text-indigo-800';
+      case "documentacion directorio": return 'bg-pink-100 text-pink-800';
+      case "otro": return 'bg-gray-100 text-gray-800';
+      default: return 'bg-secondary/10 text-secondary';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -159,9 +176,9 @@ export function AdminRegulationsPage() {
           </Button>
           <div className="flex items-center gap-3 mb-3">
             <FileText className="w-10 h-10" />
-            <h1 className="text-3xl font-bold mb-3">Gestión de Reglamentos</h1>
+            <h1 className="text-3xl font-bold mb-3">Gestión de Normativas</h1>
           </div>
-          <p>Administra los reglamentos, normativas y documentos oficiales del CICB</p>
+          <p>Administra las normativas, reglamentos y documentos oficiales del CICB</p>
         </div>
       </div>
 
@@ -172,18 +189,34 @@ export function AdminRegulationsPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Buscar reglamentos por título, fecha de publicación(AAAA-MM-DD) o descripción..."
+              placeholder="Buscar normativas por título, fecha de publicación(AAAA-MM-DD) o descripción..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-full md:w-[200px]">
+              <SelectValue placeholder="Categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las categorías</SelectItem>
+              <SelectItem value="reglamento">Reglamento</SelectItem>
+              <SelectItem value="estatuto">Estatuto</SelectItem>
+              <SelectItem value="ley">Ley</SelectItem>
+              <SelectItem value="decreto">Decreto</SelectItem>
+              <SelectItem value="resolucion">Resolución</SelectItem>
+              <SelectItem value="documentacion junta">Documentación Junta</SelectItem>
+              <SelectItem value="documentacion directorio">Documentación Directorio</SelectItem>
+              <SelectItem value="otro">Otros</SelectItem>
+            </SelectContent>
+          </Select>
           <Button
             className="bg-primary text-primary-foreground"
             onClick={handleCreate}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Nuevo Reglamento
+            Nueva Normativa
           </Button>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -191,12 +224,12 @@ export function AdminRegulationsPage() {
               <form onSubmit={handleSubmit(handleSave)}>
                 <DialogHeader>
                   <DialogTitle>
-                    {editingItem ? 'Editar Reglamento' : 'Crear Nuevo Reglamento'}
+                    {editingItem ? 'Editar Normativa' : 'Crear Nueva Normativa'}
                   </DialogTitle>
                   <DialogDescription>
                     {editingItem
-                      ? 'Actualiza la información del reglamento'
-                      : 'Completa la información para crear un nuevo reglamento'}
+                      ? 'Actualiza la información de la normativa'
+                      : 'Completa la información para crear una nueva normativa'}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -205,7 +238,7 @@ export function AdminRegulationsPage() {
                     <Label htmlFor="nombre">Título</Label>
                     <Input
                       id="nombre"
-                      placeholder="Título del reglamento..."
+                      placeholder="Título de la normativa..."
                       {...register("nombre")}
                     />
                     {errors.nombre && (
@@ -220,7 +253,7 @@ export function AdminRegulationsPage() {
                     <Label htmlFor="descripcion">Descripción</Label>
                     <Textarea
                       id="descripcion"
-                      placeholder="Descripción detallada del reglamento..."
+                      placeholder="Descripción detallada de la normativa..."
                       rows={4}
                       {...register("descripcion")}
                     />
@@ -234,22 +267,40 @@ export function AdminRegulationsPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="fecha_publicacion">Fecha de Publicación</Label>
-                      <Input
-                        id="fecha_publicacion"
-                        type="date"
-                        {...register("fecha_publicacion")}
-                        disabled
+                      <Label htmlFor="categoria">Categoría</Label>
+                      <Controller
+                        control={control}
+                        name="categoria"
+                        render={({ field }) => (
+                          <>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Todas las categorías</SelectItem>
+                                <SelectItem value="reglamento">Reglamento</SelectItem>
+                                <SelectItem value="estatuto">Estatuto</SelectItem>
+                                <SelectItem value="ley">Ley</SelectItem>
+                                <SelectItem value="decreto">Decreto</SelectItem>
+                                <SelectItem value="resolucion">Resolución</SelectItem>
+                                <SelectItem value="documentacion junta">Documentación Junta</SelectItem>
+                                <SelectItem value="documentacion directorio">Documentación Directorio</SelectItem>
+                                <SelectItem value="otro">Otros</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors.categoria && (
+                              <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                                <AlertTitle className='text-sm'>Error en la Categoría</AlertTitle>
+                                <AlertDescription className='text-xs'>{errors.categoria?.message}</AlertDescription>
+                              </Alert>
+                            )}
+                          </>
+                        )}
                       />
-                      {errors.fecha_publicacion && (
-                        <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
-                          <AlertTitle className='text-sm'>Error en la Fecha de Publicación</AlertTitle>
-                          <AlertDescription className='text-xs'>{errors.fecha_publicacion?.message}</AlertDescription>
-                        </Alert>
-                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="status">Estado</Label>
+                      <Label htmlFor="estado">Estado</Label>
                       <Controller
                         control={control}
                         name="estado"
@@ -274,6 +325,23 @@ export function AdminRegulationsPage() {
                           </>
                         )}
                       />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fecha_publicacion">Fecha de Publicación</Label>
+                      <Input
+                        id="fecha_publicacion"
+                        type="date"
+                        {...register("fecha_publicacion")}
+                        disabled
+                      />
+                      {errors.fecha_publicacion && (
+                        <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
+                          <AlertTitle className='text-sm'>Error en la Fecha de Publicación</AlertTitle>
+                          <AlertDescription className='text-xs'>{errors.fecha_publicacion?.message}</AlertDescription>
+                        </Alert>
+                      )}
                     </div>
                   </div>
                   <Controller
@@ -369,7 +437,7 @@ export function AdminRegulationsPage() {
                     Cancelar
                   </Button>
                   <Button type='submit' disabled={isPosting || isPatching} className="bg-primary text-primary-foreground">
-                    {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Reglamento') : (isPosting ? 'Guardando...' : 'Guardar Reglamento')}
+                    {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Normativa') : (isPosting ? 'Guardando...' : 'Guardar Normativa')}
                   </Button>
                 </div>
               </form>
@@ -383,7 +451,7 @@ export function AdminRegulationsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground mb-1">Total Reglamentos</p>
+                  <p className="text-muted-foreground mb-1">Total Normativas</p>
                   <p className="text-3xl">{count}</p>
                 </div>
                 <FileText className="w-8 h-8 text-[#0B3D2E]" />
@@ -437,9 +505,9 @@ export function AdminRegulationsPage() {
         {/* Regulations List */}
         <Card>
           <CardHeader>
-            <CardTitle>Reglamentos Registrados</CardTitle>
+            <CardTitle>Normativas Registradas</CardTitle>
             <CardDescription>
-              Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} reglamentos
+              Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} normativas
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -455,6 +523,9 @@ export function AdminRegulationsPage() {
                         <h3 className="text-foreground">{regulation.nombre}</h3>
                         <Badge className={getStatusColor(regulation.estado)}>
                           {getStatusLabel(regulation.estado)}
+                        </Badge>
+                        <Badge className={`${getCategoryColor(regulation.categoria || '')} capitalize`}>
+                          {regulation.categoria || 'sin categoría'}
                         </Badge>
                       </div>
 
@@ -496,34 +567,36 @@ export function AdminRegulationsPage() {
               ))}
 
               {/* creamos la paginacion y sus flechas */}
-              <div className="flex items-center justify-center gap-4 mt-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!previous}
-                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                >
-                  Anterior
-                </Button>
+              {regulations.length > 0 && (
+                <div className="flex items-center justify-center gap-4 mt-6">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!previous}
+                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                  >
+                    Anterior
+                  </Button>
 
-                <span className="text-sm text-muted-foreground">
-                  Página {page} de {totalPages}
-                </span>
+                  <span className="text-sm text-muted-foreground">
+                    Página {page} de {totalPages}
+                  </span>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!next}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!next}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              )}
 
               {regulations.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No se encontraron reglamentos</p>
+                  <p>No se encontraron normativas</p>
                 </div>
               )}
             </div>

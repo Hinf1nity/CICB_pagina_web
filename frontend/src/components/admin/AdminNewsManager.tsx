@@ -10,6 +10,7 @@ import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, Image as ImageIcon, X } from 'lucide-react';
 import { RichTextEditor } from '../RichTextEditor';
+import { Link } from 'react-router-dom';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useNewsPost, useNoticiasAdmin, useNewsPatch, useNoticiaDetailAdmin, useNewsDelete } from '../../hooks/useNoticias';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -142,7 +143,20 @@ export function AdminNewsManager() {
               <TableBody>
                 {noticias.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.titulo}</TableCell>
+                    <TableCell>
+                      {item.estado === 'borrador' ? (
+                        <span className="text-gray-500 italic">{item.titulo}</span>
+                      ) : (
+                        <Link
+                          to={`/noticias/${item.id}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {item.titulo}
+                        </Link>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline"><p className='capitalize'>{item.categoria}</p></Badge>
                     </TableCell>

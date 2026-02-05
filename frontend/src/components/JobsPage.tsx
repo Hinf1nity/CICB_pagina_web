@@ -21,7 +21,7 @@ export function JobsPage() {
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   if (loading) return <p className="text-center mt-10">Cargando trabajos...</p>;
-  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
+  if (error) return <p className="text-center text-red-500 mt-10">Hubo un error al cargar los trabajos.</p>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,7 +36,7 @@ export function JobsPage() {
       </div>
 
       {/* Filtros */}
-      <div className="bg-muted py-6 border-b">
+      <div className="bg-muted py-6">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
@@ -51,8 +51,12 @@ export function JobsPage() {
         </div>
       </div>
 
+      <div className="text-muted-foreground mt-4 max-w-7xl mx-auto px-4">
+        Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} trabajos
+      </div>
+
       {/* Lista de trabajos */}
-      <div className="max-w-7xl mx-auto px-18 py-10">
+      <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="flex flex-col gap-6">
           {jobs.map((job) => (
             <Card
