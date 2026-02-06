@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react'; //Importamos el UseEffect, adicion de ActivityIndicator a los imports para evitar errores, usaremos useQuery para los gets
+import React, { useState } from 'react'; 
+//Importamos el UseEffect (comentario original), adicion de ActivityIndicator a los imports para evitar errores, usaremos useQuery para los gets
 import { View, Text, ScrollView, Pressable, StatusBar, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'; 
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { api } from '../lib/api';
+// Importamos useQuery de TanStack Query
+import { useQuery } from '@tanstack/react-query';
 
 // Componentes modulares
 import { FormInput } from '../components/forms/FormInput';
@@ -32,42 +35,39 @@ export default function HomeScreen() {
   const [location, setLocation] = useState<'ciudad' | 'campo'>('ciudad');
   const [actividad, setActividad] = useState('');
   const insets = useSafeAreaInsets(); //Identificacion del area de los botones
-  //Nuevos Estados para el servidor 
-  const [gradosOptions, setGradosOptions] = useState<SelectOption[]>([]);
-  const [actividadesOptions, setActividadesOptions] = useState<SelectOption[]>([]);
-  const [isLoading, setIsLoading] = useState(true); //Se muestra una carga
 
-  //Obtener el datos del backend para el GET
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        // Realizamos el GET a la ruta correspondiente
-        const response: any = await api.get('aranceles/aranceles/').json();
+  // --- NUEVA LÓGICA CON USEQUERY ---
+  // Reemplazamos el useEffect por useQuery para gestionar los datos del backend
+  const { data: options, isLoading } = useQuery({
+    queryKey: ['arancelesOptions'],
+    queryFn: async () => {
+      // Realizamos el GET a la ruta correspondiente
+      const response: any = await api.get('aranceles/aranceles/').json();
+      
+      // DIAGNÓSTICO PARA VERIFICAR EN TERMINAL
+      console.log("DATOS REALES DEL BACKEND:", response);
 
-        // Transformamos los strings del backend al formato como se usa el select
-        const mappedGrados = response.formaciones.map((f: string) => ({
-          label: f,
-          value: f
-        }));
+      // Transformamos los strings del backend al formato como se usa el select (Lógica original)
+      // Usamos los nombres exactos confirmados en la captura de pantalla del navegador
+      const mappedGrados = (response.formaciones || []).map((f: string) => ({
+        label: f,
+        value: f
+      }));
 
-        const mappedActividades = response.actividades.map((a: string) => ({
-          label: a.split(',')[0], // Usamos la primera palabra para evitar la extension
-          value: a
-        }));
+      const mappedActividades = (response.actividades || []).map((a: string) => ({
+        label: a.split(',')[0], // Usamos la primera palabra para evitar la extension
+        value: a
+      }));
 
-        setGradosOptions(mappedGrados);
-        setActividadesOptions(mappedActividades);
-      } catch (error) {
-        console.error('Error al obtener datos iniciales:', error);
-        Alert.alert('Error de conexión', 'No se pudieron cargar las opciones del servidor.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+      return {
+        grados: mappedGrados,
+        actividades: mappedActividades
+      };
+    },
+    // Configuración para que NO cargue a cada rato (Exigencia del jefe):
+    staleTime: 1000 * 60 * 10, // Los datos se consideran "nuevos" por 10 minutos
+    gcTime: 1000 * 60 * 30,    // Mantener en memoria por 30 minutos
+  });
 
   //Alertas para el espacio no llenado 
   const handleCalculate = async () => {
@@ -89,31 +89,31 @@ export default function HomeScreen() {
     }
     
     try {
-    const payload = {
-      antiguedad: antiguedadNumber,
-      departamento,
-      formacion: grado,
-      ubicacion: location,
-      actividad,
-    };
+      const payload = {
+        antiguedad: antiguedadNumber,
+        departamento,
+        formacion: grado,
+        ubicacion: location,
+        actividad,
+      };
 
-    const response = await api
-      .post('aranceles/aranceles/', { json: payload })
-      .json();
+      const response = await api
+        .post('aranceles/aranceles/', { json: payload })
+        .json();
 
-    router.push({
-      pathname: '/summary',
-      params: {
-        result: JSON.stringify(response),
-      },
-    });
-  } catch (error) {
-    console.error('Error al calcular aranceles:', error);
-    Alert.alert( 'Error', 'Ocurrió un error al calcular los aranceles. Intente nuevamente.', [{ text: 'Aceptar' }]);
-  }
-};
+      router.push({
+        pathname: '/summary',
+        params: {
+          result: JSON.stringify(response),
+        },
+      });
+    } catch (error) {
+      console.error('Error al calcular aranceles:', error);
+      Alert.alert( 'Error', 'Ocurrió un error al calcular los aranceles. Intente nuevamente.', [{ text: 'Aceptar' }]);
+    }
+  };
 
-return (
+  return (
     //Con esto tal vez se pueda arreglar el borde de la pantalla SafeAreaView, adicion del avoidungView para la modificacion del boton
     <SafeAreaView className="flex-1 bg-background-light dark:bg-background-dark" edges={['top']}>
       {/*Mejora e la visibilidad del boton */}
@@ -158,8 +158,6 @@ return (
                 <MaterialIcons name="engineering" size={24} color="#3c8d50" />
                 <Text className="text-lg font-bold text-primary dark:text-white">Información Profesional</Text>
               </View>
-              {/* La libreria para manejar los inputs y selects es react-hook-form */}
-              {/* Solo se pueden poner numeros. Tiene que tener un numero. No mas de dos digitos */}
               <FormInput
                 label="Años de Antigüedad"
                 placeholder="Ej. 10"
@@ -174,8 +172,14 @@ return (
               {/* Select DEPARTAMENTO */}
               <FormSelect label="Departamento" placeholder="Seleccione un departamento" value={departamento} onChange={setDepartamento} options={DEPARTAMENTOS} />
               
-              {/* Uso de gradosOptions que viene del backend */}
-              <FormSelect label="Grado de Formación" placeholder="Seleccione su grado" value={grado} onChange={setGrado} options={gradosOptions} />
+              {/* Uso de gradosOptions que ahora vienen de useQuery (Corregido mapeo de datos) */}
+              <FormSelect 
+                label="Grado de Formación" 
+                placeholder="Seleccione su grado" 
+                value={grado} 
+                onChange={setGrado} 
+                options={options?.grados ?? []} 
+              />
             </View>
 
             {/* Sección: Detalles de Actividad */}
@@ -186,8 +190,14 @@ return (
               </View>
               <LocationToggle value={location} onChange={setLocation} />
               
-              {/* Uso de actividadesOptions para que la info retorne del backend */}
-              <FormSelect label="Tipo de Actividad" placeholder="Seleccione el servicio" value={actividad} onChange={setActividad} options={actividadesOptions} />
+              {/* Uso de actividadesOptions que ahora vienen de useQuery (Corregido mapeo de datos) */}
+              <FormSelect 
+                label="Tipo de Actividad" 
+                placeholder="Seleccione el servicio" 
+                value={actividad} 
+                onChange={setActividad} 
+                options={options?.actividades ?? []} 
+              />
             </View>
 
             {/* Info Alert Box */}
