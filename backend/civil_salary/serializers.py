@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import IncidenciasLaborales, Categoria
+from django.core.cache import cache
 
 
 class ElementoSerializer(serializers.Serializer):
@@ -31,11 +32,17 @@ class CalculateArancelesSerializer(serializers.Serializer):
         ('Pando', 'Pando'),
     ]
 
-    def get_formacion_choices():
+    def get_formacion_choices(self):
         # Usamos .distinct() por si acaso hay duplicados
-        nombres = IncidenciasLaborales.objects.filter(
-            nombre__startswith='form_').values_list('nombre', flat=True)
-        return [(n.replace('form_', ''), n.replace('form_', '').capitalize()) for n in nombres]
+        choices = cache.get('formacion_choices')
+        if not choices:
+            nombres = IncidenciasLaborales.objects.all()
+            choices = [(n.nombre.replace('form_', ''), n.nombre.replace(
+                'form_', '').capitalize()) for n in nombres if n.nombre.startswith('form_')]
+            cache.set('formacion_choices', choices,
+                      timeout=60*60)  # Cache por 1 hora
+        return choices
+
     UBICACION = [
         ('ciudad', 'Ciudad'),
         ('campo', 'Campo'),
@@ -44,7 +51,7 @@ class CalculateArancelesSerializer(serializers.Serializer):
     departamento = serializers.ChoiceField(
         choices=DEPARTAMENTOS, write_only=True)
     formacion = serializers.ChoiceField(
-        choices=get_formacion_choices(), write_only=True)
+        choices=[], write_only=True)
     ubicacion = serializers.ChoiceField(choices=UBICACION, write_only=True)
     actividad = serializers.CharField(write_only=True)
     mensual = serializers.FloatField(read_only=True)
@@ -52,6 +59,11 @@ class CalculateArancelesSerializer(serializers.Serializer):
     hora = serializers.FloatField(read_only=True)
 
     trabajos = CategoriaSerializer(many=True, read_only=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Actualizamos las opciones de formación dinámicamente
+        self.fields['formacion'].choices = self.get_formacion_choices()
 
     def validate(self, data):
         mensual, hora, dia = self.calculate_arancel_mes_dia_hora(data)
