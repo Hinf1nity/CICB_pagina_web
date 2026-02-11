@@ -1,0 +1,78 @@
+trabajo,detalle,nivel,valor,unidad
+Estudios y Proyectos,Estudio de factibilidad técnica y económica,sin nivel,0.15,m2
+Estudios y Proyectos,Proyecto de Ingeniería Basica no incluye planos,sin nivel,0.2,m2
+Estudios y Proyectos,Proyecto de ingeniería a detalle incluye planos,sin nivel,0.5,m2
+Estudios y Proyectos,Cubicación de obras,sin nivel,0.15,m2
+Estudios y Proyectos,Revisión de planos y de especificaciones técnicas,sin nivel,0.07,m2
+Estudios y Proyectos,Elaboración de especificaciones técnicas,sin nivel,0.1,m2
+Estudios y Proyectos,Elaboración de presupuesto y cronograma de obra,sin nivel,0.15,m2
+Estudios y Proyectos,Elaboración de propuesta técnica para contratación de obras,sin nivel,0.15,m2
+Mensuras,Relevamiento georreferenciado,sin nivel,0.07,m2
+Mensuras,Cálculo de volúmenes de obra,sin nivel,0.08,m2
+Mensuras,Levantamiento topográfico especial,sin nivel,0.1,m2
+Estructuras,Diseño de Edificaciónes Básica,Básica,0.3,m2
+Estructuras,Relevamiento de Edificaciónes Basicas,Básica,0.1,m2
+Estructuras,Relevamiento especializado  de Edificaciones Básica,Básica,0.35,m2
+Estructuras,Diseño de Edificaciónes simples y medianas,Simples,0.35,m2
+Estructuras,Relevamiento de Edificaciónes simples y medianas,Simples,0.15,m2
+Estructuras,Relevamiento especializado de Edificaciones Simples y medianas,Simples,0.4,m2
+Estructuras,Diseño de Edificaciónes simples y medianas,Medianas,0.35,m2
+Estructuras,Relevamiento de Edificaciónes simples y medianas,Medianas,0.15,m2
+Estructuras,Relevamiento especializado de Edificaciones Simples y medianas,Medianas,0.4,m2
+Estructuras,Diseño de Edificaciónes medianamente complejas,Medianamente compleja,0.4,m2
+Estructuras,Relevamiento de Edificaciónes medianamente complejas,Medianamente compleja,0.17,m2
+Estructuras,Relevamiento especializado de Edificaciones medianamente complejas,Medianamente compleja,0.45,m2
+Estructuras,Diseño de Edificaciónes complejas,Compleja,0.45,m2
+Estructuras,Relevamiento de Edificaciónes complejas,Compleja,0.2,m2
+Estructuras,Relevamiento especializado de Edificaciones Complejas,Compleja,0.5,m2
+Estructuras,Diseño de Edificaciónes especiales,Especiales,0.5,m2
+Estructuras,Relevamiento de Edificaciónes especiales,Especiales,0.2,m2
+Estructuras,Relevamiento Especializado de Edificaciones Especiales,Especiales,0.58,m2
+Estructuras,Diseño de todo tipo de estructuras de hormigón no contempladas en los itemes específicos,sin nivel,0.4,m2
+Estructuras,Relevamiento de todo tipo de estructuras de hormigón no contempladas en los itemes específicos,sin nivel,0.2,m2
+Estructuras,Relevamiento Especializado de estructuras de Hormigón no contempladas en los itemes específicos,sin nivel,0.45,m2
+Estructuras,Diseño de estructuras metálicas,sin nivel,1,m2
+Estructuras,Relevamiento de estructuras metálicas,sin nivel,0.2,m2
+Estructuras,Relevamiento Especializado de estructuras metálicas,sin nivel,2,m2
+Geotecnia,Diseño de muros de contención,sin nivel,1,m2
+Geotecnia,Relevamiento de muros de contención,sin nivel,0.8,m2
+Geotecnia,Relevamiento especializado de muros de contención,sin nivel,1,m2
+Geotecnia,Diseño de estructuras de fundación,sin nivel,1,m2
+Geotecnia,Relevamiento de estructuras de fundación,sin nivel,0.8,m2
+Geotecnia,Relevameinto especializado de estructuras de fundación,sin nivel,1,m2
+Geotecnia,"Diseño de fundaciones especiales (pilotes, zapatas combinadas y otros)",sin nivel,1.2,m2
+Geotecnia,"Relevamiento de fundaciones especiales (pilotes, zapatas combinadas yotros",sin nivel,1,m2
+Geotecnia,"Relevamiento especializado de fundaciones especiales (pilotes, zapatas combinadas y otros)",sin nivel,1.2,m2
+"Hidráulica, Sanitaria y Pluvial","Diseño sistema hidráulico, sanitario o pluvial",sin nivel,0.2,m2
+"Hidráulica, Sanitaria y Pluvial","Diseño sistema hidráulico, sanitario o pluvial",sin nivel,1.5,pto
+"Hidráulica, Sanitaria y Pluvial","Relevamiento de sistema hidráulico, sanitario o pluvial",sin nivel,0.5,pto
+"Hidráulica, Sanitaria y Pluvial","Relevamiento especializado de sistemá hidráulico, sanitario o pluvial",sin nivel,2,pto
+"Hidráulica, Sanitaria y Pluvial",Diseño de sistema de riego,sin nivel,0.1,ml
+"Hidráulica, Sanitaria y Pluvial",Relevamiento de sistema de riego,sin nivel,0.05,ml
+"Hidráulica, Sanitaria y Pluvial",Relevamiento especializado de sistema de riego,sin nivel,0.25,ml
+"Hidráulica, Sanitaria y Pluvial",Diseño de sistema contraincendios con agua,sin nivel,3,pto
+"Hidráulica, Sanitaria y Pluvial",Relevamiento de sistema contraincendios con agua,sin nivel,1.5,pto
+"Hidráulica, Sanitaria y Pluvial",Relevamiento especializado de sistema contraincendios con agua,sin nivel,4,pto
+Vías y Caminos,Diseño de Via Urbana,sin nivel,130,km
+Vías y Caminos,Relevamiento de Via Urbana,sin nivel,40,km
+Vías y Caminos,Relevamiento especializado de via urbana,sin nivel,130,km
+Vías y Caminos,Diseño de Carretera,sin nivel,200,km
+Vías y Caminos,Relevamiento de Carretera,sin nivel,40,km
+Vías y Caminos,Relevamiento especializado de carretera,sin nivel,200,km
+Vías y Caminos,Diseño de puente,sin nivel,10,ml
+Vías y Caminos,Relevamiento de Puente,sin nivel,5,ml
+Vías y Caminos,Relevamiento Especializado de puente,sin nivel,10,ml
+Vías y Caminos,"Diseño de viaductos, tuneles y otros similares",sin nivel,25,ml
+Vías y Caminos,"Relevamiento de viaductos, tuneles y otros similares",sin nivel,5,ml
+Vías y Caminos,"Relevamiento especializado de viaductos, tuneles y otros similares",sin nivel,25,ml
+Vías y Caminos,Diseño de pavimentos aeroportuarios,sin nivel,0.2,m2
+Vías y Caminos,Relevamiento de pavimientos aeroportuarios,sin nivel,0.1,m2
+Vías y Caminos,Relevamiento especializado de pavimientos aeroportuarios,sin nivel,0.2,m2
+Laboratorios,Suelos (campo mas interpretación),sin nivel,4,pto
+Laboratorios,Esclerometria,sin nivel,0.2,pto
+Laboratorios,Scaner de fierros,sin nivel,0.5,m2
+Laboratorios,"otros laboratorios especiales (ultrasonido, carbonatación, GPR u otros",sin nivel,0.5,pto
+Docencia,Docencia de Pre-grado (hora académica 45-50 min),sin nivel,2.3,hr
+Docencia,Docencia de Post-grado (hora académica 45-50 min),sin nivel,4.2,hr
+Docencia,Capacitación Técnica (hora académica 45 -50 min),sin nivel,2,hr
+Docencia,Tribunal de grado/tesis,sin nivel,2.35,hr

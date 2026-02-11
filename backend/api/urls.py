@@ -11,4 +11,5 @@ urlpatterns = [
     path('imgs/', include('IMGs.urls')),
     path('stats/', include('stats.urls')),
     path('performance/', include('performance_table.urls')),
+    path('aranceles/', include('civil_salary.urls')),
 ]

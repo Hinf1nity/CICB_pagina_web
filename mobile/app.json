@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Aranceles CICB",
+    "slug": "mobile",
+    "scheme": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/splash-icon-cicb.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon-cicb.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f3e33"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "icon": "./assets/splash-icon-cicb.png"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/iconCiCB.png",
+        "backgroundColor": "#0f3e33"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "bo.org.cicb.calculadora"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1ab8720e-3760-4195-9d4f-bded9602b069"
+      }
+    }
+  }
+}
