@@ -5,12 +5,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 
-// --- DATOS DEPARTAMENTOS ---
 const DEPARTMENTS = [
   { name: 'Bolivia', image: require('../../assets/LOGO CIC B sin fondo.png'), active: false },
   { name: 'La Paz', image: require('../../assets/cicLaPaz.png'), active: false },
   { name: 'Santa Cruz', image: require('../../assets/cicSantaCruz.png'), active: false },
-  { name: 'Cochabamba', image: require('../../assets/cicCochabamba.png'), active: false }, // agriculture no existe en MaterialIcons standard, cambiamos a similar
+  { name: 'Cochabamba', image: require('../../assets/cicCochabamba.png'), active: false },
   { name: 'Oruro', image: require('../../assets/cicOruro.png'), active: false },
   { name: 'Potosí', image: require('../../assets/cicPotosi.png'), active: false },
   { name: 'Tarija', image: require('../../assets/cicTarija.png'), active: false },
@@ -24,54 +23,47 @@ export default function MenuScreen() {
   const { height } = Dimensions.get('window');
 
   return (
-    <View className="flex-1 bg-background-light dark:bg-background-dark">
+    // CAMBIO 1: Fondo base dinámico coordinado (Plomo oscuro en dark mode)
+    <View className="flex-1 bg-[#f8faf9] dark:bg-zinc-950"> 
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* --- BACKGROUND CON DEGRADADO --- */}
-      {/* Imagen de fondo (Ocupa 75% del alto como en tu CSS) */}
-      <View className="absolute top-0 left-0 w-full z-0" style={{ height: height * 0.75 }}>
+      {/* --- BACKGROUND --- */}
+      <View className="absolute top-0 left-0 w-full z-0" style={{ height: height * 1.1 }}>
         <Image 
-            // Usamos una imagen de construcción genérica de alta calidad
             source={{ uri: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=2070&auto=format&fit=crop' }} 
             className="w-full h-full"
             resizeMode="cover"
         />
-        {/* Capa de Gradiente sobre la imagen (hero-gradient) */}
         <LinearGradient
-            // rgba(15, 61, 51, 0.9) -> rgba(15, 61, 51, 0.5) -> rgba(248, 250, 249, 1)
-            colors={['rgba(15, 61, 51, 0.92)', 'rgba(15, 61, 51, 0.7)', '#f8faf9']}
+            colors={['rgba(15, 61, 51, 0.95)', 'rgba(15, 61, 51, 0.8)', 'transparent']}
             className="absolute top-0 left-0 w-full h-full"
-            locations={[0, 0.6, 1]}
+            locations={[0, 0.5, 1]}
         />
       </View>
 
       <SafeAreaView className="flex-1 relative z-10">
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+            contentContainerStyle={{ flexGrow: 1 }} 
+            showsVerticalScrollIndicator={false}
+            // CAMBIO 2: Esto elimina el bloque negro al final asegurando que el fondo sea uniforme
+            className="bg-transparent" 
+        >
             
-            {/* --- HEADER --- */}
             <View className="pt-6 px-3 pb-2">
                 <Text className="text-white text-xl font-extrabold tracking-[0.2em] text-center mb-8 drop-shadow-md">
                     CICB BOLIVIA
                 </Text>
 
-                {/* Grid de Departamentos */}
                 <View className="flex-row flex-wrap justify-center gap-y-6">
                     {DEPARTMENTS.map((dept, index) => (
                         <View key={index} className="w-[25%] items-center justify-center">
-                            <View className="w-10 h-10 items-center justify-center mb-5">
-                                <MaterialIcons 
-                                    // @ts-ignore: icon name dynamic
-                                    name={dept.icon} 
-                                    size={22} 
-                                    color={dept.active ? '#0f3e33' : 'white'} 
-                                    style={{ marginBottom: 4 }}
-                                />
+                            <View className="items-center justify-center mb-5">
                                 <Image
                                     source={dept.image}
                                     className={`w-11 h-11 mb-1 ${dept.active ? 'opacity-100' : 'opacity-80'}`}
                                     resizeMode="contain"
                                 />
-                                <Text numberOfLines={2} ellipsizeMode="tail" className="text-[9px] font-semibold uppercase text-center text-white/90 leading-tight">
+                                <Text className="text-[9px] font-semibold uppercase text-center text-white/90 leading-tight">
                                     {dept.name}
                                 </Text>
                             </View>
@@ -80,30 +72,27 @@ export default function MenuScreen() {
                 </View>
             </View>
 
-            {/* --- TARJETA CENTRAL (Glassmorphism) --- */}
+            {/* --- TARJETA CENTRAL (Ahora en Plomo/Gris) --- */}
             <View className="px-6 mt-2">
-                {/* Contenedor simulando el blur y borde blanco */}
-                <View className="bg-white/95 dark:bg-zinc-900/95 p-8 rounded-[40px] shadow-2xl shadow-primary/30 border border-white/40 dark:border-zinc-800">
+                {/* CAMBIO 3: 'bg-slate-50' para claro y 'bg-zinc-800' para el plomo que pediste */}
+                <View className="bg-slate-50 dark:bg-zinc-800 p-8 rounded-[40px] shadow-2xl border border-white/40 dark:border-zinc-700">
                     <View className="items-center">
-                        {/* Icono Principal */}
-                        <View className="size-16 bg-secondary/10 rounded-2xl items-center justify-center mb-6">
-                            <MaterialIcons name="calculate" size={36} color="#0f3e33" />
+                        <View className="size-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl items-center justify-center mb-6">
+                            <MaterialIcons name="calculate" size={36} color="#1a5d4d" />
                         </View>
 
-                        {/* Título */}
-                        <Text className="text-primary dark:text-white text-2xl font-bold leading-tight text-center mb-4">
+                        <Text className="text-[#0f3e33] dark:text-gray-100 text-2xl font-bold leading-tight text-center mb-4">
                             Calculadora de Honorarios Profesionales
                         </Text>
 
-                        {/* Descripción */}
                         <Text className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed text-center max-w-xs mb-8">
                             Determine sus aranceles de forma oficial según los parámetros de antigüedad, ubicación y tipo de actividad técnica.
                         </Text>
 
-                        {/* Botón de Acción */}
                         <Pressable 
-                            onPress={() => navigation.navigate('calculator')} // <-- Redirige a tu formulario (asumiendo que es /index)
-                            className="w-full bg-secondary active:bg-primary flex-row items-center justify-center gap-3 py-5 rounded-2xl shadow-lg shadow-secondary/25 active:scale-[0.98]"
+                            onPress={() => navigation.navigate('calculator')}
+                            // CAMBIO 4: Botón con un verde más brillante para que resalte sobre el plomo
+                            className="w-full bg-[#1a5d4d] active:bg-[#0f3e33] flex-row items-center justify-center gap-3 py-5 rounded-2xl shadow-lg"
                         >
                             <MaterialIcons name="rocket-launch" size={20} color="white" />
                             <Text className="text-white text-lg font-bold">Iniciar Cálculo</Text>
@@ -112,13 +101,13 @@ export default function MenuScreen() {
                 </View>
             </View>
 
-            {/* --- FOOTER --- */}
-            <View className="mt-auto py-10 px-6 items-center gap-2">
-                <View className="h-1 w-12 bg-secondary/20 rounded-full mb-4" />
-                <Text className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-[0.25em] font-extrabold text-center">
+            {/* --- FOOTER (Integrado) --- */}
+            {/* CAMBIO 5: Agregamos un fondo sutil o transparencia para evitar el bloque negro de la captura */}
+            <View className="mt-auto py-5 px-6 items-center gap-2">
+                <Text className="text-[11px] text-white uppercase tracking-[0.25em] font-extrabold text-center">
                     Colegio de Ingenieros Civiles de Bolivia
                 </Text>
-                <Text className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
+                <Text className="text-[10px] text-white font-bold">
                     Gestión Institucional 2024-2026
                 </Text>
             </View>

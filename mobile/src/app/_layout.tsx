@@ -10,22 +10,26 @@ import {
 import { useEffect } from 'react';
 import { SplashScreen } from 'expo-router';
 
+// --- IMPORTACIONES DE NAVEGACIÓN Y TEMA ---
+import { useColorScheme } from 'react-native'; 
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+
 // --- IMPORTACIONES DE TANSTACK QUERY ---
 import { AppState, AppStateStatus, Platform } from 'react-native';
 import { QueryClient, QueryClientProvider, focusManager, onlineManager } from '@tanstack/react-query';
 import NetInfo from '@react-native-community/netinfo';
 
-// 1. Inicializar el cliente (Añadimos defaultOptions para evitar fallos por red inestable)
+// 1. Inicializar el cliente
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 1000 * 60 * 5, // 5 minutos por defecto
+      staleTime: 1000 * 60 * 5, 
     },
   },
 });
 
-// 2. Configurar el Manager de Conexión para móvil
+// 2. Configurar el Manager de Conexión
 onlineManager.setEventListener((setOnline) => {
   return NetInfo.addEventListener((state) => {
     setOnline(!!state.isConnected);
@@ -35,6 +39,9 @@ onlineManager.setEventListener((setOnline) => {
 SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
+  // Detectar el tema del sistema (oscuro o claro)
+  const colorScheme = useColorScheme();
+
   const [fontsLoaded] = useFonts({
     PublicSans_400Regular,
     PublicSans_600SemiBold,
@@ -42,7 +49,7 @@ export default function Layout() {
     PublicSans_800ExtraBold,
   });
 
-  // 3. Configurar el Manager de Foco (Refresca datos al volver a la App)
+  // 3. Configurar el Manager de Foco
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (status: AppStateStatus) => {
       if (Platform.OS !== 'web') {
@@ -61,13 +68,18 @@ export default function Layout() {
   if (!fontsLoaded) return null;
 
   return (
-    // 4. Envolver todo con el Provider
     <QueryClientProvider client={queryClient}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="calculator" options={{ headerShown: false }} />
-        <Stack.Screen name="summary" options={{ headerShown: false }} />
-      </Stack>
+      {/* Agregamos ThemeProvider aquí. 
+          Si colorScheme es 'dark', usa DarkTheme (fondo oscuro, textos claros por defecto).
+          Si no, usa DefaultTheme (blanco).
+      */}
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="calculator" options={{ headerShown: false }} />
+          <Stack.Screen name="summary" options={{ headerShown: false }} />
+        </Stack>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

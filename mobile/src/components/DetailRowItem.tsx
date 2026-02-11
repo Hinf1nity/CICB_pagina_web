@@ -18,7 +18,7 @@ export const DetailRowItem = ({
     <View className="flex-1 pr-4">
       <Text 
         className="text-sm text-gray-700 dark:text-gray-300 leading-5"
-        numberOfLines={3} // Limitacion de lineas, se puede cambiar
+        numberOfLines={3} // Limitacion de lineas original
       >
         {label}
       </Text>
@@ -32,7 +32,7 @@ export const DetailRowItem = ({
 
     {/* Contenerdor del precio para evitar que sea empujado */}
     <View className="items-end">
-      <Text className="text-[13px] font-bold text-primary dark:text-secondary text-right">
+      <Text className="text-[13px] font-bold text-[#0f3e33] dark:text-emerald-500 text-right">
         {price}
       </Text>
     </View>

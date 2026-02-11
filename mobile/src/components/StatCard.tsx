@@ -8,13 +8,13 @@ interface StatCardProps {
 }
 
 export const StatCard = ({ label, value, currency }: StatCardProps) => (
-  <View className="bg-white/10 rounded-xl p-3 border border-white/10 flex-1">
-    <Text className="text-[10px] text-white/70 uppercase font-bold mb-1">
+  <View className="bg-white/10 dark:bg-white/20 rounded-xl p-3 border border-white/10 flex-1">
+    <Text className="text-[10px] text-white uppercase font-bold mb-1">
       {label}
     </Text>
     <View className="flex-row items-baseline gap-1">
       <Text className="text-white text-lg font-bold">{value}</Text>
-      <Text className="text-[10px] text-white/60">{currency}</Text>
+      <Text className="text-[10px] text-white/70">{currency}</Text>
     </View>
   </View>
 );

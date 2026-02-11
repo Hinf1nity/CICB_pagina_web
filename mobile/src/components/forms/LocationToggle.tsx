@@ -26,7 +26,7 @@ export const LocationToggle = ({ value, onChange }: LocationToggleProps) => {
           <MaterialIcons 
             name="apartment" 
             size={20} 
-            color={value === 'ciudad' ? (process.env.EXPO_PUBLIC_THEME === 'dark' ? 'white' : '#0f3e33') : '#67837d'} 
+            color={value === 'ciudad' ? (process.env.EXPO_PUBLIC_THEME === 'dark' ? 'white' : '#2d7a67ff') : '#67837d'} 
             style={{ marginRight: 8 }}
           />
           <Text className={`text-sm font-semibold ${value === 'ciudad' ? 'text-primary dark:text-white' : 'text-input-text'}`}>
@@ -46,7 +46,7 @@ export const LocationToggle = ({ value, onChange }: LocationToggleProps) => {
           <MaterialIcons 
             name="landscape" 
             size={20} 
-            color={value === 'campo' ? (process.env.EXPO_PUBLIC_THEME === 'dark' ? 'white' : '#0f3e33') : '#67837d'} 
+            color={value === 'campo' ? (process.env.EXPO_PUBLIC_THEME === 'dark' ? 'white' : '#2d7a67ff') : '#67837d'} 
             style={{ marginRight: 8 }}
           />
           <Text className={`text-sm font-semibold ${value === 'campo' ? 'text-primary dark:text-white' : 'text-input-text'}`}>
