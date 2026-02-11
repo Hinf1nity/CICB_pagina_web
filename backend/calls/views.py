@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -14,11 +15,32 @@ from .serializers import (
 )
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
+class TwentyPerPagePaginationAdmin(PageNumberPagination):
+    page_size = 20
+
+    def get_paginated_response(self, data):
+        queryset = Call.objects.all()
+        published_count = queryset.filter(estado="activa").count()
+        draft_count = queryset.filter(estado="borrador").count()
+        archive_count = queryset.filter(estado="cerrada").count()
+        return Response({
+            'count': self.page.paginator.count,
+            'published_count': published_count,
+            'draft_count': draft_count,
+            'archive_count': archive_count,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data,
+        })
+
+
 class CallViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = Call.objects.all()
+    # queryset = Call.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
 
@@ -34,9 +56,11 @@ class CallViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CallAdminViewSet(viewsets.ModelViewSet):
-    #queryset = Call.objects.all()
+    # queryset = Call.objects.all()
     permission_classes = [IsAdminPrin]
-    pagination_class = TwentyPerPagePagination
+    pagination_class = TwentyPerPagePaginationAdmin
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ['nombre', 'fecha_publicacion']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -45,7 +69,8 @@ class CallAdminViewSet(viewsets.ModelViewSet):
         return CallAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = Call.objects.all().order_by('-fecha_publicacion')
+        return queryset
 
     @action(
         detail=True,
@@ -97,7 +122,6 @@ class CallAdminViewSet(viewsets.ModelViewSet):
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                 Key=ruta,
             )
-            call.pdf = None
-            call.save()
             pdf.delete()
-        return super().destroy(request, *args, **kwargs)
+        self.perform_destroy(call)
+        return Response(status=status.HTTP_204_NO_CONTENT)

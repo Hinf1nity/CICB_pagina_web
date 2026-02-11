@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -15,15 +15,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { type GenericData, genericSchema } from '../../validations/genericSchema';
 import { useItemsAdmin, useItemPost, useItemPatch, useItemDelete, useItemDetailAdmin } from '../../hooks/useItems';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { useDebounce } from 'use-debounce';
 
 export function AdminYearbookPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GenericData | null>(null);
+  const [page, setPage] = useState(1);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
 
-  const { items: yearbooks, loading } = useItemsAdmin("yearbooks");
-  console.log("Yearbooks loaded:", yearbooks);
+  const { items: yearbooks, isPending: loading, count, published_count, draft_count, next, previous } = useItemsAdmin("yearbooks", page, debouncedSearchTerm);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
   const { mutate: postItem, isPending: isPosting } = useItemPost();
   const { mutate: patchItem, isPending: isPatching } = useItemPatch();
   const { mutate: deleteItem } = useItemDelete();
@@ -59,7 +66,12 @@ export function AdminYearbookPage() {
       pdf_url: data?.pdf_url,
       pdf: data?.pdf,
     });
-    setEditingItem(item);
+    setEditingItem({
+      ...item,
+      fecha_publicacion: item.fecha_publicacion ? new Date(item.fecha_publicacion).toISOString().split('T')[0] : '',
+      pdf_url: data?.pdf_url,
+      pdf: data?.pdf,
+    });
     setIsDialogOpen(true);
   };
 
@@ -87,11 +99,6 @@ export function AdminYearbookPage() {
       });
     }
   };
-
-  const filteredYearbooks = yearbooks.filter((y) =>
-    y.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    y.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const getStatusColor = (estado: string) => {
     switch (estado) {
@@ -148,7 +155,7 @@ export function AdminYearbookPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground mb-1">Total Anuarios</p>
-                  <p className="text-3xl">{yearbooks.length}</p>
+                  <p className="text-3xl">{count}</p>
                 </div>
                 <BookOpen className="w-8 h-8 text-primary" />
               </div>
@@ -161,7 +168,7 @@ export function AdminYearbookPage() {
                 <div>
                   <p className="text-muted-foreground mb-1">Publicados</p>
                   <p className="text-3xl">
-                    {yearbooks.filter(y => y.estado === 'publicado').length}
+                    {published_count}
                   </p>
                 </div>
                 <Eye className="w-8 h-8 text-[#3C8D50]" />
@@ -175,7 +182,7 @@ export function AdminYearbookPage() {
                 <div>
                   <p className="text-muted-foreground mb-1">Borradores</p>
                   <p className="text-3xl">
-                    {yearbooks.filter(y => y.estado === 'borrador').length}
+                    {draft_count}
                   </p>
                 </div>
                 <Edit className="w-8 h-8 text-yellow-500" />
@@ -243,7 +250,7 @@ export function AdminYearbookPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="fecha_publicacion">Fecha de Publicación</Label>
-                    <Input id="fecha_publicacion" type="date" {...register("fecha_publicacion")} />
+                    <Input id="fecha_publicacion" type="date" {...register("fecha_publicacion")} disabled />
                     {errors.fecha_publicacion && (
                       <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                         <AlertTitle className='text-sm'>Error en la Fecha de Publicación</AlertTitle>
@@ -345,10 +352,12 @@ export function AdminYearbookPage() {
         <Card>
           <CardHeader>
             <CardTitle>Anuarios Registrados</CardTitle>
-            <CardDescription>{filteredYearbooks.length} anuario(s) encontrado(s)</CardDescription>
+            <CardDescription>
+              Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} anuarios
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {filteredYearbooks.map((yearbook) => (
+            {yearbooks.map((yearbook) => (
               <div key={yearbook.id} className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -387,7 +396,32 @@ export function AdminYearbookPage() {
               </div>
             ))}
 
-            {!loading && filteredYearbooks.length === 0 && (
+            {/* creamos la paginacion y sus flechas */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!previous}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              >
+                Anterior
+              </Button>
+
+              <span className="text-sm text-muted-foreground">
+                Página {page} de {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!next}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Siguiente
+              </Button>
+            </div>
+
+            {!loading && yearbooks.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <BookOpen className="w-12 h-12 mx-auto mb-3 text-muted-foreground/40" />
                 <p>No se encontraron anuarios en la base de datos</p>

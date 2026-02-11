@@ -4,8 +4,10 @@ import { decodeJWT, isTokenExpired } from "../api/auth.utils";
 import { authService } from "../api/auth";
 import { hasPermission as checkPermission } from "../api/auth.roles";
 import type { User } from "../api/auth.types";
+import { useQueryClient } from '@tanstack/react-query';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -13,6 +15,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUser = (newUser: string | undefined) => {
     if (user) {
+      localStorage.setItem("user_name_override", newUser || "");
       setUser({
         ...user,
         name: newUser,
@@ -23,6 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
+    localStorage.removeItem("user_name_override");
+    queryClient.removeQueries({ queryKey: ['admin'] });
     setUser(null);
   };
 
@@ -45,12 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem("access");
+    const savedName = localStorage.getItem("user_name_override");
     if (token && !isTokenExpired(token)) {
       const decoded = decodeJWT(token);
       setUser({
         id: decoded.user_id,
         rol: decoded.rol,
-        name: decoded.name ? decoded.name : undefined,
+        name: savedName ? savedName : (decoded.name ? decoded.name : undefined),
       });
     } else {
       logout();

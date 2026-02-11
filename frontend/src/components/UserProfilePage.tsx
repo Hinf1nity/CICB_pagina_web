@@ -44,7 +44,8 @@ export function UserProfilePage() {
   const [userData, setUserData] = useState({
     id: '',
     name: '',
-    registration: '',
+    rni: '',
+    rnic: '' as string | undefined,
     specialty: '',
     city: '',
     registrationDate: '',
@@ -88,7 +89,8 @@ export function UserProfilePage() {
       try {
         patchUser({ id: parseInt(userData.id), data, data_old: userDataCopy as Partial<UserPageData> }, {
           onSuccess: (res: any) => {
-            if (user?.name !== res?.nombre) {
+            if (user?.name !== res?.nombre && res?.message !== "Sin cambios en base de datos") {
+              console.log('Actualizando nombre en contexto de autenticación:', res?.nombre);
               updateUser(res?.nombre);
             }
           }
@@ -202,7 +204,7 @@ export function UserProfilePage() {
       canvas.toBlob((blob) => {
         if (blob) {
           const link = document.createElement('a');
-          link.download = `QR_${userData.registration}.png`;
+          link.download = `QR_${userData.rnic}.png`;
           link.href = URL.createObjectURL(blob);
           link.click();
           URL.revokeObjectURL(link.href);
@@ -272,14 +274,14 @@ export function UserProfilePage() {
                     <Award className="w-4 h-4 mr-3 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-foreground">RNI</p>
-                      <p>{userData.registration}</p>
+                      <p>{userData.rni}</p>
                     </div>
                   </div>
                   <div className="flex items-center text-muted-foreground">
                     <IdCardLanyard className="w-4 h-4 mr-3 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-foreground">RNIC</p>
-                      <p>{userData.registration}</p>
+                      <p>{userData.rnic}</p>
                     </div>
                   </div>
                   <div className="flex items-center text-muted-foreground">
@@ -315,7 +317,7 @@ export function UserProfilePage() {
                 <div className="bg-white p-4 rounded-lg shadow-sm">
                   <QRCodeSVG
                     id="qr-code-svg"
-                    value={`https://localhost/tarjeta_usuario/${userData.id}`}
+                    value={`${window.location.origin}/tarjeta_usuario/${userData.id}`}
                     size={180}
                     level="H"
                     includeMargin={true}
@@ -430,10 +432,10 @@ export function UserProfilePage() {
                               </Alert>)}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="registration">RNIC</Label>
+                              <Label htmlFor="rnic">RNIC</Label>
                               <Input
-                                id="registration"
-                                value={userData.registration}
+                                id="rnic"
+                                value={userData.rnic}
                                 disabled
                                 className="bg-muted"
                               />

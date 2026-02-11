@@ -1,73 +1,105 @@
-import { useState, useEffect } from "react";
 import api from "../api/kyClient";
 import type { GenericData } from "../validations/genericSchema";
 import { presignedUrlPatch, presignedUrlPost } from "./presignedUrl";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export function useItems(type: "yearbooks" | "regulation" | "announcements") {
-  const [items, setItems] = useState<GenericData[]>([]);
-  const [loading, setLoading] = useState(true);
+interface PaginatedResponse {
+  results: GenericData[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+  published_count: number;
+  draft_count: number;
+  archive_count?: number;
+}
 
-  const fetchItems = async (type: "yearbooks" | "regulation" | "announcements") => {
-    try {
-      setLoading(true);
-      const url = type === "announcements" ? "calls" : type
-
-      const response: GenericData[] = await api.get(`${url}/${url}/`).json();
-
-      setItems(response.map(item => ({
+export function useItems(type: "yearbooks" | "regulation" | "announcements", page: number = 1, search: string = '', category: string = 'all') {
+  const {
+    data,
+    isPending,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: [type, page, search, category],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search: search }),
+        ...(category !== 'all' && { categoria: category }),
+      });
+      const url = type === "announcements" ? "calls" : type;
+      return api
+        .get(`${url}/${url}/?${params.toString()}`)
+        .json<PaginatedResponse>();
+    },
+    select: (data) => ({
+      ...data,
+      results: data.results.map((item) => ({
         ...item,
         pdf_url: item.pdf?.url,
         pdf: undefined,
-      })));
+      })),
+    }),
+    placeholderData: keepPreviousData,
+  });
 
-    } catch (error) {
-      console.error("Error obteniendo datos:", error);
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    items: data?.results ?? [],
+    next: data?.next,
+    previous: data?.previous,
+    count: data?.count ?? 0,
+    isPending,
+    isError,
+    error,
   };
-
-  useEffect(() => {
-    fetchItems(type);
-  }, [type]);
-
-  return { items, loading, refetchItems: () => fetchItems(type) };
 }
 
-export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements") {
-  const [items, setItems] = useState<GenericData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchItems = async (type: "yearbooks" | "regulation" | "announcements") => {
-    try {
-      setLoading(true);
-      const url = type === "announcements" ? "calls" : type
-
-      const response: GenericData[] = await api.get(`${url}/${url}_admin/`).json();
-
-      setItems(response.map(item => ({
+export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements", page: number = 1, search: string = '', category: string = 'all') {
+  const {
+    data,
+    isPending,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: [type, 'admin', page, search, category],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search: search }),
+        ...(category !== 'all' && { categoria: category }),
+      });
+      const url = type === "announcements" ? "calls" : type;
+      return api
+        .get(`${url}/${url}_admin/?${params.toString()}`)
+        .json<PaginatedResponse>();
+    },
+    select: (data) => ({
+      ...data,
+      results: data.results.map((item) => ({
         ...item,
         pdf_url: item.pdf?.url,
         pdf: undefined,
-      })));
+      })),
+    }),
+    placeholderData: keepPreviousData,
+    enabled: search.trim().length > 3 || search.trim().length === 0,
+  });
 
-    } catch (error) {
-      console.error("Error obteniendo datos:", error);
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    items: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
+    published_count: data?.published_count ?? 0,
+    draft_count: data?.draft_count ?? 0,
+    archived_count: data?.archive_count ?? 0,
+    isPending,
+    isError,
+    error,
   };
-
-  useEffect(() => {
-    fetchItems(type);
-  }, [type]);
-
-  return { items, loading, refetchItems: () => fetchItems(type) };
 }
+
 
 export async function useItemDetailAdmin(id: number, type: "yearbooks" | "regulation" | "announcements") {
   const data: { pdf_url: string, pdf: string } = {
@@ -102,22 +134,21 @@ export function useItemPost() {
       formData.append("nombre", data.nombre);
       formData.append("descripcion", data.descripcion);
       formData.append("estado", data.estado);
-
-      if (type !== "announcements") {
-        formData.append("fecha_publicacion", data.fecha_publicacion);
-      }
+      formData.append("fecha_publicacion", data.fecha_publicacion);
+      if (data.categoria) formData.append("categoria", data.categoria);
 
       if (finalPdfId) formData.append("pdf", finalPdfId.toString());
+      console.log("FormData to be sent:", Array.from(formData.entries()));
 
       const response = await api.post(`${endpoint}/${endpoint}_admin/`, { body: formData });
       return response;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+      queryClient.invalidateQueries({ queryKey: [variables.type, 'admin'] });
       toast.success("Elemento creado exitosamente");
     },
-    onError: () => {
-      toast.error("Error al crear el elemento");
+    onError: (error) => {
+      toast.error(`Error al crear el elemento: ${(error as Error)}`);
     }
   });
 }
@@ -142,6 +173,7 @@ export function useItemPatch() {
       appendIfChanged("descripcion", data.descripcion, data_old.descripcion);
       appendIfChanged("estado", data.estado, data_old.estado);
       appendIfChanged("fecha_publicacion", data.fecha_publicacion, data_old.fecha_publicacion);
+      appendIfChanged("categoria", data.categoria || '', data_old.categoria || '');
 
       if (data.pdf !== data_old.pdf) {
         hasChanges = true;
@@ -160,15 +192,20 @@ export function useItemPatch() {
       }
 
       if (!hasChanges) {
-        return null;
+        return { message: "Sin cambios en base de datos" };
       }
 
       const response = await api.patch(`${endpoint}/${endpoint}_admin/${id}/`, { body: formData });
       return response;
     },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
-      toast.success("Elemento actualizado exitosamente");
+    onSuccess: (_data: any, variables) => {
+      if (!_data.message) {
+        queryClient.invalidateQueries({ queryKey: [variables.type, 'admin'] });
+        toast.success("Elemento actualizado exitosamente");
+      } else {
+        toast.info("No se detectaron cambios para actualizar");
+      }
+
     },
     onError: () => {
       toast.error("Error al actualizar el elemento");
@@ -185,7 +222,7 @@ export function useItemDelete() {
       return await api.delete(`${endpoint}/${endpoint}_admin/${id}/`);
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [variables.type + "_admin"] });
+      queryClient.invalidateQueries({ queryKey: [variables.type, 'admin'] });
       toast.success("Elemento eliminado exitosamente");
     },
     onError: () => {

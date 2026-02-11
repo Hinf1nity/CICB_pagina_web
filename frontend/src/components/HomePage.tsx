@@ -22,7 +22,7 @@ export function HomePage() {
   const [direction, setDirection] = useState(0);
   const navigate = useNavigate();
   const { isAuthenticated, hasPermission } = useAuth();
-  const { noticias } = useNoticias();
+  const { noticias } = useNoticias(1);
 
   const stats = [
     { icon: Users, label: 'Miembros Activos', value: '2,500+' },

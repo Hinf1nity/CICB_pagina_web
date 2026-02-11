@@ -13,6 +13,8 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetTitle,
+  SheetDescription,
   SheetTrigger,
 } from './ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -37,7 +39,7 @@ export function Navbar() {
     { path: '/estadisticas', label: 'Estadísticas' },
     { path: '/tabla', label: 'Tabla' },
     { path: '/anuario', label: 'Anuario' },
-    { path: '/reglamentos', label: 'Reglamentos' },
+    { path: '/normativa', label: 'Normativa' },
     { path: '/convocatorias', label: 'Convocatorias' },
   ];
 
@@ -97,8 +99,8 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo y título */}
-          <NavLink to="/" className="flex items-center space-x-3">
-            <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full bg-white">
+          <NavLink to="/" className="flex items-center space-x-3 shrink-0">
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full bg-white shrink-0">
               <img src="/src/assets/LOGO CIC B sin fondo.png" alt="Logo CICB" className="w-full h-full object-contain" />
             </div>
             <div className="hidden md:block">
@@ -112,7 +114,7 @@ export function Navbar() {
           </NavLink>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden 2xl:flex items-center space-x-1">
             {navItems.map((item) => (
               <Button
                 key={item.path}
@@ -176,11 +178,17 @@ export function Navbar() {
           {/* Mobile menu button - usando Sheet */}
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
-              <button className="lg:hidden p-2 rounded hover:bg-primary/80">
+              <button className="2xl:hidden p-2 rounded hover:bg-primary/80">
                 <Menu className="w-6 h-6" />
               </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-80 p-0">
+              <div className="sr-only">
+                <SheetTitle>Menú de Navegación</SheetTitle>
+                <SheetDescription>
+                  Accede a las diferentes secciones del Colegio de Ingenieros Civiles de Bolivia.
+                </SheetDescription>
+              </div>
               <div className="flex flex-col h-full">
                 {/* Header del drawer con info del usuario */}
                 <div className="bg-primary text-primary-foreground p-6">

@@ -17,7 +17,6 @@ export const userSchema = z.object({
   fecha_inscripcion: z.string().refine((date) => !isNaN(Date.parse(date)), { message: "Fecha de inscripción inválida" }),
   imagen: z.instanceof(File).optional().or(z.string().optional()),
   imagen_url: z.string().optional(),
-  mail: z.string().refine((val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), { message: "Correo electrónico inválido" }).optional(),
   certificaciones: z.array(z.object({
     nombre: z.string().optional(),
     institucion: z.string().optional(),

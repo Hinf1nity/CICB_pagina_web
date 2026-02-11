@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, filters, status
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -16,13 +17,17 @@ from .serializers import (
 from users.permissions import IsAdminPrin
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
 class JobViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = Job.objects.all()
+    # queryset = Job.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ['titulo']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -30,7 +35,11 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
         return JobDetailSerializer
 
     def get_queryset(self):
-        return super().get_queryset().filter(estado='publicado').order_by('-fecha_publicacion')
+        queryset = Job.objects.filter(
+            estado='publicado').order_by('-fecha_publicacion')
+        if not self.action in ['list', 'retrieve']:
+            queryset = Job.objects.all().order_by('-fecha_publicacion')
+        return queryset
 
     @action(
         detail=True,
@@ -74,7 +83,7 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class JobAdminViewSet(viewsets.ModelViewSet):
-    #queryset = Job.objects.all()
+    # queryset = Job.objects.all()
     permission_classes = [IsAdminPrin]
     pagination_class = TwentyPerPagePagination
 
@@ -88,7 +97,8 @@ class JobAdminViewSet(viewsets.ModelViewSet):
         return JobAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = Job.objects.all().order_by('-fecha_publicacion')
+        return queryset
 
     def destroy(self, request, *args, **kwargs):
         job = self.get_object()

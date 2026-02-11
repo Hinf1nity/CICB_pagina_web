@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, filters, status
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -20,13 +21,18 @@ import os
 from users.permissions import IsAdminPrin
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = News.objects.all()
+    # queryset = News.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['categoria']
+    search_fields = ['titulo']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -36,6 +42,11 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = News.objects.filter(estado="publicado").select_related(
             'imagen').order_by("-fecha_publicacion")
+
+        # If it's a custom action, return all objects
+        if self.action not in ['list', 'retrieve']:
+            queryset = News.objects.all().order_by("-fecha_publicacion")
+
         return queryset
 
     @action(
@@ -119,7 +130,7 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class NewsAdminViewSet(viewsets.ModelViewSet):
-    #queryset = News.objects.all()
+    # queryset = News.objects.all()
     permission_classes = [IsAdminPrin]
     pagination_class = TwentyPerPagePagination
 
@@ -133,7 +144,8 @@ class NewsAdminViewSet(viewsets.ModelViewSet):
         return NewsAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = News.objects.all().order_by("-fecha_publicacion")
+        return queryset
 
     def destroy(self, request, *args, **kwargs):
         new = self.get_object()

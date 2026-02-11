@@ -5,11 +5,12 @@ import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
 import { useJobDetail } from '../hooks/useJobs';
+import { toast } from 'sonner';
 
 export function JobDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { job, loading, error } = useJobDetail(id);
+  const { data: job, isPending: loading, error } = useJobDetail(id);
   const getTypeColor = (jobType: string) => {
 
     const colors: Record<string, string> = {
@@ -25,8 +26,35 @@ export function JobDetailPage() {
   };
 
   if (loading) return <p className="text-center mt-10">Cargando empleo...</p>;
-  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
+  if (error) return <p className="text-center text-red-500 mt-10">{error instanceof Error ? error.message : String(error)}</p>;
   if (!job?.id) return <p className="text-center mt-10 text-muted-foreground">No se encontró el empleo solicitado.</p>;
+
+  const copiarEnlace = async () => {
+    const url = window.location.href;
+
+    // 1. Intentar con la API moderna
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('¡Enlace copiado!');
+      } catch (err) {
+        console.error('Error al copiar: ', err);
+      }
+    } else {
+      // 2. Fallback para contextos no seguros o navegadores viejos
+      const textArea = document.createElement("textarea");
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast.success('¡Enlace copiado!');
+      } catch (err) {
+        console.error('No se pudo copiar ni con fallback', err);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -213,16 +241,10 @@ export function JobDetailPage() {
 
                 <Separator className="my-6" />
 
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mb-3">
-                  Postular Ahora
-                </Button>
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('Enlace copiado al portapapeles');
-                  }}
+                  onClick={copiarEnlace}
                 >
                   Compartir Oferta
                 </Button>

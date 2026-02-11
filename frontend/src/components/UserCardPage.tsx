@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Card, CardContent } from './ui/card';
 import { Phone, Award, FileText, Building2, Mail } from 'lucide-react';
 import { useParams } from 'react-router-dom';
-import { useUsersDetailAdmin } from '../hooks/useUsers';
+import { useUsersDetailCard } from '../hooks/useUsers';
 import type { UserData } from '../validations/userSchema';
 
 export function UserCardPage() {
@@ -24,7 +24,7 @@ export function UserCardPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const data = await useUsersDetailAdmin(Number(id));
+      const data = await useUsersDetailCard(Number(id));
       console.log('Datos del usuario:', data);
       setUserData(data);
       // Aquí podrías actualizar el estado con los datos reales
@@ -49,13 +49,13 @@ export function UserCardPage() {
           <div className="flex justify-center mb-6">
             <div className="relative">
               <Avatar className="w-40 h-40 border-4 border-primary shadow-lg">
-                <AvatarImage src={userData.imagen_url} />
+                <AvatarImage src={userData.imagen} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-5xl">
                   {userData.nombre.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground px-3 py-1 rounded-full shadow-md">
-                <span>Activo</span>
+                <span className='capitalize'>{userData.estado}</span>
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -13,15 +13,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { userSchema, type UserData } from '../../validations/userSchema';
 import { useUsersPost, useUsersAdmin, useUsersDetailAdmin, useUsersPatch, useUserDelete } from '../../hooks/useUsers';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
+import { useDebounce } from 'use-debounce';
 
 export function AdminUsersManager() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [page, setPage] = useState(1);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [filterStatus, setFilterStatus] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
+  useEffect(() => {
+    setPage(1); // Reset to first page on new search
+  }, [debouncedSearchTerm, filterStatus]);
+  const { users, next, previous, count, isSearching } = useUsersAdmin(page, debouncedSearchTerm, filterStatus);
   const { mutate: postUser, isPending: isPosting } = useUsersPost();
-  const { users } = useUsersAdmin();
+  const pageSize = 20; // Paginacion se agrega esto y el count de arriba
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
   const { mutate: patchUser, isPending: isPatching } = useUsersPatch();
   const { mutate: deleteUser } = useUserDelete();
   const { register, handleSubmit, control, formState: { errors }, reset } = useForm<UserData>({
@@ -37,15 +45,6 @@ export function AdminUsersManager() {
       fecha_inscripcion: "",
       imagen: undefined,
     },
-  });
-
-  const filteredUsers = users.filter(user => {
-    const matchesSearch =
-      user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.rni.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.celular.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || user.estado === filterStatus;
-    return matchesSearch && matchesStatus;
   });
 
   const handleCreate = () => {
@@ -65,11 +64,9 @@ export function AdminUsersManager() {
 
   const handleEdit = async (user: any) => {
     const detailedUser = await useUsersDetailAdmin(user.id);
-    console.log('Detalles del usuario para editar:', detailedUser);
     reset({
       ...detailedUser,
       rnic: detailedUser.rnic?.toString(),
-      mail: detailedUser.mail || undefined,
     });
     setEditingUser(detailedUser);
     setIsDialogOpen(true);
@@ -142,7 +139,7 @@ export function AdminUsersManager() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
                 type="text"
-                placeholder="Buscar por nombre, registro o celular..."
+                placeholder="Buscar por nombre, RNI o celular..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -161,7 +158,7 @@ export function AdminUsersManager() {
           </div>
 
           <div className="mt-4 text-muted-foreground">
-            Mostrando {filteredUsers.length} de {users.length} usuarios
+            Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} usuarios
           </div>
         </CardHeader>
 
@@ -183,7 +180,7 @@ export function AdminUsersManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>{user.nombre}</TableCell>
                     <TableCell>{user.rnic}</TableCell>
@@ -230,9 +227,33 @@ export function AdminUsersManager() {
                 ))}
               </TableBody>
             </Table>
+            {/* creamos la paginacion y sus flechas */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!previous}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              >
+                Anterior
+              </Button>
+
+              <span className="text-sm text-muted-foreground">
+                Página {page} de {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!next}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Siguiente
+              </Button>
+            </div>
           </div>
 
-          {filteredUsers.length === 0 && (
+          {users.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No se encontraron usuarios que coincidan con tu búsqueda.</p>
             </div>
@@ -445,18 +466,18 @@ export function AdminUsersManager() {
                   };
 
                   const removeImage = () => {
-                    field.onChange(null);
+                    field.onChange(undefined);
                     setNewsImagePreview("");
                   };
 
                   return (
                     <div className="space-y-2">
-                      <Label htmlFor="image">Imagen de Perfil (Opcional)</Label>
+                      <Label htmlFor="imagen">Imagen de Perfil (Opcional)</Label>
                       <div className="flex items-center gap-4">
                         <Input
-                          id="image"
+                          id="imagen"
                           type="file"
-                          accept="image/*"
+                          accept="imagen/*"
                           onChange={handleImageChange}
                           className="hidden"
                         />
@@ -464,7 +485,7 @@ export function AdminUsersManager() {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => document.getElementById('image')?.click()}
+                          onClick={() => document.getElementById('imagen')?.click()}
                         >
                           <Upload className="w-4 h-4 mr-2" />
                           Subir Imagen
@@ -505,7 +526,7 @@ export function AdminUsersManager() {
                             </Button>
                           </div>
                         )}
-                        {!newsImagePreview && editingUser?.image && (
+                        {!newsImagePreview && editingUser?.imagen && (
                           <div className="text-muted-foreground">Imagen actual existente</div>
                         )}
                       </div>

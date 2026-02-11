@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -14,13 +15,37 @@ from .serializers import (
 )
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
+class TwentyPerPagePaginationAdmin(PageNumberPagination):
+    page_size = 20
+
+    def get_paginated_response(self, data):
+        queryset = Regulation.objects.all()
+        published_count = queryset.filter(estado="vigente").count()
+        draft_count = queryset.filter(estado="borrador").count()
+        archive_count = queryset.filter(estado="archivado").count()
+        return Response({
+            'count': self.page.paginator.count,
+            'published_count': published_count,
+            'draft_count': draft_count,
+            'archive_count': archive_count,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data,
+        })
+
+
 class RegulationViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = Regulation.objects.all()
+    # queryset = Regulation.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['categoria']
+    search_fields = ['nombre']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -34,9 +59,12 @@ class RegulationViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RegulationAdminViewSet(viewsets.ModelViewSet):
-    #queryset = Regulation.objects.all()
+    # queryset = Regulation.objects.all()
     permission_classes = [IsAdminPrin]
-    pagination_class = TwentyPerPagePagination
+    pagination_class = TwentyPerPagePaginationAdmin
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['categoria']
+    search_fields = ['nombre', 'fecha_publicacion']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -45,7 +73,8 @@ class RegulationAdminViewSet(viewsets.ModelViewSet):
         return RegulationAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = Regulation.objects.all().order_by('-fecha_publicacion')
+        return queryset
 
     @action(
         detail=True,
@@ -58,7 +87,7 @@ class RegulationAdminViewSet(viewsets.ModelViewSet):
 
         if not regulation.pdf:
             return Response(
-                {"error": "Este Job no tiene un PDF asociado"},
+                {"error": "Este Regulation no tiene un PDF asociado"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -97,7 +126,6 @@ class RegulationAdminViewSet(viewsets.ModelViewSet):
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                 Key=ruta,
             )
-            regulation.pdf = None
-            regulation.save()
             pdf.delete()
-        return super().destroy(request, *args, **kwargs)
+        self.perform_destroy(regulation)
+        return Response(status=status.HTTP_204_NO_CONTENT)

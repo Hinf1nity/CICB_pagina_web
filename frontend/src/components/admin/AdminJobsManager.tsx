@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, X } from 'lucide-react';
 import { DynamicList } from '../DynamicList';
+import { Link } from 'react-router-dom';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useJobsPost, useJobPatch, useJobsAdmin, useJobDetailAdmin, useJobDelete } from '../../hooks/useJobs';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,8 +37,11 @@ export function AdminJobsManager() {
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<JobData | null>(null);
+  const [page, setPage] = useState(1);
+  const { count, next, previous, data: jobs } = useJobsAdmin(page);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
   const { mutate: postJob, isPending: isPosting } = useJobsPost();
-  const { jobs } = useJobsAdmin();
   const { mutate: patchJob, isPending: isPatching } = useJobPatch();
   const { mutate: deleteJob } = useJobDelete();
   // console.log('Errors en el formulario:', errors);
@@ -60,21 +64,30 @@ export function AdminJobsManager() {
   };
 
   const handleEdit = async (item: JobData) => {
-    const formattedJob = await useJobDetailAdmin(`${item.id}`);
-    console.log('Cargando oferta para edición:', formattedJob);
-    if (formattedJob) {
-      item = {
+    try {
+      // 1. Buscamos el detalle completo
+      const formattedJob = await useJobDetailAdmin(`${item.id}`);
+
+      if (!formattedJob) {
+        alert("No se pudo cargar la información del trabajo.");
+        return;
+      }
+
+      // 2. Preparamos el objeto de edición asegurando que los arrays existan
+      const itemToEdit = {
         ...formattedJob,
-        requisitos: formattedJob.requisitos || [""],
-        responsabilidades: formattedJob.responsabilidades || [""],
+        requisitos: formattedJob.requisitos?.length ? formattedJob.requisitos : [""],
+        responsabilidades: formattedJob.responsabilidades?.length ? formattedJob.responsabilidades : [""],
       };
+
+      // 3. Seteamos estados ANTES de abrir el diálogo
+      setEditingItem(itemToEdit);
+      reset(itemToEdit); // Esto inyecta los datos al formulario
+      setIsDialogOpen(true);
+
+    } catch (error) {
+      console.error("Error al intentar editar:", error);
     }
-    reset({
-      ...item,
-    });
-    console.log('Editando oferta:', item);
-    setEditingItem(item);
-    setIsDialogOpen(true);
   };
 
   const handleDelete = async (id: number) => {
@@ -88,6 +101,7 @@ export function AdminJobsManager() {
   const handleSave: SubmitHandler<JobData> = (data) => {
     console.log('Guardando oferta:', data);
     if (editingItem && editingItem.id !== undefined) {
+      console.log('Actualizando oferta:', editingItem);
       patchJob({ id: editingItem.id, data, data_old: editingItem }, {
         onSuccess: () => {
           setEditingItem(null);
@@ -105,6 +119,14 @@ export function AdminJobsManager() {
     }
   };
 
+  const handleToggleStatus = (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'publicado' ? 'borrador' : 'publicado';
+    console.log(`Cambiando estado del trabajo ${id} de ${currentStatus} a ${newStatus}`);
+    const data = { estado: newStatus } as JobData;
+    const data_odl = { estado: currentStatus } as JobData;
+    patchJob({ id, data, data_old: data_odl });
+  }
+
   return (
     <>
       <Card>
@@ -118,6 +140,9 @@ export function AdminJobsManager() {
               <Plus className="w-4 h-4 mr-2" />
               Nueva Oferta
             </Button>
+          </div>
+          <div className="mt-4 text-muted-foreground">
+            Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} trabajos
           </div>
         </CardHeader>
         <CardContent>
@@ -135,7 +160,20 @@ export function AdminJobsManager() {
               <TableBody>
                 {jobs.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.titulo}</TableCell>
+                    <TableCell>
+                      {item.estado === 'borrador' ? (
+                        <span className="text-gray-500 italic">{item.titulo}</span>
+                      ) : (
+                        <Link
+                          to={`/trabajos/${item.id}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {item.titulo}
+                        </Link>
+                      )}
+                    </TableCell>
                     <TableCell>{item.nombre_empresa}</TableCell>
                     <TableCell>
                       <Badge className={item.estado === 'publicado' ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-foreground'}>
@@ -145,7 +183,7 @@ export function AdminJobsManager() {
                     <TableCell>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => item.id !== undefined && handleToggleStatus(item.id, item.estado)}>
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
@@ -160,6 +198,30 @@ export function AdminJobsManager() {
                 ))}
               </TableBody>
             </Table>
+            {/* creamos la paginacion y sus flechas */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!previous}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              >
+                Anterior
+              </Button>
+
+              <span className="text-sm text-muted-foreground">
+                Página {page} de {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!next}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Siguiente
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

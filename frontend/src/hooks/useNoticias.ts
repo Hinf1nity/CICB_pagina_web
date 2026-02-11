@@ -1,61 +1,82 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import api from '../api/kyClient';
 import { type NewsData } from "../validations/newsSchema";
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
-
-export function useNoticiasAdmin() {
+//Anadimos esto Paginacion
+type PaginatedResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: NewsData[];
+};
+//Aumentamos funciones para paginacion en admin
+export function useNoticiasAdmin(page: number) {
   const {
-    data: noticias,
+    data,
     isPending,
     isError,
     error
   } = useQuery({
-    queryKey: ['noticias_admin'],
+    queryKey: ['noticias', 'admin', page],
     queryFn: async () => {
-      return await api.get("news/news_admin/").json<NewsData[]>();
+      return api
+        .get(`news/news_admin/?page=${page}`)
+        .json<PaginatedResponse>();
+      //const res = await api.get("news/news_admin/").json<{ results: NewsData[] }>();
+      //return res.results;
     },
+    placeholderData: keepPreviousData,
   });
 
   // Retornamos un array vacío por defecto si es undefined para evitar crash en el .map del UI
+  //Anadimos funciones para la paginacion en admin
   return {
-    noticias: noticias ?? [],
+    noticias: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
     isPending,
     isError,
-    error
+    error,
   };
 }
-
-export function useNoticias() {
+//Cambiamos esto para la Paginacion
+export function useNoticias(page: number, search: string = '', category: string = '') {
   const {
-    data: noticias, // Ya no necesitas valor por defecto aquí si usas initialData o placeholder, pero [] está bien
-    isLoading, // Ojo: En v5 prefiere 'isPending' si quieres saber si no hay data aún
+    data,
+    isLoading,
     isError,
     error
   } = useQuery({
-    queryKey: ['noticias_users'],
-
-    // 2. La función SOLO busca datos, no los toca.
+    queryKey: ['noticias_users', page, search, category],
     queryFn: async () => {
-      // Asumimos que 'api' es tu instancia de Ky
-      return await api.get("news/news/").json<NewsData[]>();
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search: search }),
+        ...(category !== "all" && { categoria: category }),
+      });
+      return api
+        .get(`news/news/?${params.toString()}`)
+        .json<PaginatedResponse>();
     },
-
-    // 3. SELECT: Aquí ocurre la magia de la transformación
-    // Esto permite que la caché guarde la respuesta original del servidor,
-    // pero tu componente reciba la versión limpia.
-    select: (data) => {
-      return data.map((item) => ({
+    select: (data) => ({
+      ...data,
+      results: data.results.map((item) => ({
         ...item,
         imagen_url: item.imagen?.url,
-        imagen: undefined, // Opcional: eliminar la ref original
-      }));
-    },
+        imagen: undefined,
+      })),
+    }),
+    placeholderData: keepPreviousData,
+    enabled: search.trim().length > 4 || search.trim().length === 0,
   });
 
-  // Retornamos un array vacío por defecto si es undefined para evitar crash en el .map del UI
   return {
-    noticias: noticias ?? [],
+    noticias: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
     isLoading,
     isError,
     error
@@ -63,7 +84,7 @@ export function useNoticias() {
 }
 
 export async function useNoticiaDetailAdmin(id?: string) {
-  const data: NewsData = await api.get(`news/news_admin/${id}`).json();
+  const data: NewsData = await api.get(`news/news_admin/${id}/`).json();
   if (data.pdf) {
     const pdf_url_response = await api
       .get(`news/news/${data.id}/pdf-download/`)
@@ -78,13 +99,12 @@ export async function useNoticiaDetailAdmin(id?: string) {
     data.imagen_url = `${img_url_response.img_id}`;
     data.imagen = img_url_response.download_url;
   }
-  console.log(data);
   return data;
 }
 
 export function useNoticiaDetail(id?: string) {
   const fetchNoticias = async () => {
-    const data: NewsData = await api.get(`news/news/${id}`).json();
+    const data: NewsData = await api.get(`news/news/${id}/`).json();
     if (data.pdf) {
       const pdf_url_response = await api
         .get(`news/news/${data.id}/pdf-download/`)
@@ -97,24 +117,18 @@ export function useNoticiaDetail(id?: string) {
         .json<{ download_url: string }>();
       data.imagen_url = img_url_response.download_url;
     }
-    console.log(data);
     return data;
   };
 
   const { data: noticia, isLoading: loading, isError, error } = useQuery({
-    queryKey: ['noticia', id],
+    // CAMBIO: Se agregó el sufijo _users
+    queryKey: ['noticia_users', id],
     queryFn: fetchNoticias,
-    staleTime: 1000 * 60 * 15 * 1,
-    gcTime: 1000 * 60 * 15 * 2,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
     enabled: !!id,
   });
 
   return { noticia, loading, isError, error };
-
 }
-
 export function useNewsPost() {
   const queryClient = useQueryClient();
 
@@ -154,7 +168,7 @@ export function useNewsPost() {
     },
     onSuccess: () => {
       toast.success("Noticia creada exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['noticias', 'admin'] });
     },
     onError: () => {
       toast.error("Error al crear la noticia");
@@ -242,7 +256,7 @@ export function useNewsPatch() {
     },
     onSuccess: () => {
       toast.success("Noticia actualizada exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['noticias', 'admin'] });
     },
     onError: () => {
       toast.error("Error al actualizar la noticia");
@@ -260,7 +274,7 @@ export function useNewsDelete() {
     },
     onSuccess: () => {
       toast.success("Noticia eliminada exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['noticias_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['noticias', 'admin'] });
     },
     onError: () => {
       toast.error("Error al eliminar la noticia");

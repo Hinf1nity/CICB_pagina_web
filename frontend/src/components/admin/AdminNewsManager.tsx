@@ -10,6 +10,7 @@ import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Plus, Edit, Trash2, Eye, Upload, FileText, Image as ImageIcon, X } from 'lucide-react';
 import { RichTextEditor } from '../RichTextEditor';
+import { Link } from 'react-router-dom';
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useNewsPost, useNoticiasAdmin, useNewsPatch, useNoticiaDetailAdmin, useNewsDelete } from '../../hooks/useNoticias';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,7 +34,6 @@ export function AdminNewsManager() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
   const { mutate, isPending } = useNewsPost();
-  const { noticias } = useNoticiasAdmin();
   const { mutate: patchNews, isPending: isPatching } = useNewsPatch();
   const { mutate: deleteNews } = useNewsDelete();
 
@@ -52,7 +52,20 @@ export function AdminNewsManager() {
     setIsDialogOpen(true);
   };
 
+  const [page, setPage] = useState(1);
+
+  const {
+    noticias,
+    next,
+    previous,
+    count,
+  } = useNoticiasAdmin(page);
+
+  const pageSize = 20; // Paginacion se agrega esto y el count de arriba
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
+
   const handleEdit = async (item: any) => {
+    // CORRECCIÓN: Se asegura el uso de await y la función original
     const detailedItem = await useNoticiaDetailAdmin(item.id);
     reset({
       ...detailedItem,
@@ -88,6 +101,14 @@ export function AdminNewsManager() {
     }
   };
 
+  const handleToggleStatus = (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'publicado' ? 'borrador' : 'publicado';
+    console.log(`Cambiando estado de la noticia ${id} de ${currentStatus} a ${newStatus}`);
+    const data = { estado: newStatus } as NewsData;
+    const data_odl = { estado: currentStatus } as NewsData;
+    patchNews({ id: id.toString(), data, data_old: data_odl });
+  }
+
 
   return (
     <>
@@ -102,6 +123,9 @@ export function AdminNewsManager() {
               <Plus className="w-4 h-4 mr-2" />
               Nueva Noticia
             </Button>
+          </div>
+          <div className="mt-4 text-muted-foreground">
+            Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} noticias
           </div>
         </CardHeader>
         <CardContent>
@@ -119,7 +143,20 @@ export function AdminNewsManager() {
               <TableBody>
                 {noticias.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.titulo}</TableCell>
+                    <TableCell>
+                      {item.estado === 'borrador' ? (
+                        <span className="text-gray-500 italic">{item.titulo}</span>
+                      ) : (
+                        <Link
+                          to={`/noticias/${item.id}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {item.titulo}
+                        </Link>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline"><p className='capitalize'>{item.categoria}</p></Badge>
                     </TableCell>
@@ -131,7 +168,7 @@ export function AdminNewsManager() {
                     <TableCell>{item.fecha_publicacion !== undefined && new Date(item.fecha_publicacion).toLocaleDateString('es-BO')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => item.id !== undefined && handleToggleStatus(item.id, item.estado)}>
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
@@ -146,6 +183,30 @@ export function AdminNewsManager() {
                 ))}
               </TableBody>
             </Table>
+            {/* creamos la paginacion y sus flechas */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!previous}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              >
+                Anterior
+              </Button>
+
+              <span className="text-sm text-muted-foreground">
+                Página {page} de {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!next}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Siguiente
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

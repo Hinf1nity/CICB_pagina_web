@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -8,25 +8,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Search, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNoticias } from '../hooks/useNoticias';
+import { useDebounce } from 'use-debounce';
 
 export function NewsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
+  const [page, setPage] = useState(1); //Anadimos esto Paginacion
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  useEffect(() => {
+    setPage(1); // Reset to first page on new search
+  }, [debouncedSearchTerm, category]);
   const navigate = useNavigate();
-
-  const { noticias, isLoading, error } = useNoticias();
-
-  const filteredNews = useMemo(() => {
-    const getTime = (s?: string) => (s ? new Date(s).getTime() : 0);
-    return noticias.filter((item) => {
-      const matchesSearch =
-        item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.resumen.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = category === 'all' || item.categoria === category;
-      return matchesSearch && matchesCategory;
-    })
-      .sort((a, b) => getTime(b.fecha_publicacion) - getTime(a.fecha_publicacion));
-  }, [noticias, searchTerm, category]);
+  //Anadimos funciones Paginacion
+  const { noticias, count, next, previous, isLoading, error } = useNoticias(page, debouncedSearchTerm, category);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   if (isLoading) {
     return (
@@ -39,7 +35,7 @@ export function NewsPage() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">Error al cargar noticias: {error}</p>
+        <p className="text-red-500">Hubo un error al cargar las noticias.</p>
       </div>
     );
   }
@@ -96,10 +92,14 @@ export function NewsPage() {
         </div>
       </div>
 
+      <div className="text-muted-foreground mt-4 max-w-7xl mx-auto px-4">
+        Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} noticias
+      </div>
+
       {/* News Grid */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNews.map((item) => {
+          {noticias.map((item) => {
             return (
               <Card
                 key={item.id}
@@ -148,7 +148,32 @@ export function NewsPage() {
           })}
         </div>
 
-        {filteredNews.length === 0 && (
+        {/* Paginacion Anadida */}
+        {noticias.length > 0 && (
+          <div className="flex justify-center items-center gap-4 mt-10">
+            <Button
+              variant="outline"
+              disabled={!previous}
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            >
+              Anterior
+            </Button>
+
+            <span className="text-sm text-muted-foreground">
+              Página {page} de {totalPages}
+            </span>
+
+            <Button
+              variant="outline"
+              disabled={!next}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Siguiente
+            </Button>
+          </div>
+        )}
+
+        {noticias.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No se encontraron noticias que coincidan con tu búsqueda.</p>
           </div>

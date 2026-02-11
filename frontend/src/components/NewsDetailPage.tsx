@@ -12,13 +12,13 @@ export function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
   // Datos de ejemplo - en producción vendrían de una API o estado global
 
-  const { noticias } = useNoticias();
+  // const { noticias } = useNoticias();
 
   const { noticia, loading, error } = useNoticiaDetail(id);
   if (loading) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Cargando noticias...</p>
+        <p className="text-muted-foreground">Cargando noticia...</p>
       </div>
     );
   }
@@ -26,7 +26,7 @@ export function NewsDetailPage() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">Error al cargar noticias: {error}</p>
+        <p className="text-red-500">Hubo un error al cargar la noticia.</p>
       </div>
     );
   }
@@ -63,21 +63,21 @@ export function NewsDetailPage() {
         {/* Featured Image */}
         <div className="mb-8 rounded-lg overflow-hidden shadow-lg">
           <ImageWithFallback
-            src={noticia.imagen_url}
-            alt={noticia.titulo}
-            className="w-full h-[400px] object-cover"
+            src={noticia?.imagen_url}
+            alt={noticia?.titulo}
+            className="w-full aspect-ratio min-[900px]:h-[420px] object-cover"
           />
         </div>
 
         {/* Article Header */}
         <div className="mb-8">
           <div className="flex flex-wrap items-center gap-4 mb-4">
-            <Badge className={getCategoryColor(noticia.categoria)}>
-              {noticia.categoria}
+            <Badge className={getCategoryColor(noticia?.categoria ?? '')}>
+              {noticia?.categoria}
             </Badge>
             <div className="flex items-center text-muted-foreground">
               <Calendar className="w-4 h-4 mr-2" />
-              <span>{new Date(noticia.fecha_publicacion).toLocaleDateString('es-BO', {
+              <span>{new Date(noticia?.fecha_publicacion ?? '').toLocaleDateString('es-BO', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -88,7 +88,7 @@ export function NewsDetailPage() {
               <span>{noticias.author}</span>
             </div> */}
           </div>
-          <h1 className="text-foreground mb-4">{noticia.titulo}</h1>
+          <h1 className="text-foreground mb-4">{noticia?.titulo}</h1>
         </div>
 
         <Separator className="mb-8" />
@@ -96,11 +96,11 @@ export function NewsDetailPage() {
         {/* Article Content */}
         <div
           className="prose prose-lg max-w-none mb-12 text-foreground"
-          dangerouslySetInnerHTML={{ __html: noticia.descripcion }}
+          dangerouslySetInnerHTML={{ __html: noticia?.descripcion ?? '' }}
         />
 
         {/* PDF Document Section */}
-        {noticia.pdf_url && (
+        {noticia?.pdf_url && (
           <Card className="mb-8">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -112,7 +112,7 @@ export function NewsDetailPage() {
                   </div>
                 </div>
                 <Button
-                  onClick={() => window.open(noticia.pdf_url, '_blank')}
+                  onClick={() => window.open(noticia?.pdf_url, '_blank')}
                   className="bg-accent text-accent-foreground hover:bg-accent/90"
                 >
                   <Download className="w-4 h-4 mr-2" />
@@ -124,7 +124,7 @@ export function NewsDetailPage() {
               <div className="border rounded-lg overflow-hidden bg-muted">
                 <iframe
                   src={noticia.pdf_url}
-                  className="w-full h-[600px]"
+                  className="w-full aspect-ratio h-[600px]"
                   title="Documento PDF"
                 />
               </div>
@@ -133,7 +133,7 @@ export function NewsDetailPage() {
         )}
 
         {/* Related News */}
-        <div>
+        {/* <div>
           <h3 className="text-foreground mb-4">Noticias Relacionadas</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2].filter(id_filter => id_filter !== Number(id)).slice(0, 3).map((id_map) => {
@@ -166,7 +166,7 @@ export function NewsDetailPage() {
               );
             })}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

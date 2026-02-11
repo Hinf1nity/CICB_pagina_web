@@ -1,45 +1,43 @@
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
-import { Search, Download, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Card, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { usePerformance } from '../hooks/usePerformance';
+import { useDebounce } from 'use-debounce';
 
 export function TablePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [page, setPage] = useState(1);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  useEffect(() => {
+    setPage(1); // Reset to first page on new search
+  }, [debouncedSearchTerm, filterCategory]);
 
-  const {actions, loading, error}=usePerformance();
-  
+  const { actions, loading, error, count, next, previous, total_categories, total_resources } = usePerformance(page, debouncedSearchTerm, filterCategory);
+  const pageSize = 20;
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
+
   if (loading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-muted-foreground">Cargando actividades...</p>
-    </div>
-  );
-}
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Cargando actividades...</p>
+      </div>
+    );
+  }
 
-if (error) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-red-500">{error}</p>
-    </div>
-  );
-}
-
-
-  const filteredActions = actions.filter(action => {
-    const matchesSearch = 
-      action.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      action.recursos.some(r => r.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = filterCategory === 'all' || action.categoria === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   const toggleRow = (id: number) => {
     const newExpanded = new Set(expandedRows);
@@ -49,10 +47,6 @@ if (error) {
       newExpanded.add(id);
     }
     setExpandedRows(newExpanded);
-  };
-
-  const handleExport = () => {
-    console.log('Exportando tabla de rendimientos...');
   };
 
   const categories = Array.from(new Set(actions.map(a => a.categoria)));
@@ -74,19 +68,19 @@ if (error) {
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Total de Actividades</CardDescription>
-                <CardTitle>{actions.length}</CardTitle>
+                <CardTitle>{count}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Categorías</CardDescription>
-                <CardTitle>{categories.length}</CardTitle>
+                <CardTitle>{total_categories}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Recursos Totales</CardDescription>
-                <CardTitle>{actions.reduce((sum, a) => sum + a.recursos.length, 0)}</CardTitle>
+                <CardTitle>{total_resources}</CardTitle>
               </CardHeader>
             </Card>
           </div>
@@ -114,13 +108,9 @@ if (error) {
                 ))}
               </SelectContent>
             </Select>
-            {/* <Button onClick={handleExport} variant="outline" className="whitespace-nowrap">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
-            </Button> */}
           </div>
           <div className="text-muted-foreground">
-            Mostrando {filteredActions.length} de {actions.length} actividades
+            Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} actividades
           </div>
         </div>
       </div>
@@ -141,16 +131,16 @@ if (error) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredActions.map((action) => (
+                {actions.map((action) => (
                   <Fragment key={action.id}>
                     {/* Main Row */}
-                    <TableRow 
+                    <TableRow
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => action.id !== undefined && toggleRow(action.id)}
                     >
                       <TableCell>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0"
                         >
@@ -164,7 +154,7 @@ if (error) {
                       <TableCell>
                         <code className="text-primary">{action.codigo}</code>
                       </TableCell>
-                      <TableCell>{action.descripcion}</TableCell>
+                      <TableCell>{action.actividad}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{action.unidad}</Badge>
                       </TableCell>
@@ -174,7 +164,7 @@ if (error) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline">{action.recursos.length}</Badge>
+                        <Badge variant="outline">{action.recursos_info.length}</Badge>
                       </TableCell>
                     </TableRow>
 
@@ -193,12 +183,12 @@ if (error) {
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {action.recursos.map((resource) => (
-                                  <TableRow key={resource.id} className="border-b last:border-0">
-                                    <TableCell className="py-2">{resource.nombre}</TableCell>
+                                {action.recursos_info.map((resource, index) => (
+                                  <TableRow key={typeof resource.recurso === 'object' && resource.recurso.id ? resource.recurso.id : index} className="border-b last:border-0">
+                                    <TableCell className="py-2">{typeof resource.recurso === 'object' ? resource.recurso.nombre : resource.recurso}</TableCell>
                                     <TableCell className="py-2">
                                       <Badge variant="outline" className="bg-background">
-                                        {resource.unidad}
+                                        {typeof resource.recurso === 'object' ? resource.recurso.unidad : ''}
                                       </Badge>
                                     </TableCell>
                                     <TableCell className="py-2 text-right">
@@ -218,11 +208,35 @@ if (error) {
             </Table>
           </div>
 
-          {filteredActions.length === 0 && (
+          {count === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No se encontraron actividades que coincidan con tu búsqueda.</p>
             </div>
           )}
+        </div>
+        {/* creamos la paginacion y sus flechas */}
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!previous}
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          >
+            Anterior
+          </Button>
+
+          <span className="text-sm text-muted-foreground">
+            Página {page} de {totalPages}
+          </span>
+
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!next}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
         </div>
 
         {/* Legend */}

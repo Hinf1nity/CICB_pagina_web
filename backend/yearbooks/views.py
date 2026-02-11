@@ -1,7 +1,8 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
+from django_filters.rest_framework import DjangoFilterBackend
 from users.permissions import IsAdminPrin
 from utils.s3 import s3_client
 from django.conf import settings
@@ -14,11 +15,30 @@ from .serializers import (
 )
 from rest_framework.pagination import PageNumberPagination
 
+
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
+class TwentyPerPagePaginationAdmin(PageNumberPagination):
+    page_size = 20
+
+    def get_paginated_response(self, data):
+        queryset = Yearbook.objects.all()
+        published_count = queryset.filter(estado="publicado").count()
+        draft_count = queryset.filter(estado="borrador").count()
+        return Response({
+            'count': self.page.paginator.count,
+            'published_count': published_count,
+            'draft_count': draft_count,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data,
+        })
+
+
 class YearbookViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = Yearbook.objects.all()
+    # queryset = Yearbook.objects.all()
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
 
@@ -34,9 +54,11 @@ class YearbookViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class YearbookAdminViewSet(viewsets.ModelViewSet):
-    #queryset = Yearbook.objects.all()
+    # queryset = Yearbook.objects.all()
     permission_classes = [IsAdminPrin]
-    pagination_class = TwentyPerPagePagination
+    pagination_class = TwentyPerPagePaginationAdmin
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ['nombre', 'fecha_publicacion']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -45,7 +67,8 @@ class YearbookAdminViewSet(viewsets.ModelViewSet):
         return YearbookAdminGeneralSerializer
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-fecha_publicacion')
+        queryset = Yearbook.objects.all().order_by('-fecha_publicacion')
+        return queryset
 
     @action(
         detail=True,
@@ -97,7 +120,6 @@ class YearbookAdminViewSet(viewsets.ModelViewSet):
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                 Key=ruta,
             )
-            yearbook.pdf = None
-            yearbook.save()
             pdf.delete()
-        return super().destroy(request, *args, **kwargs)
+        self.perform_destroy(yearbook)
+        return Response(status=status.HTTP_204_NO_CONTENT)

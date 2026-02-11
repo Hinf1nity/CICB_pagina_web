@@ -37,12 +37,14 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
 
     EMPLEO = [
         ("empleado", "Empleado"),
-        ("desempleado", "Desempleado") 
+        ("desempleado", "Desempleado")
     ]
 
     rnic = models.PositiveIntegerField(
         unique=True, editable=False, null=True, blank=True, validators=[MaxValueValidator(99999)])
-    rni = models.CharField(max_length=255, unique=True)
+    rni = models.CharField(max_length=255, unique=True, error_messages={
+        'unique': 'Este RNI ya esta registrado.'
+    })
     nombre = models.CharField(max_length=255)
     fecha_inscripcion = models.DateField(null=True, blank=True)
     departamento = models.CharField(max_length=100, blank=True)
@@ -50,7 +52,8 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
     celular = models.CharField(max_length=20, blank=True)
     imagen = models.ForeignKey(
         Img, on_delete=models.CASCADE, null=True, blank=True)
-    registro_empleado = models.CharField(max_length=16, choices=EMPLEO, default="desempleado")
+    registro_empleado = models.CharField(
+        max_length=16, choices=EMPLEO, default="desempleado")
     estado = models.CharField(max_length=16, choices=ESTADOS, default="activo")
     certificaciones = models.JSONField(default=list)
     mail = models.CharField(max_length=32, blank=True)

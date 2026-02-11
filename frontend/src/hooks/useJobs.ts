@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react";
 import api from "../api/kyClient";
 import { type JobData } from "../validations/jobsSchema";
 import { presignedUrlPost, presignedUrlPatch } from "./presignedUrl";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+interface PaginatedResponse {
+  results: JobData[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
 
 export function useJobsPost() {
   const queryClient = useQueryClient();
@@ -35,6 +41,7 @@ export function useJobsPost() {
       if (pdfId) {
         formData.append("pdf", pdfId);
       }
+      console.log("FormData entries:", Array.from(formData.entries()));
 
       const response = await api.post("jobs/job_admin/", { body: formData });
 
@@ -42,7 +49,7 @@ export function useJobsPost() {
     },
     onSuccess: () => {
       toast.success("Empleo creado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['trabajos_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'admin'] });
     },
     onError: () => {
       toast.error("Error al crear el trabajo");
@@ -50,112 +57,40 @@ export function useJobsPost() {
   });
 }
 
-export function useJobs() {
-  const [jobs, setJobs] = useState<JobData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchJobs = async () => {
-    try {
-      const data: JobData[] = await api.get("jobs/job/").json();
-      const formattedData: JobData[] = data.map((job) => ({
-        ...job,
-        requisitos:
-          typeof job.requisitos === "string"
-            ? (job.requisitos as string)
-              .split(",")
-              .map((r: string) => r.trim())
-              .filter((r: string) => r.length > 0)
-            : job.requisitos || [],
-      }));
-
-      setJobs(formattedData);
-    } catch (err) {
-      setError("Error al cargar los empleos");
-    } finally {
-      setLoading(false);
-    }
+export function useJobs(page: number = 1, search: string = '') {
+  const {
+    data,
+    isPending,
+    error,
+  } = useQuery({
+    queryKey: ['jobs_user', page, search],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        ...(search && { search: search }),
+      });
+      const data: PaginatedResponse = await api.get(`jobs/job/?${params.toString()}`).json();
+      console.log(data);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+    enabled: search.trim().length > 3 || search.trim().length === 0,
+  });
+  return {
+    jobs: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
+    loading: isPending,
+    error,
   };
-
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  return { jobs, loading, error };
-}
-
-export function useJobsAdmin() {
-  const [jobs, setJobs] = useState<JobData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchJobs = async () => {
-    try {
-      const data: JobData[] = await api.get("jobs/job_admin/").json();
-      const formattedData: JobData[] = data.map((job) => ({
-        ...job,
-        requisitos:
-          typeof job.requisitos === "string"
-            ? (job.requisitos as string)
-              .split(",")
-              .map((r: string) => r.trim())
-              .filter((r: string) => r.length > 0)
-            : job.requisitos || [],
-      }));
-
-      setJobs(formattedData);
-    } catch (err) {
-      setError("Error al cargar los empleos");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  return { jobs, loading, error, refetchJobs: fetchJobs };
-}
-
-export async function useJobDetailAdmin(id: string) {
-  let pdf_url: string | null = null;
-  let pdf_id: string | null = null;
-  const data: JobData = await api.get(`jobs/job_admin/${id}/`).json();
-  if (data.pdf) {
-    const pdf_url_response = await api
-      .get(`jobs/job/${data.id}/pdf-download/`)
-      .json<{ download_url: string, pdf_id: string }>();
-    pdf_url = pdf_url_response.download_url;
-    pdf_id = pdf_url_response.pdf_id;
-  }
-  const formattedJob: JobData = {
-    ...data,
-    requisitos:
-      typeof data.requisitos === "string"
-        ? (data.requisitos as string)
-          .split(",")
-          .map((r: string) => r.trim())
-          .filter((r: string) => r.length > 0)
-        : data.requisitos || [],
-    responsabilidades:
-      typeof data.responsabilidades === "string"
-        ? (data.responsabilidades as string)
-          .split(",")
-          .map((r: string) => r.trim())
-          .filter((r: string) => r.length > 0)
-        : data.responsabilidades || [],
-    pdf: pdf_url ? pdf_url : undefined,
-    pdf_url: pdf_id ? `${pdf_id}` : undefined,
-    salario: data.salario ? data.salario : '',
-  };
-  return formattedJob;
 }
 
 export function useJobDetail(id?: string) {
   const fetchJob = async () => {
     let pdf_url: string | null = null;
     const data: JobData = await api.get(`jobs/job/${id}/`).json();
+    console.log(data);
     if (data.pdf) {
       const pdf_url_response = await api
         .get(`jobs/job/${data.id}/pdf-download/`)
@@ -182,17 +117,86 @@ export function useJobDetail(id?: string) {
     };
     return formattedJob;
   };
-  const { data: job, isLoading: loading, isError, error } = useQuery({
-    queryKey: ['job', id],
+
+  const { data, isPending, error } = useQuery({
+    queryKey: ['job_user', id],
     queryFn: fetchJob,
-    staleTime: 1000 * 60 * 60 * 5,
-    gcTime: 1000 * 60 * 60 * 6,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
     enabled: !!id,
   });
+  return {
+    data,
+    isPending,
+    error,
+  };
+}
 
-  return { job, loading, isError, error };
+// --- HOOKS Y FUNCIONES PARA ADMIN ---
+
+export function useJobsAdmin(page: number = 1) {
+  const {
+    data,
+    isPending,
+    error,
+  } = useQuery({
+    queryKey: ['jobs', 'admin', page],
+    queryFn: async () => {
+      const data: PaginatedResponse = await api.get(`jobs/job_admin/?page=${page}`).json();
+      console.log(data);
+      return data
+    },
+    placeholderData: keepPreviousData,
+  });
+  return {
+    data: data?.results ?? [],
+    count: data?.count ?? 0,
+    next: data?.next,
+    previous: data?.previous,
+    error,
+    isPending,
+  };
+}
+
+export async function useJobDetailAdmin(id: string) {
+  let pdf_url: string | null = null;
+  let pdf_id: string | null = null;
+
+  const data: JobData = await api.get(`jobs/job_admin/${id}/`).json();
+
+  if (data.pdf) {
+    try {
+      const pdf_url_response = await api
+        .get(`jobs/job/${data.id}/pdf-download/`)
+        .json<{ download_url: string, pdf_id: string }>();
+
+      pdf_url = pdf_url_response.download_url;
+      pdf_id = pdf_url_response.pdf_id;
+    } catch (e) {
+      console.warn("Aviso: El archivo PDF físico no se encontró en el servidor (404).");
+    }
+  }
+
+  const formattedJob: JobData = {
+    ...data,
+    requisitos:
+      typeof data.requisitos === "string"
+        ? (data.requisitos as string)
+          .split(",")
+          .map((r: string) => r.trim())
+          .filter((r: string) => r.length > 0)
+        : data.requisitos || [],
+    responsabilidades:
+      typeof data.responsabilidades === "string"
+        ? (data.responsabilidades as string)
+          .split(",")
+          .map((r: string) => r.trim())
+          .filter((r: string) => r.length > 0)
+        : data.responsabilidades || [],
+    pdf: pdf_url ? pdf_url : undefined,
+    pdf_url: pdf_id ? `${pdf_id}` : undefined,
+    salario: data.salario ? data.salario : '',
+  };
+
+  return formattedJob;
 }
 
 export function useJobPatch() {
@@ -223,15 +227,15 @@ export function useJobPatch() {
       appendIfChanged("estado", data.estado, data_old.estado);
 
       if (JSON.stringify(data.requisitos) !== JSON.stringify(data_old.requisitos)) {
-        data.requisitos.forEach((req, index) => {
-          formData.append(`requisitos[${index}]`, req);
+        data.requisitos.forEach((req) => {
+          formData.append(`requisitos`, req);
         });
         hasChanges = true;
       }
 
       if (JSON.stringify(data.responsabilidades) !== JSON.stringify(data_old.responsabilidades)) {
-        data.responsabilidades.forEach((res, index) => {
-          formData.append(`responsabilidades[${index}]`, res);
+        data.responsabilidades.forEach((res) => {
+          formData.append(`responsabilidades`, res);
         });
         hasChanges = true;
       }
@@ -255,16 +259,18 @@ export function useJobPatch() {
       if (!hasChanges) {
         return { message: "Sin cambios en base de datos" };
       }
-
-      const response = await api.patch(`jobs/job_admin/${id}/`, {
-        body: formData,
-      });
+      console.log("FormData entries:", formData);
+      const response = await api.patch(`jobs/job_admin/${id}/`, { body: formData });
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data: any) => {
+      if (_data.message) {
+        toast.info("No se realizaron cambios");
+        return;
+      }
       toast.success("Empleo actualizado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['trabajos_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'admin'] });
     },
     onError: () => {
       toast.error("Error al actualizar el empleo");
@@ -282,7 +288,7 @@ export function useJobDelete() {
     },
     onSuccess: () => {
       toast.success("Empleo eliminado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['trabajos_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'admin'] });
     },
     onError: () => {
       toast.error("Error al eliminar el empleo");

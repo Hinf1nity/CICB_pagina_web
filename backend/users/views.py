@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status, mixins
+from rest_framework import viewsets, filters, status, mixins
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -7,16 +8,21 @@ from utils.s3 import s3_client
 import os
 
 from .models import UsuarioComun
-from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer
+from .serializers import UsuarioComunSerializer, UsuarioComunListSerializer, UsuarioCardSerializer, SerializerUserAdmin
 from .permissions import IsAdminPrin, IsAdminSec, IsUser
 from rest_framework.pagination import PageNumberPagination
+
 
 class TwentyPerPagePagination(PageNumberPagination):
     page_size = 20
 
+
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UsuarioComunSerializer
     pagination_class = TwentyPerPagePagination
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['estado']
+    search_fields = ['nombre', 'rni', 'celular']
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create", "update", "partial_update", "destroy"]:
@@ -30,8 +36,14 @@ class UserViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_serializer_class(self):
+        user = self.request.user
+        es_admin = user.is_superuser or getattr(user, "rol", None) in [
+            "admin_ciudad", "admin_general"]
+
         if self.action == 'list':
             return UsuarioComunListSerializer
+        if es_admin and self.action in ['create', 'update', 'partial_update', 'retrieve']:
+            return SerializerUserAdmin
         return UsuarioComunSerializer
 
     def get_queryset(self):
@@ -106,5 +118,5 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class UserDetails(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = UsuarioComun.objects.all()
-    serializer_class = UsuarioComunSerializer
+    serializer_class = UsuarioCardSerializer
     permission_classes = [AllowAny]
