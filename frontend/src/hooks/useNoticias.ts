@@ -225,8 +225,6 @@ export function useNewsPatch() {
         }
         hasChanges = true;
       }
-      console.log("PDFs comparados:", data.pdf, data_old.pdf);
-      console.log("URLs comparados:", data.pdf_url, data_old.pdf_url);
       // Manejo del PDF
       if (data.pdf !== data_old.pdf) {
         if (data_old.pdf_url) {

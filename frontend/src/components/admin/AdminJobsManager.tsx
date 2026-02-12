@@ -44,7 +44,6 @@ export function AdminJobsManager() {
   const { mutate: postJob, isPending: isPosting } = useJobsPost();
   const { mutate: patchJob, isPending: isPatching } = useJobPatch();
   const { mutate: deleteJob } = useJobDelete();
-  // console.log('Errors en el formulario:', errors);
 
   const handleCreate = () => {
     reset({
@@ -92,16 +91,13 @@ export function AdminJobsManager() {
 
   const handleDelete = async (id: number) => {
     if (confirm('¿Estás seguro de eliminar esta oferta laboral?')) {
-      console.log('Eliminando oferta:', id);
       deleteJob(id);
     }
   };
 
 
   const handleSave: SubmitHandler<JobData> = (data) => {
-    console.log('Guardando oferta:', data);
     if (editingItem && editingItem.id !== undefined) {
-      console.log('Actualizando oferta:', editingItem);
       patchJob({ id: editingItem.id, data, data_old: editingItem }, {
         onSuccess: () => {
           setEditingItem(null);
@@ -121,7 +117,6 @@ export function AdminJobsManager() {
 
   const handleToggleStatus = (id: number, currentStatus: string) => {
     const newStatus = currentStatus === 'publicado' ? 'borrador' : 'publicado';
-    console.log(`Cambiando estado del trabajo ${id} de ${currentStatus} a ${newStatus}`);
     const data = { estado: newStatus } as JobData;
     const data_odl = { estado: currentStatus } as JobData;
     patchJob({ id, data, data_old: data_odl });

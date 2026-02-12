@@ -117,9 +117,7 @@ export function AdminRegulationsPage() {
           reset();
         }
       });
-      console.log('Editando reglamento:', data);
     } else {
-      console.log('Creando nuevo reglamento:', data);
       postItem({ data, type: "regulation" }, {
         onSuccess: () => {
           setIsDialogOpen(false);

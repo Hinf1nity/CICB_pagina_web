@@ -103,7 +103,6 @@ export function AdminPerformanceManager() {
   };
 
   const handleEdit = (action: PerformanceData) => {
-    console.log("Editing action:", action);
     reset({
       codigo: action.codigo,
       actividad: action.actividad,
@@ -182,11 +181,9 @@ export function AdminPerformanceManager() {
 
   const handleRemoveResource = (id: string, index: number) => {
     setResources(resources.filter(r => r.id?.toString() !== id));
-    console.log("Removing resource at index:", index);
     const currentResources = getValues('recursos_info');
     const updatedResources = currentResources.filter((_, i) => i !== index);
     setValue('recursos_info', updatedResources);
-    console.log("Removing resource with id:", id);
   };
 
   const handleEditCatalogResource = (resource: Recurso) => {
@@ -212,10 +209,8 @@ export function AdminPerformanceManager() {
   const handleSaveCatalogResource = (data: Recurso) => {
     if (editingCatalogResource) {
       // Lógica para actualizar recurso existente
-      console.log("Actualizar recurso del catálogo:", editingCatalogResource.id, data);
       patchResource({ id: editingCatalogResource.id!.toString(), data, oldData: editingCatalogResource }, {
         onSuccess: () => {
-          console.log("Recurso actualizado con éxito");
           setEditingCatalogResource(null);
           setIsResourceCatalogDialogOpen(false);
           resetCatalog();
@@ -223,10 +218,8 @@ export function AdminPerformanceManager() {
       });
     } else {
       // Lógica para crear nuevo recurso
-      console.log("Crear nuevo recurso del catálogo:", data);
       postResource(data, {
         onSuccess: () => {
-          console.log("Recurso creado con éxito");
           setIsResourceCatalogDialogOpen(false);
           resetCatalog();
         }

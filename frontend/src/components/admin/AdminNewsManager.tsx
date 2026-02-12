@@ -76,13 +76,11 @@ export function AdminNewsManager() {
 
   const handleDelete = (id: number) => {
     if (confirm('¿Estás seguro de eliminar esta noticia?')) {
-      console.log('Eliminando noticia:', id);
       deleteNews(id);
     }
   };
 
   const handleSave: SubmitHandler<NewsData> = (data) => {
-    console.log('Guardando noticias:', data);
     if (editingItem) {
       patchNews({ id: editingItem.id, data, data_old: editingItem }, {
         onSuccess: () => {
@@ -103,7 +101,6 @@ export function AdminNewsManager() {
 
   const handleToggleStatus = (id: number, currentStatus: string) => {
     const newStatus = currentStatus === 'publicado' ? 'borrador' : 'publicado';
-    console.log(`Cambiando estado de la noticia ${id} de ${currentStatus} a ${newStatus}`);
     const data = { estado: newStatus } as NewsData;
     const data_odl = { estado: currentStatus } as NewsData;
     patchNews({ id: id.toString(), data, data_old: data_odl });

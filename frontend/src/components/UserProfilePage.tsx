@@ -90,7 +90,6 @@ export function UserProfilePage() {
         patchUser({ id: parseInt(userData.id), data, data_old: userDataCopy as Partial<UserPageData> }, {
           onSuccess: (res: any) => {
             if (user?.name !== res?.nombre && res?.message !== "Sin cambios en base de datos") {
-              console.log('Actualizando nombre en contexto de autenticación:', res?.nombre);
               updateUser(res?.nombre);
             }
           }

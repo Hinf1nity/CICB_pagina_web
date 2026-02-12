@@ -86,8 +86,6 @@ export function AdminAnnouncementsPage() {
 
   const handleSave: SubmitHandler<GenericData> = (data) => {
     if (editingItem?.id) {
-      console.log('Patching item with data:', data);
-      console.log('Old item data:', editingItem);
       patchItem({ id: editingItem.id, data, data_old: editingItem, type: "announcements" }, {
         onSuccess: () => {
           setIsDialogOpen(false);

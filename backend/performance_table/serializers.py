@@ -44,7 +44,6 @@ class PerformanceTableSerializer(serializers.ModelSerializer):
         return response
 
     def create(self, validated_data):
-        print(validated_data)
         recursos_data = validated_data.pop('recursos_info')
         performance_table = PerformanceTable.objects.create(**validated_data)
 
@@ -57,7 +56,6 @@ class PerformanceTableSerializer(serializers.ModelSerializer):
         return performance_table
 
     def update(self, instance, validated_data):
-        print(validated_data)
         recursos_data = validated_data.pop('recursos_info', None)
 
         for attr, value in validated_data.items():

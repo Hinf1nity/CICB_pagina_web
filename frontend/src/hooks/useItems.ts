@@ -138,7 +138,6 @@ export function useItemPost() {
       if (data.categoria) formData.append("categoria", data.categoria);
 
       if (finalPdfId) formData.append("pdf", finalPdfId.toString());
-      console.log("FormData to be sent:", Array.from(formData.entries()));
 
       const response = await api.post(`${endpoint}/${endpoint}_admin/`, { body: formData });
       return response;

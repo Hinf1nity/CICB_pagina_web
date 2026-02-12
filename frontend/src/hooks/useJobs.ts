@@ -41,7 +41,6 @@ export function useJobsPost() {
       if (pdfId) {
         formData.append("pdf", pdfId);
       }
-      console.log("FormData entries:", Array.from(formData.entries()));
 
       const response = await api.post("jobs/job_admin/", { body: formData });
 
@@ -70,7 +69,6 @@ export function useJobs(page: number = 1, search: string = '') {
         ...(search && { search: search }),
       });
       const data: PaginatedResponse = await api.get(`jobs/job/?${params.toString()}`).json();
-      console.log(data);
       return data;
     },
     placeholderData: keepPreviousData,
@@ -90,7 +88,6 @@ export function useJobDetail(id?: string) {
   const fetchJob = async () => {
     let pdf_url: string | null = null;
     const data: JobData = await api.get(`jobs/job/${id}/`).json();
-    console.log(data);
     if (data.pdf) {
       const pdf_url_response = await api
         .get(`jobs/job/${data.id}/pdf-download/`)
@@ -141,7 +138,6 @@ export function useJobsAdmin(page: number = 1) {
     queryKey: ['jobs', 'admin', page],
     queryFn: async () => {
       const data: PaginatedResponse = await api.get(`jobs/job_admin/?page=${page}`).json();
-      console.log(data);
       return data
     },
     placeholderData: keepPreviousData,
@@ -271,7 +267,6 @@ export function useJobPatch() {
       if (!hasChanges) {
         return { message: "Sin cambios en base de datos" };
       }
-      console.log("FormData entries:", formData);
       const response = await api.patch(`jobs/job_admin/${id}/`, { body: formData });
 
       return response.json();

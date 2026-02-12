@@ -25,7 +25,6 @@ export function UserCardPage() {
   useEffect(() => {
     async function fetchData() {
       const data = await useUsersDetailCard(Number(id));
-      console.log('Datos del usuario:', data);
       setUserData(data);
       // Aquí podrías actualizar el estado con los datos reales
     }

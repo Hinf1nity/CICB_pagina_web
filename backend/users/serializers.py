@@ -12,7 +12,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         username = attrs.get("username")
         password = attrs.get("password")
         user = None
-        print("Attempting to authenticate user:", username)
 
         try:
             admin = UsuarioAdmin.objects.get(username=username)
@@ -49,7 +48,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
         refresh = RefreshToken(attrs['refresh'])
-        print("Refreshing token for:", refresh.payload)
         rol = refresh.payload.get('rol')
         user_id = refresh.payload.get('user_id')
         user = None

@@ -74,14 +74,12 @@ export function AdminUsersManager() {
 
   const handleDelete = (id: number) => {
     if (confirm('¿Estás seguro de eliminar este usuario?')) {
-      console.log('Eliminando usuario:', id);
       deleteUser(id);
     }
   };
 
   const handleToggleStatus = async (id: number, currentStatus: string) => {
     const newStatus = currentStatus === 'activo' ? 'inactivo' : 'activo';
-    console.log('Cambiando estado del usuario', id, 'a', newStatus);
     const data = { estado: newStatus };
     const data_old = { estado: currentStatus };
     patchUser({ id, data, data_old });
@@ -89,7 +87,6 @@ export function AdminUsersManager() {
 
   const handleSave: SubmitHandler<UserData> = (data) => {
     if (editingUser) {
-      console.log('Actualizando usuario:', data);
       patchUser({ id: editingUser.id, data, data_old: editingUser }, {
         onSuccess: () => {
           setEditingUser(null);
@@ -99,7 +96,6 @@ export function AdminUsersManager() {
         }
       });
     } else {
-      console.log('Guardando oferta:', data);
       postUser(data, {
         onSuccess: () => {
           setIsDialogOpen(false);

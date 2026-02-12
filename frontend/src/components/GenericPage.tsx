@@ -25,7 +25,6 @@ export function GenericPage({ title, description, type }: GenericPageProps) {
   const { items, isPending, error, next, previous, count } = useItems(type, page, debouncedSearchTerm, category);
   const pageSize = 20;
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
-  console.log(`Loaded ${type}:`, items);
 
   if (error) {
     return (

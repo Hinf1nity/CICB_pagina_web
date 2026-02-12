@@ -18,7 +18,6 @@ export function usePerformancePost() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (data: PerformanceData) => {
-            console.log(data);
             return await api.post("performance/performance/", {
                 json: {
                     codigo: data.codigo,
@@ -143,7 +142,6 @@ export function usePerformancePatch() {
             if (!hasChanges) {
                 return { message: "Sin cambios en base de datos" };
             }
-            console.log("Patching with data:", formData);
             return await api.patch(`performance/performance/${id}/`, { json: formData }).json();
         },
         onSuccess: (_data: any) => {
