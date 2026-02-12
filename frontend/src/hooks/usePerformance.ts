@@ -249,7 +249,7 @@ export function searchResourceByName(query: string) {
     const { data, isLoading, isError } = useQuery({
         queryKey: ['resources', search],
         queryFn: async () => {
-            const data: Recurso[] = await api.get(`performance/resources/`, {
+            const data: PaginatedResponse<Recurso> = await api.get(`performance/resources/`, {
                 searchParams: { search: search },
             }).json();
             return data.results;

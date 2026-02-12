@@ -18,6 +18,7 @@ export const userSchema = z.object({
   imagen: z.instanceof(File).optional().or(z.string().optional()),
   imagen_url: z.string().optional(),
   certificaciones: z.array(z.object({
+    id: z.number().optional(),
     nombre: z.string().optional(),
     institucion: z.string().optional(),
     anio: z.string().refine((val) => /^\d{4}$/.test(val), { message: "Año inválido" }).optional(),

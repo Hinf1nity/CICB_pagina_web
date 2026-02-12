@@ -9,11 +9,12 @@ export const userPageSchema = z.object({
     especialidad: z.enum(especialidades).optional(),
     mail: z
         .string()
-        .optional()
         .refine(
             (val) => val === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
             { message: "Correo electrónico inválido" }
-        ),
+        )
+        .optional()
+        .or(z.literal("")),
     certificaciones: z.array(z.object({
         nombre: z.string().optional(),
         institucion: z.string().optional(),

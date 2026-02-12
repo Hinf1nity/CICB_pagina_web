@@ -35,11 +35,22 @@ export function useItems(type: "yearbooks" | "regulation" | "announcements", pag
     },
     select: (data) => ({
       ...data,
-      results: data.results.map((item) => ({
-        ...item,
-        pdf_url: item.pdf?.url,
-        pdf: undefined,
-      })),
+      results: data.results.map((item) => {
+        const pdfSource = item.pdf;
+        let finalPdfUrl = undefined;
+        if (typeof pdfSource === 'string') {
+          // Si ya es un string, asumimos que es la URL
+          finalPdfUrl = pdfSource;
+        } else if (pdfSource && typeof pdfSource === 'object' && 'url' in pdfSource) {
+          // Si es un objeto con la propiedad url (típico de DRF)
+          finalPdfUrl = (pdfSource as any).url;
+        }
+        return {
+          ...item,
+          pdf_url: finalPdfUrl,
+          pdf: undefined,
+        }
+      }),
     }),
     placeholderData: keepPreviousData,
   });
@@ -76,11 +87,22 @@ export function useItemsAdmin(type: "yearbooks" | "regulation" | "announcements"
     },
     select: (data) => ({
       ...data,
-      results: data.results.map((item) => ({
-        ...item,
-        pdf_url: item.pdf?.url,
-        pdf: undefined,
-      })),
+      results: data.results.map((item) => {
+        const pdfSource = item.pdf;
+        let finalPdfUrl = undefined;
+        if (typeof pdfSource === 'string') {
+          // Si ya es un string, asumimos que es la URL
+          finalPdfUrl = pdfSource;
+        } else if (pdfSource && typeof pdfSource === 'object' && 'url' in pdfSource) {
+          // Si es un objeto con la propiedad url (típico de DRF)
+          finalPdfUrl = (pdfSource as any).url;
+        }
+        return {
+          ...item,
+          pdf_url: finalPdfUrl,
+          pdf: undefined,
+        }
+      }),
     }),
     placeholderData: keepPreviousData,
     enabled: search.trim().length > 3 || search.trim().length === 0,
