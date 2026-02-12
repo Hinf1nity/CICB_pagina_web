@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3
+      DEBUG: 1
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME}
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - ./localstack/init:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    build: ./frontend
+    container_name: vite_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+
+  mobile:
+    build: ./mobile # Asume que tu código de Expo está en la carpeta 'mobile'
+    container_name: expo_mobile
+    ports:
+      - "8081:8081" # Metro Bundler (Puerto principal)
+      - "19000:19000" # Expo Legacy/DevTools
+      - "19001:19001" # Metro JS Bundle
+    volumes:
+      - ./mobile:/app # Sincronización de código
+      - /app/node_modules # Evita conflictos de arquitecturas en node_modules
+    environment:
+      - REACT_NATIVE_PACKAGER_HOSTNAME=${REACT_NATIVE_PACKAGER_HOSTNAME}
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+      - EXPO_PUBLIC_API_URL=${REACT_NATIVE_PACKAGER_HOSTNAME} # Si necesitas conectar con el backend
+    stdin_open: true # Necesario para comandos interactivos
+    tty: true # Necesario para ver el QR y logs de colores
+
+volumes:
+  postgres_data:
+  localstack_data:

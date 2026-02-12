@@ -1,0 +1,36 @@
+{
+  "stats": {
+    "specialties": [
+      { "name": "Ciencias Exactas", "value": 1200 },
+      { "name": "Ingeniería", "value": 950 },
+      { "name": "Economía", "value": 800 },
+      { "name": "Ciencias Sociales", "value": 1100 },
+      { "name": "Salud", "value": 700 }
+    ],
+
+    "departments": [
+      { "name": "SCZ", "value": 1800 },
+      { "name": "LPZ", "value": 1500 },
+      { "name": "CBA", "value": 1300 },
+      { "name": "TJA", "value": 700 },
+      { "name": "ORU", "value": 500 },
+      { "name": "CHU", "value": 450 },
+      { "name": "BEN", "value": 300 },
+      { "name": "PAN", "value": 200 },
+      { "name": "POT", "value": 150 }
+    ],
+
+    "employment": [
+      { "name": "Empleado", "value": 3200 },
+      { "name": "Desempleado", "value": 600 }
+    ],
+
+    "evolution": [
+      { "year": "2019", "total": 2000 },
+      { "year": "2020", "total": 2300 },
+      { "year": "2021", "total": 2600 },
+      { "year": "2022", "total": 3000 },
+      { "year": "2023", "total": 3200 }
+    ]
+  }
+}

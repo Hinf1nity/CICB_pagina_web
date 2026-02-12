@@ -1,0 +1,20 @@
+{
+    "aranceles": [
+        {
+            "id": 1,
+            "mensual": 1,
+            "diario": 2,
+            "hora": 3,
+            "trabajo":{
+                "estudios": {"detalle": 4},
+                "mensuras": {"detalle": 5},
+                "estructuras": {"detalle": 6},
+                "geotecnia": {"detalle": 7},
+                "hidraulica": {"detalle": 8},
+                "vias": {"detalle": 9},
+                "laboratorios": {"detalle": 10},
+                "docencia": {"detalle": 11}
+                }
+            }
+    ]
+}
