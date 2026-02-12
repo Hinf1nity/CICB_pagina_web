@@ -30,7 +30,7 @@ export function AdminAnnouncementsPage() {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearchTerm]);
-  const { items: announcements, isPending: loading, count, published_count, draft_count, archived_count, next, previous } = useItemsAdmin("announcements", page, debouncedSearchTerm);
+  const { items: announcements, count, published_count, draft_count, archived_count, next, previous } = useItemsAdmin("announcements", page, debouncedSearchTerm);
   const pageSize = 20;
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
   const { mutate: postItem, isPending: isPosting } = useItemPost();

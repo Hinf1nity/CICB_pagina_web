@@ -26,7 +26,7 @@ export function AdminUsersManager() {
   useEffect(() => {
     setPage(1); // Reset to first page on new search
   }, [debouncedSearchTerm, filterStatus]);
-  const { users, next, previous, count, isSearching } = useUsersAdmin(page, debouncedSearchTerm, filterStatus);
+  const { users, next, previous, count } = useUsersAdmin(page, debouncedSearchTerm, filterStatus);
   const { mutate: postUser, isPending: isPosting } = useUsersPost();
   const pageSize = 20; // Paginacion se agrega esto y el count de arriba
   const totalPages = count ? Math.ceil(count / pageSize) : 1;

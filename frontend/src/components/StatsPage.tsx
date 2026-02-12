@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { useStatsData } from "../hooks/useStatsData";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { Users, Briefcase, TrendingUp, MapPin } from 'lucide-react';
@@ -60,7 +58,7 @@ export function StatsPage() {
   if (error) {
     return (
       <div className="text-center py-12 text-red-500">
-        {error}
+        Error al cargar las estadísticas.
       </div>
     );
   }

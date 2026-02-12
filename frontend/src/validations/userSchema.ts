@@ -22,6 +22,7 @@ export const userSchema = z.object({
     institucion: z.string().optional(),
     anio: z.string().refine((val) => /^\d{4}$/.test(val), { message: "Año inválido" }).optional(),
   })).optional(),
+  mail: z.string().optional(),
 });
 
 export type UserData = z.infer<typeof userSchema>;
