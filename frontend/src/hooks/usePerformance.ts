@@ -106,7 +106,7 @@ export function useResources(page: number = 1, search: string = '') {
             return data;
         },
         placeholderData: keepPreviousData,
-        enabled: search.trim().length > 4 || search.trim().length === 0,
+        enabled: search.trim().length > 3 || search.trim().length === 0,
     });
 
     return {

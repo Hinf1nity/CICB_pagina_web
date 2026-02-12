@@ -14,8 +14,8 @@ export const jobSchema = z.object({
   fecha_publicacion: z.string().refine((date) => !isNaN(Date.parse(date)), { message: "Fecha inválida" }).optional(),
   tipo_contrato: z.enum(contractTypes, { message: `El tipo de contrato debe ser uno de los siguientes: ${contractTypes.join(", ")}` }),
   salario: z.string().max(100).refine((value) => value === '' || /^[0-9]+(\.[0-9]+)?$/.test(value), { message: "El salario debe ser un número positivo" }).optional(),
-  requisitos: z.array(z.string().min(2, { message: "El requisito debe tener al menos 2 caracteres" }).max(100)).refine((arr) => arr.length > 0, { message: "Debe haber al menos un requisito" }),
-  responsabilidades: z.array(z.string().min(2, { message: "La responsabilidad debe tener al menos 2 caracteres" }).max(100)).refine((arr) => arr.length > 0, { message: "Debe haber al menos una responsabilidad" }),
+  requisitos: z.array(z.string().min(2, { message: "El requisito debe tener al menos 2 caracteres" }).max(200)).refine((arr) => arr.length > 0, { message: "Debe haber al menos un requisito" }),
+  responsabilidades: z.array(z.string().min(2, { message: "La responsabilidad debe tener al menos 2 caracteres" }).max(200)).refine((arr) => arr.length > 0, { message: "Debe haber al menos una responsabilidad" }),
   pdf_url: z.string().optional(),
   pdf: z
     .instanceof(File)

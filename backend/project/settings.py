@@ -111,6 +111,7 @@ AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION")
 AWS_S3_ENDPOINT = os.getenv("AWS_S3_ENDPOINT")
 AWS_S3_PUBLIC_URL = f"https://{AWS_S3_ENDPOINT}/{AWS_STORAGE_BUCKET_NAME}"
 
+PASSWORDS_ADMINS = os.getenv('PASSWORDS_ADMINS', 'admin').split(',')
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -23,8 +23,22 @@ export async function presignedUrlPost(data) {
     return presignedResponse[`${dataTypeFile}_id`] || '';
 }
 
-export async function presignedUrlPatch(data, id: string) {
+export async function presignedUrlPatch(data: any, id: string, endpoint?: string) {
     const dataTypeFile = data.type === 'application/pdf' ? 'pdf' : 'img';
+    if (endpoint === "delete") {
+        const { ruta, tipo } = extractS3Info(data);
+        const response = await api.delete(`${tipo}s/${id}/${tipo}-delete/`, {
+            json: {
+                ruta: ruta,
+                tipo: tipo,
+                content_type: "application/json",
+            }
+        });
+        if (!response.ok) {
+            throw new Error("Error eliminando PDF");
+        }
+        return "Archivo eliminado correctamente";
+    }
     const presignedResponse = await api
         .patch(`${dataTypeFile}s/${id}/${dataTypeFile}-presigned-update/`, {
             json: {
@@ -44,4 +58,27 @@ export async function presignedUrlPatch(data, id: string) {
     }
 
     return "Archivo actualizado correctamente";
+}
+
+function extractS3Info(urlValue: string) {
+    const url = new URL(urlValue);
+
+    // 1. Obtenemos el path (sin el dominio ni los parámetros de búsqueda)
+    // Resultado: "/mi-bucket/pdfs/*.pdf"
+    let path = url.pathname;
+
+    // 2. Quitamos el nombre del bucket de la ruta
+    // Nota: El bucket suele ser el primer segmento después del primer "/"
+    const pathSegments = path.split('/').filter(segment => segment.length > 0);
+
+    // La "ruta" real (Key en S3) es todo lo que sigue al bucket
+    const rutaS3 = pathSegments.slice(1).join('/');
+
+    // 3. Extraemos la extensión del archivo
+    const extension = rutaS3.split('.').pop();
+
+    return {
+        ruta: rutaS3,
+        tipo: extension
+    };
 }

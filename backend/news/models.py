@@ -2,7 +2,6 @@ from django.db import models
 from IMGs.models import Img
 from PDFs.models import PDF
 
-from django.utils import timezone
 
 class News(models.Model):
 
@@ -21,8 +20,10 @@ class News(models.Model):
         choices=estados,
         default="borrador",
     )
-    imagen = models.ForeignKey(Img, on_delete=models.CASCADE, null=True, blank=True)
-    pdf = models.ForeignKey(PDF, on_delete=models.CASCADE, null=True, blank=True)
+    imagen = models.ForeignKey(
+        Img, on_delete=models.CASCADE, null=True, blank=True)
+    pdf = models.ForeignKey(
+        PDF, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.titulo

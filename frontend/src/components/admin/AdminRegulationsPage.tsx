@@ -278,7 +278,6 @@ export function AdminRegulationsPage() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="all">Todas las categorías</SelectItem>
                                 <SelectItem value="reglamento">Reglamento</SelectItem>
                                 <SelectItem value="estatuto">Estatuto</SelectItem>
                                 <SelectItem value="ley">Ley</SelectItem>

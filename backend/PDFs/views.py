@@ -107,3 +107,40 @@ class PDFViewSet(viewsets.GenericViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["delete"], url_path="pdf-delete", permission_classes=[IsAdminPrin])
+    def delete_pdf_s3(self, request, pk=None):
+        # 1. Obtenemos la instancia del modelo PDF
+        file_instance = self.get_object()
+
+        # 2. Verificamos si existe la ruta
+        if not file_instance.ruta:
+            return Response(
+                {"error": "Este archivo no tiene una ruta asociada en S3"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ruta_s3 = file_instance.ruta
+
+        try:
+            # 3. Eliminar el archivo del bucket de S3
+            s3_client.delete_object(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                Key=ruta_s3,
+            )
+
+            # 4. Eliminar el registro del modelo PDF
+            # Esto automáticamente pondrá en NULL el campo 'pdf' en el modelo 'News'
+            # gracias a 'null=True, blank=True' en la ForeignKey de News.
+            file_instance.delete()
+
+            return Response(
+                {"message": f"Archivo {ruta_s3} eliminado exitosamente de S3 y base de datos."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": f"Error al eliminar de S3: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

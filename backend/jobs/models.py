@@ -27,7 +27,7 @@ class Job(models.Model):
     )
     descripcion = models.TextField()
     pdf = models.ForeignKey(
-        PDF, on_delete=models.CASCADE, null=True, blank=True)
+        PDF, on_delete=models.SET_NULL, null=True, blank=True)
     sobre_empresa = models.TextField(blank=True, null=True)
 
     def __str__(self):

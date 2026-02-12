@@ -225,11 +225,24 @@ export function useNewsPatch() {
         }
         hasChanges = true;
       }
-
+      console.log("PDFs comparados:", data.pdf, data_old.pdf);
+      console.log("URLs comparados:", data.pdf_url, data_old.pdf_url);
       // Manejo del PDF
       if (data.pdf !== data_old.pdf) {
         if (data_old.pdf_url) {
           // Actualizar PDF existente
+          if (data.pdf === null) {
+            // Eliminar PDF
+            const deleteRes = await presignedUrlPatch(
+              data_old.pdf as string,
+              data_old.pdf_url as string,
+              "delete"
+            );
+            if (!deleteRes) {
+              throw new Error("Error al eliminar el PDF");
+            }
+            return "PDF eliminado correctamente";
+          }
           const uploadRes = await presignedUrlPatch(
             data.pdf as File,
             data_old.pdf_url as string
