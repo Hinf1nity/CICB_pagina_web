@@ -111,6 +111,21 @@ AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION")
 AWS_S3_ENDPOINT = os.getenv("AWS_S3_ENDPOINT")
 AWS_S3_PUBLIC_URL = f"https://{AWS_S3_ENDPOINT}/{AWS_STORAGE_BUCKET_NAME}"
 
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "querystring_auth": os.getenv("AWS_QUERYSTRING_AUTH", "True") == "True",
+            "file_overwrite": os.getenv("AWS_S3_FILE_OVERWRITE", "False") == "True",
+            "default_acl": os.getenv("AWS_DEFAULT_ACL", "none"),
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 PASSWORDS_ADMINS = os.getenv('PASSWORDS_ADMINS', 'admin').split(',')
 
 # Password validation
