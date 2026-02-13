@@ -101,7 +101,7 @@ export function Navbar() {
           {/* Logo y título */}
           <NavLink to="/" className="flex items-center space-x-3 shrink-0">
             <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full bg-white shrink-0">
-              <img src="/src/assets/LOGO CIC B sin fondo.png" alt="Logo CICB" className="w-full h-full object-contain" />
+              <img src="/src/assets/logo_cicb_sin_fondo.png" alt="Logo CICB" className="w-full h-full object-contain" />
             </div>
             <div className="hidden md:block">
               <h1 className="text-primary-foreground font-semibold text-lg">
