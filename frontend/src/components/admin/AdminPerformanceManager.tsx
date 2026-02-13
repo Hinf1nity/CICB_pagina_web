@@ -112,7 +112,10 @@ export function AdminPerformanceManager() {
     });
     setEditingAction({
       ...action,
-      recursos_info: action.recursos_info.map(ri => ({ ...ri, recurso: ri.recurso.id.toString(), cantidad: ri.cantidad })),
+      recursos_info: action.recursos_info.map(ri => ({ ...ri, recurso: typeof ri.recurso === 'object' && ri.recurso !== null && 'id' in ri.recurso
+        ? ri.recurso.id?.toString() ?? "" 
+        : ri.recurso.toString(), // Si ya es un string (o el ID), lo usamos directamente
+      cantidad: ri.cantidad })),
     });
     setResources([...action.recursos_info.map(ri => typeof ri.recurso === 'object' ? {
       id: ri.recurso.id,

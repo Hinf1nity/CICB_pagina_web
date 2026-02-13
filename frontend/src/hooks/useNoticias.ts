@@ -62,11 +62,27 @@ export function useNoticias(page: number, search: string = '', category: string 
     },
     select: (data) => ({
       ...data,
-      results: data.results.map((item) => ({
-        ...item,
-        imagen_url: item.imagen?.url,
-        imagen: undefined,
-      })),
+      results: data.results.map((item) => {
+        // 1. Extraemos la imagen para evaluarla
+        const imgSource = item.imagen;
+        
+        // 2. Determinamos la URL de forma segura
+        let finalImagenUrl = undefined;
+
+        if (imgSource && typeof imgSource === 'object' && 'url' in imgSource) {
+          // Caso: Es el objeto que manda Django REST Framework { url: "...", ... }
+          finalImagenUrl = (imgSource as { url: string }).url;
+        } else if (typeof imgSource === 'string') {
+          // Caso: Ya es un string con el path/URL
+          finalImagenUrl = imgSource;
+        }
+
+        return {
+          ...item,
+          imagen_url: finalImagenUrl,
+          imagen: undefined, // Limpiamos para evitar conflictos
+        };
+      }),
     }),
     placeholderData: keepPreviousData,
     enabled: search.trim().length > 4 || search.trim().length === 0,

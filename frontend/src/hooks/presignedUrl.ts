@@ -1,6 +1,6 @@
 import api from "../api/kyClient";
 
-export async function presignedUrlPost(data) {
+export async function presignedUrlPost(data: any) {
     const dataTypeFile = data.type === 'application/pdf' ? 'pdf' : 'img';
     const presignedResponse = await api
         .post(`${dataTypeFile}s/${dataTypeFile}-presigned-url/`, {

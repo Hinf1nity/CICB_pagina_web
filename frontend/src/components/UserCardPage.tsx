@@ -48,7 +48,11 @@ export function UserCardPage() {
           <div className="flex justify-center mb-6">
             <div className="relative">
               <Avatar className="w-40 h-40 border-4 border-primary shadow-lg">
-                <AvatarImage src={userData.imagen} />
+                <AvatarImage src={
+                  userData.imagen instanceof File 
+                    ? URL.createObjectURL(userData.imagen) 
+                    : userData.imagen // Aquí userData.imagen ya es un string o undefined
+                } />
                 <AvatarFallback className="bg-primary text-primary-foreground text-5xl">
                   {userData.nombre.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </AvatarFallback>
