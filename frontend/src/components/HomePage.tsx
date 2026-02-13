@@ -106,7 +106,7 @@ export function HomePage() {
           <div className="text-primary-foreground max-w-2xl">
             <div className="mb-4 w-48 h-auto">
               <img
-                src="/src/assets/LOGO CIC B sin fondo.png"
+                src="/src/assets/logo_cicb_sin_fondo.png"
                 alt="Logo Colegio de Ingenieros Civiles de Bolivia"
                 className="w-full h-auto object-contain"
               />
