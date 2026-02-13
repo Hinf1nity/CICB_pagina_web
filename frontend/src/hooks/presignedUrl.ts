@@ -65,7 +65,7 @@ function extractS3Info(urlValue: string) {
 
     // 1. Obtenemos el path (sin el dominio ni los parámetros de búsqueda)
     // Resultado: "/mi-bucket/pdfs/*.pdf"
-    let path = url.pathname;
+    const path = url.pathname;
 
     // 2. Quitamos el nombre del bucket de la ruta
     // Nota: El bucket suele ser el primer segmento después del primer "/"
