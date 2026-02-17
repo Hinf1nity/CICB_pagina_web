@@ -20,6 +20,7 @@ import { AdminNewsPage } from './components/admin/AdminNewsPage';
 import { AdminAnnouncementsPage } from './components/admin/AdminAnnouncementsPage';
 import { AdminRegulationsPage } from './components/admin/AdminRegulationsPage';
 import { AdminYearbookPage } from './components/admin/AdminYearbookPage';
+import { CalculatorPage } from './components/CalculatorPage';
 import PrivateRoute from './components/PrivateRoute';
 
 export default function App() {
@@ -87,6 +88,7 @@ function AppRoutes() {
             type="announcements"
           />
         } />
+        <Route path="/calculadora" element={<CalculatorPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

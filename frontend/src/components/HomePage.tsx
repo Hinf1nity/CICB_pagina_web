@@ -149,11 +149,11 @@ export function HomePage() {
                 </Button>
               )}
               <Button
-                onClick={() => navigate('/noticias')}
+                onClick={() => navigate('/calculadora')}
                 variant="outline"
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
               >
-                Ver Noticias
+                Calculadora de Aranceles
               </Button>
             </div>
           </div>
