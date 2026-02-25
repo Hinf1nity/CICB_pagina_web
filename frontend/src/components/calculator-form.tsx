@@ -1,168 +1,248 @@
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  calculatorSchema,
+  type FormData,
+} from "../validations/CalculatorSchema";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Button } from "./ui/button";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Building2, TreePine } from "lucide-react";
-import { useState } from "react";
+import { Building2, TreePine, Loader2 } from "lucide-react";
+import { useCalculatorData } from "../hooks/useCalculatorData";
 
 interface CalculatorFormProps {
-    onSubmit: (data: FormData) => void;
-    isLoading: boolean;
-}
-
-export interface FormData {
-    yearsOfExperience: number;
-    department: string;
-    educationLevel: string;
-    location: string;
-    activityType: string;
+  onSubmit: (data: FormData) => void;
+  isLoading: boolean;
 }
 
 export function CalculatorForm({ onSubmit, isLoading }: CalculatorFormProps) {
-    const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const { actividades, educationLevels, isLoadingData } = useCalculatorData();
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+  // 6. Lista de departamentos corregida con mayúsculas (Nombre propio)
+  const departamentos = [
+    "Beni",
+    "Chuquisaca",
+    "Cochabamba",
+    "La Paz",
+    "Oruro",
+    "Pando",
+    "Potosí",
+    "Santa Cruz",
+    "Tarija",
+  ];
 
-        const data: FormData = {
-            yearsOfExperience: Number(formData.get('yearsOfExperience')),
-            department: formData.get('department') as string,
-            educationLevel: formData.get('educationLevel') as string,
-            location: formData.get('location') as string,
-            activityType: formData.get('activityType') as string,
-        };
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(calculatorSchema),
+    defaultValues: {
+      yearsOfExperience: 0,
+      department: "",
+      educationLevel: "",
+      location: "ciudad",
+      activityType: "",
+    },
+  });
 
-        onSubmit(data);
-    };
+  const selectedLocation = watch("location");
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="yearsOfExperience">Años de Antigüedad</Label>
-                <Input
-                    id="yearsOfExperience"
-                    name="yearsOfExperience"
-                    type="number"
-                    min="0"
-                    max="60"
-                    required
-                    placeholder="Ej: 5"
-                    className="bg-white border-gray-300"
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="yearsOfExperience">Años de Antigüedad</Label>
+        <Input
+          id="yearsOfExperience"
+          type="number"
+          className={errors.yearsOfExperience ? "border-red-500" : "bg-white"}
+          {...register("yearsOfExperience", { valueAsNumber: true })}
+        />
+        {errors.yearsOfExperience && (
+          <p className="text-xs text-red-500 font-medium">
+            {errors.yearsOfExperience.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>Departamento</Label>
+        <Controller
+          name="department"
+          control={control}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value || ""}>
+              <SelectTrigger
+                className={
+                  errors.department ? "border-red-500 bg-white" : "bg-white"
+                }
+              >
+                <SelectValue placeholder="Seleccione el departamento" />
+              </SelectTrigger>
+              <SelectContent>
+                {departamentos.map((dept) => (
+                  <SelectItem key={dept} value={dept}>
+                    {dept}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.department && (
+          <p className="text-xs text-red-500 font-medium">
+            {errors.department.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>Grado de Formación</Label>
+        <Controller
+          name="educationLevel"
+          control={control}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value || ""}>
+              <SelectTrigger
+                className={
+                  errors.educationLevel ? "border-red-500 bg-white" : "bg-white"
+                }
+              >
+                <SelectValue
+                  placeholder={
+                    isLoadingData ? "Cargando..." : "Seleccione el grado"
+                  }
                 />
-            </div>
+              </SelectTrigger>
+              <SelectContent>
+                {educationLevels.map((grado: any) => (
+                  <SelectItem key={grado.value} value={grado.value}>
+                    {grado.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.educationLevel && (
+          <p className="text-xs text-red-500 font-medium">
+            {errors.educationLevel.message}
+          </p>
+        )}
+      </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="department">Departamento</Label>
-                <Select name="department" required>
-                    <SelectTrigger id="department" className="bg-white border-gray-300">
-                        <SelectValue placeholder="Seleccione el departamento" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="la-paz">La Paz</SelectItem>
-                        <SelectItem value="cochabamba">Cochabamba</SelectItem>
-                        <SelectItem value="santa-cruz">Santa Cruz</SelectItem>
-                        <SelectItem value="oruro">Oruro</SelectItem>
-                        <SelectItem value="potosi">Potosí</SelectItem>
-                        <SelectItem value="chuquisaca">Chuquisaca</SelectItem>
-                        <SelectItem value="tarija">Tarija</SelectItem>
-                        <SelectItem value="beni">Beni</SelectItem>
-                        <SelectItem value="pando">Pando</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="educationLevel">Grado de Formación</Label>
-                <Select name="educationLevel" required>
-                    <SelectTrigger id="educationLevel" className="bg-white border-gray-300">
-                        <SelectValue placeholder="Seleccione el grado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="tecnico">Técnico</SelectItem>
-                        <SelectItem value="licenciatura">Licenciatura</SelectItem>
-                        <SelectItem value="diplomado">Diplomado</SelectItem>
-                        <SelectItem value="especialidad">Especialidad</SelectItem>
-                        <SelectItem value="maestria">Maestría</SelectItem>
-                        <SelectItem value="doctorado">Doctorado</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="space-y-3">
-                <Label className="text-base font-medium">Locación</Label>
-                <RadioGroup
-                    name="location"
-                    required
-                    className="grid grid-cols-2 gap-4"
-                    value={selectedLocation}
-                    onValueChange={setSelectedLocation}
-                >
-                    <div>
-                        <RadioGroupItem value="ciudad" id="ciudad" className="peer sr-only" />
-                        <Label
-                            htmlFor="ciudad"
-                            className={`flex flex-col items-center justify-center p-6 rounded-lg border-2 cursor-pointer transition-all hover:border-[#3C8D50] hover:shadow-md ${selectedLocation === 'ciudad'
-                                    ? 'border-[#0F3D33] bg-[#0F3D33]/5 shadow-md'
-                                    : 'border-gray-300 bg-white'
-                                }`}
-                        >
-                            <Building2
-                                className={`w-10 h-10 mb-3 ${selectedLocation === 'ciudad' ? 'text-[#0F3D33]' : 'text-gray-500'
-                                    }`}
-                            />
-                            <span className={`text-lg font-medium ${selectedLocation === 'ciudad' ? 'text-[#0F3D33]' : 'text-gray-700'
-                                }`}>
-                                Ciudad
-                            </span>
-                            <span className="text-sm text-gray-500 mt-1">Zona urbana</span>
-                        </Label>
-                    </div>
-                    <div>
-                        <RadioGroupItem value="campo" id="campo" className="peer sr-only" />
-                        <Label
-                            htmlFor="campo"
-                            className={`flex flex-col items-center justify-center p-6 rounded-lg border-2 cursor-pointer transition-all hover:border-[#3C8D50] hover:shadow-md ${selectedLocation === 'campo'
-                                    ? 'border-[#0F3D33] bg-[#0F3D33]/5 shadow-md'
-                                    : 'border-gray-300 bg-white'
-                                }`}
-                        >
-                            <TreePine
-                                className={`w-10 h-10 mb-3 ${selectedLocation === 'campo' ? 'text-[#3C8D50]' : 'text-gray-500'
-                                    }`}
-                            />
-                            <span className={`text-lg font-medium ${selectedLocation === 'campo' ? 'text-[#0F3D33]' : 'text-gray-700'
-                                }`}>
-                                Campo
-                            </span>
-                            <span className="text-sm text-gray-500 mt-1">Zona rural</span>
-                        </Label>
-                    </div>
-                </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="activityType">Tipo de Actividad</Label>
-                <Select name="activityType" required>
-                    <SelectTrigger id="activityType" className="bg-white border-gray-300">
-                        <SelectValue placeholder="Seleccione el tipo de actividad" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="diseno">Diseño</SelectItem>
-                        <SelectItem value="supervision">Supervisión</SelectItem>
-                        <SelectItem value="avaluo">Avalúo</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/90"
-                disabled={isLoading}
+      <div className="space-y-3">
+        <Label className="text-base font-medium">Locación</Label>
+        <Controller
+          name="location"
+          control={control}
+          render={({ field }) => (
+            <RadioGroup
+              onValueChange={field.onChange}
+              value={field.value}
+              className="grid grid-cols-2 gap-4"
             >
-                {isLoading ? 'Calculando...' : 'Calcular Arancel'}
-            </Button>
-        </form>
-    );
+              <div>
+                <RadioGroupItem
+                  value="ciudad"
+                  id="ciudad"
+                  className="sr-only"
+                />
+                <Label
+                  htmlFor="ciudad"
+                  className={`flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    selectedLocation === "ciudad"
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <Building2
+                    className={`w-8 h-8 mb-2 ${selectedLocation === "ciudad" ? "text-primary" : "text-gray-400"}`}
+                  />
+                  <span className="font-medium">Ciudad</span>
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="campo" id="campo" className="sr-only" />
+                <Label
+                  htmlFor="campo"
+                  className={`flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    selectedLocation === "campo"
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <TreePine
+                    className={`w-8 h-8 mb-2 ${selectedLocation === "campo" ? "text-primary" : "text-gray-400"}`}
+                  />
+                  <span className="font-medium">Campo</span>
+                </Label>
+              </div>
+            </RadioGroup>
+          )}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Tipo de Actividad</Label>
+        <Controller
+          name="activityType"
+          control={control}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value || ""}>
+              <SelectTrigger
+                className={
+                  errors.activityType ? "border-red-500 bg-white" : "bg-white"
+                }
+              >
+                <SelectValue
+                  placeholder={
+                    isLoadingData ? "Cargando..." : "Seleccione actividad"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {actividades.map((act: any) => (
+                  <SelectItem key={act.value} value={act.value}>
+                    {act.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.activityType && (
+          <p className="text-xs text-red-500 font-medium">
+            {errors.activityType.message}
+          </p>
+        )}
+      </div>
+
+      {/* 7. Botón con estado dinámico de carga */}
+      <Button
+        type="submit"
+        className="w-full text-base font-semibold"
+        disabled={isLoading || isLoadingData}
+      >
+        {isLoading ? (
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Cargando...
+          </div>
+        ) : (
+          "Calcular Arancel"
+        )}
+      </Button>
+    </form>
+  );
 }
