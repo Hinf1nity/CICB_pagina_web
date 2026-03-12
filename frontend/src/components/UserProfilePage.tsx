@@ -94,6 +94,7 @@ export function UserProfilePage() {
         }
       });
       setIsEditing(false);
+    }
   };
 
   const handleAddCertification = (data: any) => {
