@@ -358,8 +358,8 @@ export function AdminRegulationsPage() {
                           alert("Solo se permiten archivos PDF");
                           return;
                         }
-                        if (newFile.size > 10 * 1024 * 1024) {
-                          alert("El PDF no debe superar los 10MB");
+                        if (newFile.size > 200 * 1024 * 1024) {
+                          alert("El PDF no debe superar los 200MB");
                           return;
                         }
 
@@ -412,7 +412,7 @@ export function AdminRegulationsPage() {
                               <label htmlFor="pdf" className="cursor-pointer">
                                 <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                                 <p className="text-muted-foreground">
-                                  Sube un PDF con detalles adicionales (máx. 10MB)
+                                  Sube un PDF con detalles adicionales (máx. 200MB)
                                 </p>
                               </label>
                             </div>

@@ -20,7 +20,7 @@ export const jobSchema = z.object({
   pdf: z
     .instanceof(File)
     .refine((file) => file.type === "application/pdf", "Debe ser un PDF")
-    .refine((file) => file.size <= 10 * 1024 * 1024, "El PDF no debe superar los 10MB")
+    .refine((file) => file.size <= 200 * 1024 * 1024, "El PDF no debe superar los 200MB")
     .optional()
     .or(z.literal(null))
     .or(z.string()),
