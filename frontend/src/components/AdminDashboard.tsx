@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, Settings, FileText, BookOpen, Megaphone, LogOut } from 'lucide-react';
+import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, Settings, FileText, BookOpen, Megaphone, LogOut, Calculator } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { useAdminData } from '../hooks/useAdminData';
@@ -42,6 +42,16 @@ export function AdminDashboard() {
       icon: ListChecks,
       color: 'text-[#3A5A78]',
       bgColor: 'bg-[#3A5A78]/10',
+    },
+    {
+      id: "/admin/calculadora",
+      title: "Calculadora de Aranceles",
+      description:
+        "Configure parámetros, multiplicadores y costos de la calculadora profesional",
+      icon: Calculator,
+      color: "text-[#0B3D2E]",
+      bgColor: "bg-[#0B3D2E]/10",
+      stats: "Sistema de cálculo activo",
     },
     {
       id: "/admin/anuario",

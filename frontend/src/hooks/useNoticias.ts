@@ -65,7 +65,7 @@ export function useNoticias(page: number, search: string = '', category: string 
       results: data.results.map((item) => {
         // 1. Extraemos la imagen para evaluarla
         const imgSource = item.imagen;
-        
+
         // 2. Determinamos la URL de forma segura
         let finalImagenUrl = undefined;
 
@@ -273,7 +273,7 @@ export function useNewsPatch() {
       }
 
       if (!hasChanges) {
-        return null;
+        return { message: "Sin cambios en base de datos" };
       }
 
       const response = await api.patch(`news/news_admin/${id}/`, {
@@ -281,7 +281,11 @@ export function useNewsPatch() {
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data: any) => {
+      if (_data.message) {
+        toast.info("No se realizaron cambios");
+        return;
+      }
       toast.success("Noticia actualizada exitosamente");
       queryClient.invalidateQueries({ queryKey: ['noticias', 'admin'] });
     },

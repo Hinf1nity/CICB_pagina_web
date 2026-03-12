@@ -20,7 +20,9 @@ import { AdminNewsPage } from './components/admin/AdminNewsPage';
 import { AdminAnnouncementsPage } from './components/admin/AdminAnnouncementsPage';
 import { AdminRegulationsPage } from './components/admin/AdminRegulationsPage';
 import { AdminYearbookPage } from './components/admin/AdminYearbookPage';
+import { CalculatorPage } from './components/CalculatorPage';
 import PrivateRoute from './components/PrivateRoute';
+import { AdminCalculatorPage } from './components/admin/AdminCalculatorPage';
 
 export default function App() {
   // const navigate = useNavigate();
@@ -66,6 +68,7 @@ function AppRoutes() {
         <Route path="/admin/convocatorias" element={<PrivateRoute requiredRole={['admin_general']}><AdminAnnouncementsPage /></PrivateRoute>} />
         <Route path="/admin/regulaciones" element={<PrivateRoute requiredRole={['admin_general']}><AdminRegulationsPage /></PrivateRoute>} />
         <Route path="/admin/anuario" element={<PrivateRoute requiredRole={['admin_general']}><AdminYearbookPage /></PrivateRoute>} />
+        <Route path='/admin/calculadora' element={<PrivateRoute requiredRole={['admin_general']}><AdminCalculatorPage /></PrivateRoute>} />
         <Route path="/anuario" element={
           <GenericPage
             title="Anuario"
@@ -87,6 +90,7 @@ function AppRoutes() {
             type="announcements"
           />
         } />
+        <Route path="/calculadora" element={<CalculatorPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

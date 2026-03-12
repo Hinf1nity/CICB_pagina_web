@@ -307,9 +307,8 @@ export function useUserPatchUserProfile() {
       toast.success("Perfil actualizado exitosamente");
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
     },
-    onError: (err) => {
+    onError: () => {
       toast.error("Error al actualizar el perfil");
-      console.error('Error en useUserPatchUserProfile:', err);
     }
   });
 }

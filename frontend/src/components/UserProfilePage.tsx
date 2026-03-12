@@ -86,18 +86,14 @@ export function UserProfilePage() {
   const handleSave: SubmitHandler<UserPageData> = (data) => {
     data.certificaciones = userDataCopy.certificaciones || [];
     if (data !== userDataCopy) {
-      try {
-        patchUser({ id: parseInt(userData.id), data, data_old: userDataCopy as Partial<UserPageData> }, {
-          onSuccess: (res: any) => {
-            if (user?.name !== res?.nombre && res?.message !== "Sin cambios en base de datos") {
-              updateUser(res?.nombre);
-            }
+      patchUser({ id: parseInt(userData.id), data, data_old: userDataCopy as Partial<UserPageData> }, {
+        onSuccess: (res: any) => {
+          if (user?.name !== res?.nombre && res?.message !== "Sin cambios en base de datos") {
+            updateUser(res?.nombre);
           }
-        });
-        setIsEditing(false);
-      } catch (error) {
-        console.error('Error al guardar los cambios:', error);
-      }
+        }
+      });
+      setIsEditing(false);
     }
   };
 
@@ -125,8 +121,8 @@ export function UserProfilePage() {
         certificaciones: [{ nombre: '', institucion: '', anio: '' }],
       });
 
-    } catch (error) {
-      console.error("Error al agregar certificación:", error);
+    } catch {
+      console.error("Error al agregar certificación");
     }
   };
 
@@ -141,8 +137,8 @@ export function UserProfilePage() {
         data_old: { certificaciones: userDataCopy.certificaciones }
       });
 
-    } catch (error) {
-      console.error("Error al eliminar:", error);
+    } catch {
+      console.error("Error al eliminar");
     }
   };
 
@@ -164,8 +160,8 @@ export function UserProfilePage() {
       setTempPhotoUrl('');
       reset();
 
-    } catch (error) {
-      console.error("Error al actualizar foto:", error);
+    } catch {
+      console.error("Error al actualizar foto");
     }
   };
 

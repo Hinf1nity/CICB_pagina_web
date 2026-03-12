@@ -7,12 +7,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         incidencias_antiguedad_locacion = {
-            "junior_ciudad": 1.80,
-            "junior_campo": 2.30,
-            "pleno_ciudad": 3.00,
-            "pleno_campo": 3.50,
-            "senior_ciudad": 4.20,
-            "senior_campo": 4.70,
+            "ant_junior_ciudad": 1.80,
+            "ant_junior_campo": 2.30,
+            "ant_junior_min": 1.00,
+            "ant_junior_max": 5.00,
+            "ant_pleno_ciudad": 3.00,
+            "ant_pleno_campo": 3.50,
+            "ant_pleno_min": 6.00,
+            "ant_pleno_max": 15.00,
+            "ant_senior_ciudad": 4.20,
+            "ant_senior_campo": 4.70,
+            "ant_senior_min": 16.00,
+            "ant_senior_max": 100.00,
         }
 
         incidencias_formacion = {

@@ -32,8 +32,7 @@ export function LoginPage() {
       else {
         navigate('/');
       }
-    } catch (error) {
-      console.error('Error during login:', error);
+    } catch {
       alert('Error al iniciar sesión. Por favor, verifica tus credenciales e intenta de nuevo.');
     }
     finally {

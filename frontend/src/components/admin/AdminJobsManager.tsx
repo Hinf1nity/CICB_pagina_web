@@ -84,8 +84,8 @@ export function AdminJobsManager() {
       reset(itemToEdit); // Esto inyecta los datos al formulario
       setIsDialogOpen(true);
 
-    } catch (error) {
-      console.error("Error al intentar editar:", error);
+    } catch {
+      console.error("Error al intentar editar");
     }
   };
 
