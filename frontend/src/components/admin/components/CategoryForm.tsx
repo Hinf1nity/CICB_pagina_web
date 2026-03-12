@@ -53,7 +53,6 @@ export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem }: Categ
 
         // 3. Enviamos el objeto completo al backend usando tu función onSave existente
         // Esto activará el método .update() de tu serializer en Django
-        console.log("Datos completos a enviar al backend:", updatedCategory);
         return await onAddNewItem(category.id, updatedCategory);
     };
 

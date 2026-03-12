@@ -26,8 +26,6 @@ export function WorkCostsSection({ aranceles }: { aranceles: any[] }) {
     const { fields } = useFieldArray({ control, name: "niveles" });
 
     const handleAddCategory = (data: any) => {
-        console.log("Nueva categoría:", data.nombre);
-        console.log("Datos completos enviados al API:", data);
         setIsLoading(true);
         postCategoria(data, {
             onSuccess: () => {

@@ -28,10 +28,8 @@ export const ActivitySection = ({ activitiesData }: Props) => {
     const { fields, remove, append } = useFieldArray({ control, name: "actividades" });
     const onSave = (data: any) => {
         if (!data.actividades || data.actividades.length === 0) {
-            console.log("No hay actividades para guardar");
             return;
         }
-        console.log("Guardando solo Actividades:", data);
         patchIncidencia({ oldData: activitiesData, data: data.actividades });
     };
 
@@ -43,7 +41,6 @@ export const ActivitySection = ({ activitiesData }: Props) => {
     });
 
     const onAddActivity = (data: any) => {
-        console.log("Agregando nueva actividad:", data);
         setIsLoading(true);
         postIncidencia({ nombre: `actividad_${data.nombre}`, valor: data.valor }, {
             onSuccess: () => {

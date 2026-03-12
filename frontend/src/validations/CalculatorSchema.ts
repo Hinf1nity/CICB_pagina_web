@@ -4,7 +4,6 @@ import { z } from "zod";
 export const calculatorSchema = z.object({
   // Preprocesamos para evitar el error NaN al borrar el input
   yearsOfExperience: z.number({
-    required_error: "Ingrese los años de antigüedad",
     message: "Es necesario ingresar un número",
   }).min(0, "Mínimo 0 años").max(99, "Máximo 99 años"),
   
@@ -14,7 +13,7 @@ export const calculatorSchema = z.object({
   educationLevel: z.string().min(1, "Seleccione un nivel académico"),
   
   location: z.enum(["ciudad", "campo"], {
-    required_error: "Seleccione una ubicación"
+    message: "Seleccione una ubicación"
   }),
   
   activityType: z.string().min(1, "Seleccione una actividad"),

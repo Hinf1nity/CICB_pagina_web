@@ -136,9 +136,8 @@ export function AdminPerformanceManager() {
 
     try {
       deletePerformance(id);
-    } catch (error) {
+    } catch {
       alert('Error al eliminar la actividad');
-      console.error(error);
     }
   };
 
@@ -167,8 +166,7 @@ export function AdminPerformanceManager() {
           }
         });
       }
-    } catch (error) {
-      console.error("Error al guardar:", error);
+    } catch {
       alert("Error al procesar la solicitud");
     }
   };
@@ -204,9 +202,8 @@ export function AdminPerformanceManager() {
     if (confirm('¿Estás seguro de eliminar este recurso del catálogo?')) {
       try {
         deleteResource(id);
-      } catch (error) {
+      } catch {
         alert('Error al eliminar el recurso del catálogo');
-        console.error(error);
       }
     }
   };

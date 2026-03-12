@@ -145,7 +145,6 @@ export function useAdminIncidenciasPatch() {
             if (updatedIncidencias.length === 0) {
                 return { message: "Sin cambios en base de datos" };
             }
-            console.log("Incidencias a actualizar:", updatedIncidencias);
             const response = await api.patch(`aranceles/incidencias-admin/bulk-update/`, { json: updatedIncidencias });
             return response.json();
         },

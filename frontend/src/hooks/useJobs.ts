@@ -166,7 +166,7 @@ export async function useJobDetailAdmin(id: string) {
 
       pdf_url = pdf_url_response.download_url;
       pdf_id = pdf_url_response.pdf_id;
-    } catch (e) {
+    } catch {
       console.warn("Aviso: El archivo PDF físico no se encontró en el servidor (404).");
     }
   }

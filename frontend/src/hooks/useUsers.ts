@@ -309,7 +309,6 @@ export function useUserPatchUserProfile() {
     },
     onError: (err) => {
       toast.error("Error al actualizar el perfil");
-      console.error('Error en useUserPatchUserProfile:', err);
     }
   });
 }

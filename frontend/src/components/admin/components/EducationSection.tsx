@@ -37,13 +37,10 @@ export const EducationSection = ({ initialData }: Props) => {
     const onSave = (data: any) => {
         if (data.formacion && data.formacion.length > 0) {
             patchIncidencia({ oldData: initialData, data: data.formacion });
-        } else {
-            console.log("No hay datos para guardar");
         }
     };
 
     const onAddEducation = (data: any) => {
-        console.log("Agregando nuevo grado de educación:", data);
         setIsLoading(true);
         postIncidencia({ nombre: `form_${data.nombre}`, valor: data.valor }, {
             onSuccess: () => {
@@ -56,7 +53,6 @@ export const EducationSection = ({ initialData }: Props) => {
     }
 
     const onDeleteEducation = (id: number) => {
-        console.log("Eliminando grado de educación con ID:", id);
         deleteIncidencia(id);
     };
 

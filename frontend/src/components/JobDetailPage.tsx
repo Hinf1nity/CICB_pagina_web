@@ -37,8 +37,8 @@ export function JobDetailPage() {
       try {
         await navigator.clipboard.writeText(url);
         toast.success('¡Enlace copiado!');
-      } catch (err) {
-        console.error('Error al copiar: ', err);
+      } catch {
+        toast.error('Error al copiar: ');
       }
     } else {
       // 2. Fallback para contextos no seguros o navegadores viejos
@@ -49,8 +49,8 @@ export function JobDetailPage() {
       try {
         document.execCommand('copy');
         toast.success('¡Enlace copiado!');
-      } catch (err) {
-        console.error('No se pudo copiar ni con fallback', err);
+      } catch {
+        toast.error('No se pudo copiar');
       }
       document.body.removeChild(textArea);
     }
