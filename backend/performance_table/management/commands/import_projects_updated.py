@@ -152,15 +152,13 @@ class Command(BaseCommand):
                 if pair_key in qr_map:
                     qr = qr_map[pair_key]
                     if abs(getattr(qr, 'rendimiento', 0.0) - rendimiento) > 0.0001: 
-                        qr.rendimiento = rendimiento
                         qr.cantidad = str(rendimiento) 
                         qr_to_update.append(qr)
                 else:
                     qr_to_create.append(QuantifiedResource(
                         performance_table=t_obj,
                         recurso=r_obj,
-                        cantidad=str(rendimiento),
-                        rendimiento=rendimiento
+                        cantidad=str(rendimiento)
                     ))
 
             if qr_to_create:
@@ -168,7 +166,7 @@ class Command(BaseCommand):
                 self.stdout.write(f"   + Se asignaron {len(qr_to_create)} nuevos recursos a tareas.")
             
             if qr_to_update:
-                QuantifiedResource.objects.bulk_update(qr_to_update, ['rendimiento', 'cantidad'])
+                QuantifiedResource.objects.bulk_update(qr_to_update, ['cantidad'])
                 self.stdout.write(f"   ~ Se actualizaron rendimientos en {len(qr_to_update)} asignaciones.")
 
         self.stdout.write(self.style.SUCCESS("Importación finalizada con éxito."))

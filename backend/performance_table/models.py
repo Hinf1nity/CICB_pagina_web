@@ -27,8 +27,7 @@ class QuantifiedResource(models.Model):
         PerformanceTable, on_delete=models.CASCADE)
     recurso = models.ForeignKey(ResourceChart, on_delete=models.CASCADE)
 
-    cantidad = models.FloatField(null=True, blank=True, default=0.0)
-    rendimiento = models.FloatField(null=True, blank=True, default=0.0)
+    cantidad = models.CharField(max_length=255)
 
     class Meta:
         unique_together = ('performance_table', 'recurso')
