@@ -22,7 +22,7 @@ export const genericSchema = z.object({
   pdf: z
     .instanceof(File, { message: "El archivo debe ser un PDF" })
     .refine((file) => file.type === "application/pdf", "Debe ser un PDF")
-    .refine((file) => file.size <= 10 * 1024 * 1024, "El PDF no debe superar los 10MB").or(z.string()).optional(),
+    .refine((file) => file.size <= 200 * 1024 * 1024, "El PDF no debe superar los 200MB").or(z.string()).optional(),
   estado: z.enum(estados, { message: "El estado debe ser 'borrador' o 'publicado'" }),
   categoria: z.enum(categorias, { message: "La categoría no es válida" }).optional(),
 });
