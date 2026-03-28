@@ -36,7 +36,7 @@ export function useCalculatorData() {
         monthlyFee: Math.round(result.mensual || 0),
         dailyFee: Math.round(result.diario || 0),
         hourlyFee: Math.round(result.hora || 0),
-        
+
         // Mapeo dinámico basado en detailData.ts para evitar el error de 'undefined'
         workCategories: (result.trabajos || []).map((t: any) => ({
           category: t.nombre.toUpperCase(), // Sincronizado con la App
@@ -45,13 +45,14 @@ export function useCalculatorData() {
             items: (n.elementos || []).map((e: any) => ({
               name: e.detalle,
               // Convertimos a costo numérico y redondeamos
-              cost: Math.round(e.valor || 0) 
+              cost: Math.round(e.valor || 0),
+              unidad: e.unidad,
             }))
           }))
-        })), 
+        })),
       };
     },
-  }); 
+  });
 
   return {
     actividades: optionsQuery.data?.actividades || [],

@@ -10,6 +10,7 @@ import { Separator } from "./ui/separator";
 export interface WorkItem {
   name: string;
   cost: number;
+  unidad: string; // "BOB", "hora", "diario", etc.
 }
 
 export interface ComplexityLevel {
@@ -34,13 +35,16 @@ interface ResultsDisplayProps {
 }
 
 export function ResultsDisplay({ results }: ResultsDisplayProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-BO", {
+  const formatCurrency = (amount: number, currency: string = "BOB") => {
+    const formattedCurrency = currency === "BOB" ? " Bs" : ` Bs/${currency}`;
+    const formatted = new Intl.NumberFormat("es-BO", {
       style: "currency",
       currency: "BOB",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+
+    return formatted.replace("Bs", "").trim() + formattedCurrency;
   };
 
   return (
@@ -121,13 +125,13 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
                                         {item.name}
                                       </span>
                                       <span className="font-semibold text-secondary whitespace-nowrap ml-4">
-                                        {formatCurrency(item.cost)}
+                                        {formatCurrency(item.cost, item.unidad)}
                                       </span>
                                     </div>
                                     {itemIdx <
                                       complexityLevel.items.length - 1 && (
-                                      <Separator className="ml-4" />
-                                    )}
+                                        <Separator className="ml-4" />
+                                      )}
                                   </div>
                                 ))}
                               </div>
@@ -143,12 +147,12 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
                               <div className="flex justify-between items-center py-2.5 px-4 hover:bg-accent rounded-md transition-colors">
                                 <span className="text-sm">{item.name}</span>
                                 <span className="font-semibold text-secondary whitespace-nowrap ml-4">
-                                  {formatCurrency(item.cost)}
+                                  {formatCurrency(item.cost, item.unidad)}
                                 </span>
                               </div>
                               {itemIdx <
                                 category.complexityLevels[0].items.length -
-                                  1 && <Separator className="ml-4" />}
+                                1 && <Separator className="ml-4" />}
                             </div>
                           ),
                         )}

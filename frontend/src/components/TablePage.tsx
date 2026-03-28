@@ -173,31 +173,36 @@ export function TablePage() {
                       <TableRow>
                         <TableCell colSpan={6} className="bg-muted/30 p-0">
                           <div className="px-12 py-4">
-                            <h4 className="mb-3 text-foreground">Recursos Necesarios:</h4>
-                            <Table>
-                              <TableHeader>
-                                <TableRow className="border-b">
-                                  <TableHead className="h-8">Recurso</TableHead>
-                                  <TableHead className="h-8 w-32">Unidad</TableHead>
-                                  <TableHead className="h-8 w-32 text-right">Cantidad</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {action.recursos_info.map((resource, index) => (
-                                  <TableRow key={typeof resource.recurso === 'object' && resource.recurso.id ? resource.recurso.id : index} className="border-b last:border-0">
-                                    <TableCell className="py-2">{typeof resource.recurso === 'object' ? resource.recurso.nombre : resource.recurso}</TableCell>
-                                    <TableCell className="py-2">
-                                      <Badge variant="outline" className="bg-background">
-                                        {typeof resource.recurso === 'object' ? resource.recurso.unidad : ''}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell className="py-2 text-right">
-                                      {resource.cantidad}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
+                            {/* <h4 className="mb-3 text-foreground">Recursos Necesarios:</h4> */}
+                            {action.recursos_agrupados && Object.entries(action.recursos_agrupados).map(([categoria, lista]) => (
+                              <div key={categoria} className="mb-6">
+                                <h4 className="mb-2 text-sm font-semibold uppercase">{categoria}</h4>
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-b">
+                                      <TableHead className="h-8">Recurso</TableHead>
+                                      <TableHead className="h-8 w-32">Unidad</TableHead>
+                                      <TableHead className="h-8 w-32 text-right">Cantidad</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {lista.map((resource, index) => (
+                                      <TableRow key={typeof resource.recurso === 'object' && resource.recurso.id ? resource.recurso.id : index} className="border-b last:border-0">
+                                        <TableCell className="py-2">{typeof resource.recurso === 'object' ? resource.recurso.nombre : resource.recurso}</TableCell>
+                                        <TableCell className="py-2">
+                                          <Badge variant="outline" className="bg-background">
+                                            {typeof resource.recurso === 'object' ? resource.recurso.unidad : ''}
+                                          </Badge>
+                                        </TableCell>
+                                        <TableCell className="py-2 text-right">
+                                          {resource.cantidad}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            ))}
                           </div>
                         </TableCell>
                       </TableRow>

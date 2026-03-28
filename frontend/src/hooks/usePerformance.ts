@@ -45,6 +45,7 @@ export function useResourcesPost() {
             const formData = new FormData();
             formData.append("nombre", data.nombre);
             formData.append("unidad", data.unidad);
+            formData.append("categoria", data.categoria!);
             return await api.post("performance/resources/", { body: formData }).json();
         },
         onSuccess: () => {
@@ -74,6 +75,37 @@ export function usePerformance(page: number = 1, search: string = '', category: 
         },
         placeholderData: keepPreviousData,
         enabled: search.trim().length > 4 || search.trim().length === 0,
+        select: (data) => ({
+            ...data,
+            results: data.results.map(performance => {
+                const recursos_agrupados = performance.recursos_info.reduce((acc, ri) => {
+                    const cat = (typeof ri.recurso === 'object' ? ri.recurso.categoria : null) || "Sin categoría";
+
+                    if (!acc[cat]) {
+                        acc[cat] = [];
+                    }
+
+                    // Al empujar 'ri', mantenemos el objeto que contiene {recurso, cantidad}
+                    acc[cat].push({
+                        ...ri,
+                        recurso: typeof ri.recurso === 'object'
+                            ? {
+                                nombre: ri.recurso.nombre || '',
+                                unidad: ri.recurso.unidad || '',
+                                ...(ri.recurso.id !== undefined && { id: ri.recurso.id })
+                            }
+                            : ri.recurso
+                    });
+
+                    return acc;
+                }, {} as Record<string, typeof performance.recursos_info>);
+
+                return {
+                    ...performance,
+                    recursos_agrupados // Ahora tienes los datos listos para iterar por categoría
+                };
+            })
+        }),
     });
 
     return {
@@ -173,6 +205,7 @@ export function useResourcesPatch() {
             };
             appendIfChanged("nombre", data.nombre, oldData.nombre);
             appendIfChanged("unidad", data.unidad, oldData.unidad);
+            appendIfChanged("categoria", data.categoria, oldData.categoria);
             if (!hasChanges) {
                 return { message: "Sin cambios en base de datos" };
             }

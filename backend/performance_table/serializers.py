@@ -6,7 +6,7 @@ from django.db import transaction
 class ResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResourceChart
-        fields = ['id', 'nombre', 'unidad']
+        fields = ['id', 'nombre', 'unidad', 'categoria']
 
 
 class PerformanceResourceSerializer(serializers.ModelSerializer):

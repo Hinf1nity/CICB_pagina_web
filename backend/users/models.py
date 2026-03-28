@@ -1,10 +1,22 @@
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, AbstractUser
 from django.contrib.postgres.fields import ArrayField
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from IMGs.models import Img
 from django.core.validators import MaxValueValidator
+
+DEPARTAMENTO_PREFIXES = {
+    "Chuquisaca": 1,
+    "La Paz": 2,
+    "Cochabamba": 3,
+    "Oruro": 4,
+    "Potosí": 5,
+    "Tarija": 6,
+    "Santa Cruz": 7,
+    "Beni": 8,
+    "Pando": 9,
+}
 
 
 class UsuarioComunManager(BaseUserManager):
@@ -41,7 +53,7 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
     ]
 
     rnic = models.PositiveIntegerField(
-        unique=True, editable=False, null=True, blank=True, validators=[MaxValueValidator(99999)])
+        unique=True, editable=False, null=True, blank=True, validators=[MaxValueValidator(9999999)])
     rni = models.CharField(max_length=255, unique=True, error_messages={
         'unique': 'Este RNI ya esta registrado.'
     })
@@ -82,16 +94,31 @@ class UsuarioComun(AbstractBaseUser, PermissionsMixin):
         return f"{self.rnic} - {self.nombre}"
 
 
-def generate_unique_rnic():
-    last = UsuarioComun.objects.order_by(
-        '-rnic').values_list('rnic', flat=True).first()
-    return (last or 0) + 1
+def generate_unique_rnic(departamento):
+    prefix = DEPARTAMENTO_PREFIXES.get(departamento)
+
+    if not prefix:
+        raise ValueError(f"Departamento '{departamento}' no es válido.")
+
+    base_value = prefix * 1000000
+    lower_bound = base_value + 1
+    upper_bound = base_value + 999999
+    last_in_dept = UsuarioComun.objects.filter(
+        rnic__gte=lower_bound,
+        rnic__lte=upper_bound
+    ).order_by(
+        '-rnic'
+    ).values_list('rnic', flat=True).first()
+    if last_in_dept:
+        return last_in_dept + 1
+    return lower_bound
 
 
 @receiver(pre_save, sender=UsuarioComun)
 def set_rnic(sender, instance, **kwargs):
-    if not instance.rnic:
-        instance.rnic = generate_unique_rnic()
+    if not instance.rnic and instance.departamento:
+        with transaction.atomic():
+            instance.rnic = generate_unique_rnic(instance.departamento)
 
 
 class UsuarioAdminManager(BaseUserManager):

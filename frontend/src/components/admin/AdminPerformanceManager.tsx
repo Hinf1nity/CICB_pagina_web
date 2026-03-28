@@ -71,11 +71,12 @@ export function AdminPerformanceManager() {
       recursos_info: [],
     },
   });
-  const { register: registerCatalog, handleSubmit: handleSubmitCatalog, reset: resetCatalog, formState: { errors: errorsCatalog } } = useForm<Recurso>({
+  const { register: registerCatalog, control: controlCatalog, handleSubmit: handleSubmitCatalog, reset: resetCatalog, formState: { errors: errorsCatalog } } = useForm<Recurso>({
     resolver: zodResolver(recursoSchema),
     defaultValues: {
       nombre: '',
       unidad: '',
+      categoria: '',
     },
   });
 
@@ -123,10 +124,12 @@ export function AdminPerformanceManager() {
       id: ri.recurso.id,
       nombre: ri.recurso.nombre,
       unidad: ri.recurso.unidad,
+      categoria: ri.recurso.categoria,
     } : {
       id: undefined,
       nombre: '',
       unidad: '',
+      categoria: '',
     })]);
     setIsActionDialogOpen(true);
   };
@@ -176,6 +179,7 @@ export function AdminPerformanceManager() {
       id: catalogResource.id,
       nombre: catalogResource.nombre,
       unidad: catalogResource.unidad,
+      categoria: catalogResource.categoria,
     };
     setResources([...resources, newResource]);
     setIsResourceSelectorOpen(false);
@@ -193,6 +197,7 @@ export function AdminPerformanceManager() {
     resetCatalog({
       nombre: resource.nombre,
       unidad: resource.unidad,
+      categoria: resource.categoria,
     });
     setEditingCatalogResource(resource);
     setIsResourceCatalogDialogOpen(true);
@@ -352,31 +357,36 @@ export function AdminPerformanceManager() {
                         <TableRow>
                           <TableCell colSpan={7} className="bg-muted/30 p-0">
                             <div className="px-12 py-4">
-                              <h4 className="mb-3 text-foreground">Recursos Necesarios:</h4>
-                              <Table>
-                                <TableHeader>
-                                  <TableRow className="border-b">
-                                    <TableHead className="h-8">Recurso</TableHead>
-                                    <TableHead className="h-8 w-32">Unidad</TableHead>
-                                    <TableHead className="h-8 w-32 text-right">Cantidad</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {action.recursos_info.map((resource, index) => (
-                                    <TableRow key={typeof resource.recurso === 'object' ? resource.recurso.id : index} className="border-b last:border-0">
-                                      <TableCell className="py-2">{typeof resource.recurso === 'object' ? resource.recurso.nombre : ''}</TableCell>
-                                      <TableCell className="py-2">
-                                        <Badge variant="outline" className="bg-background">
-                                          {typeof resource.recurso === 'object' ? resource.recurso.unidad : ''}
-                                        </Badge>
-                                      </TableCell>
-                                      <TableCell className="py-2 text-right">
-                                        {resource.cantidad}
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
+                              {/* <h4 className="mb-3 text-foreground">Recursos Necesarios:</h4> */}
+                              {action.recursos_agrupados && Object.entries(action.recursos_agrupados).map(([categoria, lista]) => (
+                                <div key={categoria} className="mb-6">
+                                  <h4 className="mb-2 text-sm font-semibold uppercase">{categoria}</h4>
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow className="border-b">
+                                        <TableHead className="h-8">Recurso</TableHead>
+                                        <TableHead className="h-8 w-32">Unidad</TableHead>
+                                        <TableHead className="h-8 w-32 text-right">Cantidad</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {lista.map((resource, index) => (
+                                        <TableRow key={typeof resource.recurso === 'object' ? resource.recurso.id : index} className="border-b last:border-0">
+                                          <TableCell className="py-2">{typeof resource.recurso === 'object' ? resource.recurso.nombre : ''}</TableCell>
+                                          <TableCell className="py-2">
+                                            <Badge variant="outline" className="bg-background">
+                                              {typeof resource.recurso === 'object' ? resource.recurso.unidad : ''}
+                                            </Badge>
+                                          </TableCell>
+                                          <TableCell className="py-2 text-right">
+                                            {resource.cantidad}
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
+                              ))}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -461,6 +471,7 @@ export function AdminPerformanceManager() {
                   <TableRow>
                     <TableHead>Nombre del Recurso</TableHead>
                     <TableHead className="w-32">Unidad</TableHead>
+                    <TableHead className="w-48">Categoría</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -470,6 +481,9 @@ export function AdminPerformanceManager() {
                       <TableCell>{resource.nombre}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{resource.unidad}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{resource.categoria}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -750,9 +764,14 @@ export function AdminPerformanceManager() {
                       onClick={() => handleAddResourceFromCatalog(resource)}
                       className="w-full text-left px-4 py-3 hover:bg-accent transition-colors border-b last:border-b-0"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{resource.nombre}</span>
-                        <Badge variant="secondary">{resource.unidad}</Badge>
+                      <div className="grid grid-cols-[1fr_50px_140px] gap-4 items-center py-1 border-b">
+                        <span className="text-sm font-medium truncate">{resource.nombre}</span>
+                        <div className='flex justify-center'>
+                          <Badge variant="secondary" className='w-full justify-center'>{resource.unidad}</Badge>
+                        </div>
+                        <div className='flex justify-end'>
+                          <Badge variant="outline" className='w-full justify-center'>{resource.categoria}</Badge>
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -824,6 +843,33 @@ export function AdminPerformanceManager() {
                     <AlertDescription className='text-xs'>{errorsCatalog.unidad.message}</AlertDescription>
                   </Alert>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="categoria">Categoría</Label>
+                <Controller
+                  control={controlCatalog}
+                  name="categoria"
+                  render={({ field }) => (
+                    <>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Materiales">Materiales</SelectItem>
+                          <SelectItem value="Mano de Obra">Mano de Obra</SelectItem>
+                          <SelectItem value="Herramientas y Equipo">Herramientas y Equipo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errorsCatalog.categoria && (
+                        <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3 mt-1">
+                          <AlertTitle className='text-sm'>Error en Categoría</AlertTitle>
+                          <AlertDescription className='text-xs'>{errorsCatalog.categoria.message}</AlertDescription>
+                        </Alert>
+                      )}
+                    </>
+                  )}
+                />
               </div>
             </div>
 
