@@ -1,9 +1,12 @@
 import { z } from 'zod';
 
+const CATEGORIAS_RECURSOS = ['Materiales', 'Mano de Obra', 'Herramientas y Equipo'];
+
 export const recursoSchema = z.object({
     id: z.number().optional(),
     nombre: z.string().min(1, 'El nombre del recurso es obligatorio'),
     unidad: z.string().min(1, 'La unidad del recurso es obligatoria'),
+    categoria: z.enum(CATEGORIAS_RECURSOS, 'La categoría del recurso es inválida').optional(),
 });
 
 export type Recurso = z.infer<typeof recursoSchema>;
