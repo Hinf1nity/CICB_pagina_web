@@ -41,6 +41,7 @@ export function Navbar() {
     { path: '/anuario', label: 'Anuario' },
     { path: '/normativa', label: 'Normativa' },
     { path: '/convocatorias', label: 'Convocatorias' },
+    { path: '/biblioteca_virtual', label: 'Biblioteca Virtual' },
   ];
 
   const profileButtonLabel = () => {
@@ -96,7 +97,7 @@ export function Navbar() {
 
   return (
     <nav className="bg-primary text-primary-foreground shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-[1350px] mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo y título */}
           <NavLink to="/" className="flex items-center space-x-3 shrink-0">
@@ -119,7 +120,7 @@ export function Navbar() {
               <Button
                 key={item.path}
                 onClick={() => navigate(`${item.path}`)}
-                className={`px-4 py-2 rounded transition-colors cursor-pointer ${currentPage === item.path
+                className={`px-3 py-2 rounded transition-colors cursor-pointer ${currentPage === item.path
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-primary/80'
                   }`}

@@ -273,7 +273,7 @@ export function AdminUsersManager() {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nombre Completo</Label>
+                  <Label htmlFor="name">Nombre Completo<span className="text-red-500">*</span></Label>
                   <Input id="name" placeholder="Nombre completo" {...register("nombre")} />
                   {errors.nombre && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                     <AlertTitle className='text-sm'>Error en Nombre</AlertTitle>
@@ -281,7 +281,7 @@ export function AdminUsersManager() {
                   </Alert>)}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="registration">RNI</Label>
+                  <Label htmlFor="registration">RNI<span className="text-red-500">*</span></Label>
                   <Input id="registration" placeholder="XXXXXX" {...register("rni")} />
                   {errors.rni && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                     <AlertTitle className='text-sm'>Error en RNI</AlertTitle>
@@ -292,7 +292,7 @@ export function AdminUsersManager() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="specialty">Especialidad</Label>
+                  <Label htmlFor="specialty">Especialidad<span className="text-red-500">*</span></Label>
                   <Controller
                     name="especialidad"
                     control={control}
@@ -328,7 +328,7 @@ export function AdminUsersManager() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="fecha_inscripcion">Fecha de Inscripción</Label>
+                  <Label htmlFor="fecha_inscripcion">Fecha de Inscripción<span className="text-red-500">*</span></Label>
                   <Input id="fecha_inscripcion" type="date" {...register("fecha_inscripcion")} />
                   {errors.fecha_inscripcion && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                     <AlertTitle className='text-sm'>Error en Fecha de Inscripción</AlertTitle>
@@ -339,7 +339,7 @@ export function AdminUsersManager() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Celular</Label>
+                  <Label htmlFor="phone">Celular<span className="text-red-500">*</span></Label>
                   <Input id="phone" placeholder="+591XXXXXXXX" {...register("celular")} />
                   {errors.celular && (<Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
                     <AlertTitle className='text-sm'>Error en Celular</AlertTitle>
@@ -347,7 +347,7 @@ export function AdminUsersManager() {
                   </Alert>)}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="status">Estado de Cuenta</Label>
+                  <Label htmlFor="status">Estado de Cuenta<span className="text-red-500">*</span></Label>
                   <Controller
                     name="estado"
                     control={control}
@@ -375,7 +375,7 @@ export function AdminUsersManager() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="employmentStatus">Estado Laboral</Label>
+                  <Label htmlFor="employmentStatus">Estado Laboral<span className="text-red-500">*</span></Label>
                   <Controller
                     name="registro_empleado"
                     control={control}
@@ -400,7 +400,7 @@ export function AdminUsersManager() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="department">Departamento</Label>
+                  <Label htmlFor="department">Departamento<span className="text-red-500">*</span></Label>
                   <Controller
                     name="departamento"
                     control={control}

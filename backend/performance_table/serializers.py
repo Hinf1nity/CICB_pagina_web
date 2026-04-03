@@ -73,3 +73,24 @@ class PerformanceTableSerializer(serializers.ModelSerializer):
                     )
 
         return instance
+
+
+class PerformanceTablePDFSerializer(serializers.ModelSerializer):
+    # Usamos el related_name por defecto o el nombre del modelo en minúscula + _set
+    # para traer los recursos con sus cantidades
+    recursos_detallados = PerformanceResourceSerializer(
+        source='quantifiedresource_set',
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = PerformanceTable
+        fields = [
+            'id',
+            'codigo',
+            'actividad',
+            'unidad',
+            'categoria',
+            'recursos_detallados'
+        ]

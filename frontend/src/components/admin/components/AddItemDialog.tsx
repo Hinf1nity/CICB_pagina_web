@@ -81,7 +81,7 @@ export function AddItemDialog({ category, onAddItem, isOpen, setIsOpen, isLoadin
                         <input hidden {...register("categoryId", { valueAsNumber: true })} /> {/* Para saber a qué categoría pertenece el nuevo ítem */}
                         {/* SELECT CON CONTROLLER */}
                         <div className="space-y-2">
-                            <Label>Nivel de Complejidad</Label>
+                            <Label>Nivel de Complejidad<span className="text-red-500">*</span></Label>
                             <Controller
                                 name="complexityLevel"
                                 control={control}
@@ -107,7 +107,7 @@ export function AddItemDialog({ category, onAddItem, isOpen, setIsOpen, isLoadin
 
                         {/* INPUT NOMBRE */}
                         <div className="space-y-2">
-                            <Label htmlFor="itemName">Nombre del Trabajo</Label>
+                            <Label htmlFor="itemName">Nombre del Trabajo<span className="text-red-500">*</span></Label>
                             <Input
                                 id="itemName"
                                 placeholder="Ej: Diseño estructural vivienda"
@@ -124,7 +124,7 @@ export function AddItemDialog({ category, onAddItem, isOpen, setIsOpen, isLoadin
                         <div className="grid grid-cols-2 gap-4">
                             {/* INPUT COSTO */}
                             <div className="space-y-2">
-                                <Label htmlFor="itemCost">Valor</Label>
+                                <Label htmlFor="itemCost">Valor<span className="text-red-500">*</span></Label>
                                 <Input
                                     id="itemCost"
                                     type="number"
@@ -146,7 +146,7 @@ export function AddItemDialog({ category, onAddItem, isOpen, setIsOpen, isLoadin
 
                             {/* INPUT UNIDAD */}
                             <div className="space-y-2">
-                                <Label htmlFor="itemUnit">Unidad</Label>
+                                <Label htmlFor="itemUnit">Unidad<span className="text-red-500">*</span></Label>
                                 <Input
                                     id="itemUnit"
                                     placeholder="Ej: m2"

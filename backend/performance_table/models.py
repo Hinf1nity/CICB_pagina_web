@@ -31,6 +31,18 @@ class PerformanceTable(models.Model):
 
     def __str__(self):
         return self.codigo
+    
+    @property
+    def tiene_materiales(self):
+        return self.recursos.filter(categoria='Materiales').exists()
+
+    @property
+    def tiene_obra(self):
+        return self.recursos.filter(categoria='Mano de Obra').exists()
+
+    @property
+    def tiene_herramientas(self):
+        return self.recursos.filter(categoria='Herramientas y Equipo').exists()
 
 
 class QuantifiedResource(models.Model):

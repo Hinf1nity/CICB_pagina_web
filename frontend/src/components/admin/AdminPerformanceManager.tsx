@@ -556,7 +556,7 @@ export function AdminPerformanceManager() {
                 <h3 className="font-semibold">Información Básica</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="codigo">Código</Label>
+                    <Label htmlFor="codigo">Código<span className="text-red-500">*</span></Label>
                     <Input
                       id="codigo"
                       placeholder="XXX-000"
@@ -570,7 +570,7 @@ export function AdminPerformanceManager() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="unidad">Unidad</Label>
+                    <Label htmlFor="unidad">Unidad<span className="text-red-500">*</span></Label>
                     <Input
                       id="unidad"
                       placeholder="m², m³, etc."
@@ -586,7 +586,7 @@ export function AdminPerformanceManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="descripcion">Descripción</Label>
+                  <Label htmlFor="descripcion">Descripción<span className="text-red-500">*</span></Label>
                   <Input
                     id="actividad"
                     placeholder="Descripción de la actividad"
@@ -601,7 +601,7 @@ export function AdminPerformanceManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="categoria">Categoría</Label>
+                  <Label htmlFor="categoria">Categoría<span className="text-red-500">*</span></Label>
                   <Controller
                     control={control}
                     name="categoria"
@@ -640,7 +640,7 @@ export function AdminPerformanceManager() {
               {/* Resources */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">Recursos</h3>
+                  <h3 className="font-semibold">Recursos <span className="text-red-500">*</span></h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -683,7 +683,7 @@ export function AdminPerformanceManager() {
                           />
                         </div>
                         <div className="sm:w-32 space-y-2">
-                          <Label htmlFor={`resource-cantidad-${resource.id}`}>Cantidad</Label>
+                          <Label htmlFor={`resource-cantidad-${resource.id}`}>Cantidad<span className="text-red-500">*</span></Label>
                           <Input
                             id={`resource-cantidad-${resource.id}`}
                             placeholder="0"
@@ -817,7 +817,7 @@ export function AdminPerformanceManager() {
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="catalog-name">Nombre del Recurso</Label>
+                <Label htmlFor="catalog-name">Nombre del Recurso<span className="text-red-500">*</span></Label>
                 <Input
                   id="catalog-name"
                   placeholder="Ej: Cemento Portland"
@@ -831,7 +831,7 @@ export function AdminPerformanceManager() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="catalog-unit">Unidad</Label>
+                <Label htmlFor="catalog-unit">Unidad<span className="text-red-500">*</span></Label>
                 <Input
                   id="catalog-unit"
                   placeholder="kg, m³, hr, etc."
@@ -845,7 +845,7 @@ export function AdminPerformanceManager() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="categoria">Categoría</Label>
+                <Label htmlFor="categoria">Categoría<span className="text-red-500">*</span></Label>
                 <Controller
                   control={controlCatalog}
                   name="categoria"

@@ -12,7 +12,7 @@ export const userSchema = z.object({
   especialidad: z.enum(especialidades, { message: "Especialidad inválida" }),
   celular: z.string().refine((val) => /^\+?\d{7,15}$/.test(val), { message: "Número de celular inválido" }),
   departamento: z.enum(departamentos, { message: "Departamento inválido" }),
-  registro_empleado: z.enum(employeeStatuses).optional(),
+  registro_empleado: z.enum(employeeStatuses, { message: "Estado laboral inválido" }).optional(),
   estado: z.enum(estados, { message: "Estado inválido" }),
   fecha_inscripcion: z.string().refine((date) => !isNaN(Date.parse(date)), { message: "Fecha de inscripción inválida" }),
   imagen: z.instanceof(File).optional().or(z.string().optional()),

@@ -236,7 +236,7 @@ export function AdminJobsManager() {
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="jobTitle">Título del Puesto *</Label>
+                <Label htmlFor="jobTitle">Título del Puesto<span className="text-red-500">*</span></Label>
                 <Input id="jobTitle" placeholder="Título de la oferta laboral" {...register("titulo")} />
                 {errors.titulo && (
                   <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -247,7 +247,7 @@ export function AdminJobsManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="company">Empresa *</Label>
+                <Label htmlFor="company">Empresa<span className="text-red-500">*</span></Label>
                 <Input id="company" placeholder="Nombre de la empresa" {...register("nombre_empresa")} />
                 {errors.nombre_empresa && (
                   <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -258,7 +258,7 @@ export function AdminJobsManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sobre_empresa">Información sobre la empresa *</Label>
+                <Label htmlFor="sobre_empresa">Información sobre la empresa<span className="text-red-500">*</span></Label>
                 <Textarea id="sobre_empresa" placeholder="Información sobre la empresa" rows={4} {...register("sobre_empresa")} />
                 {errors.sobre_empresa && (
                   <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -270,7 +270,7 @@ export function AdminJobsManager() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="location">Ubicación *</Label>
+                  <Label htmlFor="location">Ubicación<span className="text-red-500">*</span></Label>
                   <Input id="location" placeholder="Ciudad" {...register("ubicacion")} />
                   {errors.ubicacion && (
                     <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -280,7 +280,7 @@ export function AdminJobsManager() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tipo_contrato">Tipo *</Label>
+                  <Label htmlFor="tipo_contrato">Tipo<span className="text-red-500">*</span></Label>
                   <Controller
                     name="tipo_contrato"
                     control={control}
@@ -309,7 +309,7 @@ export function AdminJobsManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="salario">Referencia Salarial</Label>
+                <Label htmlFor="salario">Referencia Salarial (Opcional)</Label>
                 <Input type="number" id="salario" placeholder="Rango salarial (opcional)" {...register("salario")} />
                 {errors.salario && (
                   <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -320,7 +320,7 @@ export function AdminJobsManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="descripcion">Descripción *</Label>
+                <Label htmlFor="descripcion">Descripción<span className="text-red-500">*</span></Label>
                 <Textarea id="descripcion" placeholder="Descripción del puesto" rows={4} {...register("descripcion")} />
                 {errors.descripcion && (
                   <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -464,7 +464,7 @@ export function AdminJobsManager() {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="estado">Estado *</Label>
+                <Label htmlFor="estado">Estado<span className="text-red-500">*</span></Label>
                 <Controller
                   name="estado"
                   control={control}

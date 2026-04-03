@@ -12,4 +12,5 @@ urlpatterns = [
     path('stats/', include('stats.urls')),
     path('performance/', include('performance_table.urls')),
     path('aranceles/', include('civil_salary.urls')),
+    path('virtual_library/', include('virtual_library.urls')),
 ]

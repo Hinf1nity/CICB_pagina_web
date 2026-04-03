@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, Settings, FileText, BookOpen, Megaphone, LogOut, Calculator } from 'lucide-react';
+import { Users, Newspaper, Briefcase, ListChecks, ArrowRight, Settings, FileText, BookOpen, Megaphone, LogOut, Calculator, LibraryBig } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { useAdminData } from '../hooks/useAdminData';
@@ -80,6 +80,15 @@ export function AdminDashboard() {
       color: "text-[#3C8D50]",
       bgColor: "bg-[#3C8D50]/10",
     },
+    {
+      id: "/admin/biblioteca_virtual",
+      title: "Gestión de Biblioteca Virtual",
+      description:
+        "Administra documentos y recursos en la biblioteca virtual del colegio",
+      icon: LibraryBig,
+      color: "text-[#0B3D2E]",
+      bgColor: "bg-[#0B3D2E]/10",
+    }
   ];
 
   return (

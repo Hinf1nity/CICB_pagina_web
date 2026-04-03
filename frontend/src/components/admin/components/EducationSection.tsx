@@ -142,7 +142,7 @@ export const EducationSection = ({ initialData }: Props) => {
                                     </DialogHeader>
                                     <div className="space-y-4 py-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="educationName">Nombre del Grado</Label>
+                                            <Label htmlFor="educationName">Nombre del Grado<span className="text-red-500">*</span></Label>
                                             <Input
                                                 id="educationName"
                                                 placeholder="Ej: Licenciatura"
@@ -156,7 +156,7 @@ export const EducationSection = ({ initialData }: Props) => {
                                             )}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="educationMultiplier">Multiplicador</Label>
+                                            <Label htmlFor="educationMultiplier">Multiplicador<span className="text-red-500">*</span></Label>
                                             <Input
                                                 id="educationMultiplier"
                                                 type="number"

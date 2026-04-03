@@ -223,7 +223,7 @@ export function AdminNewsManager() {
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="titulo">Título *</Label>
+                <Label htmlFor="titulo">Título<span className="text-red-500">*</span></Label>
                 <Input id="titulo" placeholder="Título de la noticia" {...register('titulo')} />
                 {errors.titulo && (
                   <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -234,7 +234,7 @@ export function AdminNewsManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="categoria">Categoría *</Label>
+                <Label htmlFor="categoria">Categoría<span className="text-red-500">*</span></Label>
                 <Controller
                   name="categoria"
                   control={control}
@@ -298,7 +298,7 @@ export function AdminNewsManager() {
 
                   return (
                     <div className="space-y-2">
-                      <Label htmlFor="newsImagen">Imagen Principal *</Label>
+                      <Label htmlFor="newsImagen">Imagen Principal<span className="text-red-500">*</span></Label>
                       {isUrl && (
                         <div className="relative">
                           <img
@@ -364,7 +364,7 @@ export function AdminNewsManager() {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="resumen">Extracto *</Label>
+                <Label htmlFor="resumen">Extracto<span className="text-red-500">*</span></Label>
                 <Textarea id="resumen" placeholder="Breve descripción para la vista previa" rows={3} {...register('resumen')} />
                 {errors.resumen && (
                   <Alert variant="destructive" className="text-xs px-2 py-1 [&>svg]:size-3">
@@ -379,7 +379,7 @@ export function AdminNewsManager() {
                 control={control}
                 render={({ field }) => (
                   <div className="space-y-2">
-                    <Label>Contenido *</Label>
+                    <Label>Contenido<span className="text-red-500">*</span></Label>
                     <RichTextEditor
                       value={field.value}
                       onChange={field.onChange}
@@ -480,7 +480,7 @@ export function AdminNewsManager() {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="status">Estado *</Label>
+                <Label htmlFor="status">Estado<span className="text-red-500">*</span></Label>
                 <Controller
                   control={control}
                   name="estado"

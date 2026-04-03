@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from django.db import transaction
 from .serializers import CalculateArancelesSerializer, CategoriaAdminSerializer, IncidenciasAdminSerializer, CategoriaSerializer
 from .models import Categoria, IncidenciasLaborales
+from users.permissions import IsAdminPrin
 
 
 class CalculateArancelViewSet(viewsets.ViewSet):
@@ -31,7 +32,7 @@ class CalculateArancelViewSet(viewsets.ViewSet):
 
 
 class IncidenciasAdminViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminPrin]
     queryset = IncidenciasLaborales.objects.all()
     serializer_class = IncidenciasAdminSerializer
 
@@ -80,7 +81,7 @@ class IncidenciasAdminViewSet(viewsets.ModelViewSet):
 
 
 class CategoriaAdminViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminPrin]
     queryset = Categoria.objects.prefetch_related('niveles__elementos').all()
     serializer_class = CategoriaAdminSerializer
 

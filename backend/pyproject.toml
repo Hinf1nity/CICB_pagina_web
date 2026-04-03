@@ -22,4 +22,5 @@ dependencies = [
     "pygments>=2.19.2",
     "uvicorn>=0.40.0",
     "whitenoise[brotli]>=6.11.0",
+    "xhtml2pdf>=0.2.17",
 ]

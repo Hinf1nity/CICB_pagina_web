@@ -6,12 +6,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from users.permissions import IsAdminPrin
 from utils.s3 import s3_client
 from django.conf import settings
-from .models import Yearbook
+from .models import VirtualLibrary
 from .serializers import (
-    YearbookSerializer,
-    YearbookListSerializer,
-    YearbookAdminListSerializer,
-    YearbookAdminGeneralSerializer
+    VirtualLibrarySerializer,
+    VirtualLibraryListSerializer,
+    VirtualLibraryAdminListSerializer,
+    VirtualLibraryAdminGeneralSerializer
 )
 from rest_framework.pagination import PageNumberPagination
 
@@ -24,50 +24,54 @@ class TwentyPerPagePaginationAdmin(PageNumberPagination):
     page_size = 20
 
     def get_paginated_response(self, data):
-        queryset = Yearbook.objects.all()
+        queryset = VirtualLibrary.objects.all()
         published_count = queryset.filter(estado="publicado").count()
         draft_count = queryset.filter(estado="borrador").count()
+        archive_count = queryset.filter(estado="archivado").count()
         return Response({
             'count': self.page.paginator.count,
             'published_count': published_count,
             'draft_count': draft_count,
+            'archive_count': archive_count,
             'next': self.get_next_link(),
             'previous': self.get_previous_link(),
             'results': data,
         })
 
 
-class YearbookViewSet(viewsets.ReadOnlyModelViewSet):
-    # queryset = Yearbook.objects.all()
+class VirtualLibraryViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     pagination_class = TwentyPerPagePagination
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['categoria']
+    search_fields = ['autor', 'anio']
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return YearbookListSerializer
-        return YearbookSerializer
+            return VirtualLibraryListSerializer
+        return VirtualLibrarySerializer
 
     def get_queryset(self):
-        queryset = Yearbook.objects.filter(estado="publicado").select_related(
-            'pdf').order_by("-fecha_publicacion")
+        queryset = VirtualLibrary.objects.filter(estado="publicado").select_related(
+            'pdf').order_by("-anio")
         return queryset
 
 
-class YearbookAdminViewSet(viewsets.ModelViewSet):
-    # queryset = Yearbook.objects.all()
+class VirtualLibraryAdminViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminPrin]
     pagination_class = TwentyPerPagePaginationAdmin
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
-    search_fields = ['nombre', 'fecha_publicacion']
+    filterset_fields = ['categoria']
+    search_fields = ['autor', 'anio']
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return YearbookAdminListSerializer
+            return VirtualLibraryAdminListSerializer
 
-        return YearbookAdminGeneralSerializer
+        return VirtualLibraryAdminGeneralSerializer
 
     def get_queryset(self):
-        queryset = Yearbook.objects.all().order_by('-fecha_publicacion')
+        queryset = VirtualLibrary.objects.all().order_by('-anio')
         return queryset
 
     @action(
@@ -77,15 +81,15 @@ class YearbookAdminViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAdminPrin],
     )
     def get_pdf(self, request, pk=None):
-        yearbook = self.get_object()
+        virtual_library = self.get_object()
 
-        if not yearbook.pdf:
+        if not virtual_library.pdf:
             return Response(
                 {"error": "Este Job no tiene un PDF asociado"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        pdf: PDF = yearbook.pdf
+        pdf: PDF = virtual_library.pdf
 
         presigned_url = s3_client.generate_presigned_url(
             "get_object",
@@ -94,14 +98,9 @@ class YearbookAdminViewSet(viewsets.ModelViewSet):
                 "Key": pdf.ruta,
                 "ResponseContentType": "application/pdf",
                 "ResponseContentDisposition": "inline",
-                # "attachment; filename=archivo.pdf" → forzar descarga
             },
             ExpiresIn=300,  # 5 minutos
         )
-        # presigned_url = presigned_url.replace(
-        #     settings.AWS_S3_INTERNAL_ENDPOINT,
-        #     settings.AWS_S3_EXTERNAL_ENDPOINT,
-        # )
 
         return Response(
             {
@@ -112,14 +111,14 @@ class YearbookAdminViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, *args, **kwargs):
-        yearbook = self.get_object()
-        if yearbook.pdf:
-            pdf = yearbook.pdf
+        virtual_library = self.get_object()
+        if virtual_library.pdf:
+            pdf = virtual_library.pdf
             ruta = pdf.ruta
             s3_client.delete_object(
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                 Key=ruta,
             )
             pdf.delete()
-        self.perform_destroy(yearbook)
+        self.perform_destroy(virtual_library)
         return Response(status=status.HTTP_204_NO_CONTENT)
