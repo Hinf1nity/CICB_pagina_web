@@ -82,7 +82,7 @@ export const ActivitySection = ({ activitiesData }: Props) => {
                                     </DialogHeader>
                                     <div className="space-y-4 py-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="activityName">Nombre de la Actividad</Label>
+                                            <Label htmlFor="activityName">Nombre de la Actividad<span className="text-red-500">*</span></Label>
                                             <Input
                                                 id="activityName"
                                                 placeholder="Ej: Evaluación"
@@ -96,7 +96,7 @@ export const ActivitySection = ({ activitiesData }: Props) => {
                                             )}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="activityMultiplier">Multiplicador</Label>
+                                            <Label htmlFor="activityMultiplier">Multiplicador<span className="text-red-500">*</span></Label>
                                             <Input
                                                 id="activityMultiplier"
                                                 type="number"

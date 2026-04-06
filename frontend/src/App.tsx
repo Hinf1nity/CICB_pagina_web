@@ -10,6 +10,7 @@ import { UserProfilePage } from './components/UserProfilePage';
 import { UserCardPage } from './components/UserCardPage';
 import { TablePage } from './components/TablePage';
 import { StatsPage } from './components/StatsPage';
+import { VirtualLibraryPage } from './components/VirtualLibraryPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { GenericPage } from './components/GenericPage';
 import { UnauthorizedPage } from './components/UnauthorizedPage';
@@ -20,6 +21,7 @@ import { AdminNewsPage } from './components/admin/AdminNewsPage';
 import { AdminAnnouncementsPage } from './components/admin/AdminAnnouncementsPage';
 import { AdminRegulationsPage } from './components/admin/AdminRegulationsPage';
 import { AdminYearbookPage } from './components/admin/AdminYearbookPage';
+import { AdminVirtualLibraryPage } from './components/admin/AdminVirtualLibraryPage';
 import { CalculatorPage } from './components/CalculatorPage';
 import PrivateRoute from './components/PrivateRoute';
 import { AdminCalculatorPage } from './components/admin/AdminCalculatorPage';
@@ -57,6 +59,7 @@ function AppRoutes() {
         <Route path="/tarjeta_usuario/:id" element={<UserCardPage />} />
         <Route path="/tabla" element={<TablePage />} />
         <Route path="/estadisticas" element={<StatsPage />} />
+        <Route path="/biblioteca_virtual" element={<VirtualLibraryPage />} />
         <Route path="/admin" element={
           <PrivateRoute requiredRole={['admin_general']}><AdminDashboard /></PrivateRoute>} />
         <Route path="/admin/usuarios" element={
@@ -69,6 +72,7 @@ function AppRoutes() {
         <Route path="/admin/regulaciones" element={<PrivateRoute requiredRole={['admin_general']}><AdminRegulationsPage /></PrivateRoute>} />
         <Route path="/admin/anuario" element={<PrivateRoute requiredRole={['admin_general']}><AdminYearbookPage /></PrivateRoute>} />
         <Route path='/admin/calculadora' element={<PrivateRoute requiredRole={['admin_general']}><AdminCalculatorPage /></PrivateRoute>} />
+        <Route path="/admin/biblioteca_virtual" element={<PrivateRoute requiredRole={['admin_general']}><AdminVirtualLibraryPage /></PrivateRoute>} />
         <Route path="/anuario" element={
           <GenericPage
             title="Anuario"

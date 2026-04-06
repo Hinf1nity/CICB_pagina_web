@@ -233,7 +233,7 @@ export function AdminRegulationsPage() {
 
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="nombre">Título</Label>
+                    <Label htmlFor="nombre">Título<span className="text-red-500">*</span></Label>
                     <Input
                       id="nombre"
                       placeholder="Título de la normativa..."
@@ -248,7 +248,7 @@ export function AdminRegulationsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="descripcion">Descripción</Label>
+                    <Label htmlFor="descripcion">Descripción<span className="text-red-500">*</span></Label>
                     <Textarea
                       id="descripcion"
                       placeholder="Descripción detallada de la normativa..."
@@ -265,7 +265,7 @@ export function AdminRegulationsPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="categoria">Categoría</Label>
+                      <Label htmlFor="categoria">Categoría<span className="text-red-500">*</span></Label>
                       <Controller
                         control={control}
                         name="categoria"
@@ -297,7 +297,7 @@ export function AdminRegulationsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="estado">Estado</Label>
+                      <Label htmlFor="estado">Estado<span className="text-red-500">*</span></Label>
                       <Controller
                         control={control}
                         name="estado"
@@ -372,7 +372,7 @@ export function AdminRegulationsPage() {
 
                       return (
                         <div className="space-y-2">
-                          <Label htmlFor="pdf">Documento PDF</Label>
+                          <Label htmlFor="pdf">Documento PDF<span className="text-red-500">*</span></Label>
                           {isUrl && (
                             <div className="flex items-center justify-between p-3 border border-input rounded-md bg-muted/50">
                               <div className="flex items-center gap-2">

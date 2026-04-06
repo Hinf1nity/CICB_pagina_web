@@ -117,9 +117,9 @@ class CalculateArancelesSerializer(serializers.Serializer):
             antiguedad = 'junior'
         elif (min_junior < data['antiguedad'] <= max_junior):
             antiguedad = 'junior'
-        elif (min_pleno < data['antiguedad'] <= max_pleno):
+        elif (min_pleno <= data['antiguedad'] <= max_pleno):
             antiguedad = 'pleno'
-        elif (min_senior < data['antiguedad'] <= max_senior):
+        elif (min_senior <= data['antiguedad'] <= max_senior):
             antiguedad = 'senior'
         factor_antiguedad = IncidenciasLaborales.objects.get(
             nombre=f"ant_{antiguedad}_{data['ubicacion'].lower()}").valor

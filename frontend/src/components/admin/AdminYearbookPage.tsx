@@ -216,7 +216,7 @@ export function AdminYearbookPage() {
 
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nombre">Título</Label>
+                  <Label htmlFor="nombre">Título<span className="text-red-500">*</span></Label>
                   <Input
                     id="nombre"
                     {...register("nombre")}
@@ -232,7 +232,7 @@ export function AdminYearbookPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="descripcion">Descripción</Label>
+                  <Label htmlFor="descripcion">Descripción<span className="text-red-500">*</span></Label>
                   <Textarea
                     id="descripcion"
                     {...register("descripcion")}
@@ -260,7 +260,7 @@ export function AdminYearbookPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Estado de Publicación</Label>
+                    <Label>Estado de Publicación<span className="text-red-500">*</span></Label>
                     <Controller
                       control={control}
                       name="estado"
@@ -295,7 +295,7 @@ export function AdminYearbookPage() {
                     const isUrl = typeof file === 'string' && file.startsWith('http');
                     return (
                       <div className="space-y-2">
-                        <Label>Documento PDF (Anuario)</Label>
+                        <Label>Documento PDF (Anuario)<span className="text-red-500">*</span></Label>
                         {isUrl && (
                           <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
                             <div className="flex items-center gap-2">

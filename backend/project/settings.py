@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'stats',
     'performance_table',
     'civil_salary',
+    'virtual_library',
 ]
 
 MIDDLEWARE = [

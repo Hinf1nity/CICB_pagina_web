@@ -292,3 +292,37 @@ export function searchResourceByName(query: string) {
 
     return { resources: data || [], isLoading, isError };
 }
+
+const downloadRendimientosPDF = async (ids: number[]) => {
+    const response = await api.post('performance/generate_report/generar-pdf/', {
+        json: { ids },
+    }).blob(); // <--- IMPORTANTE: Convierte la respuesta en un objeto Blob (binario)
+
+    return response;
+};
+
+export const useDownloadPDF = () => {
+    return useMutation({
+        mutationFn: (ids: number[]) => downloadRendimientosPDF(ids),
+        onSuccess: (blob) => {
+            toast.success("PDF generado exitosamente. Iniciando descarga...");
+            // 1. Crear una URL temporal para el objeto binario
+            const url = window.URL.createObjectURL(blob);
+
+            // 2. Crear un elemento <a> invisible para disparar la descarga
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Rendimientos_CICB_${new Date().getTime()}.pdf`);
+
+            // 3. Simular el clic y limpiar
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url); // Liberar memoria
+        },
+        onError: (error) => {
+            console.error('Error al generar el PDF:', error);
+            toast.error('Hubo un problema al generar el documento técnico.');
+        }
+    });
+};

@@ -60,7 +60,7 @@ export function WorkCostsSection({ aranceles }: { aranceles: any[] }) {
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="categoryName">Nombre de la Categoría</Label>
+                                        <Label htmlFor="categoryName">Nombre de la Categoría<span className="text-red-500">*</span></Label>
                                         <Input
                                             id="categoryName"
                                             placeholder="Ej: VÍAS Y CAMINOS"

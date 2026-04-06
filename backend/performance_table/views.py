@@ -1,11 +1,17 @@
-
+from os import path
+from xhtml2pdf import pisa
+from django.conf import settings
+from django.http import HttpResponse
 from .models import PerformanceTable, ResourceChart
-from .serializers import PerformanceTableSerializer, ResourceSerializer
+from .serializers import PerformanceTablePDFSerializer, PerformanceTableSerializer, ResourceSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, status
-from rest_framework.permissions import AllowAny, IsAdminUser
+from django.template.loader import get_template
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import action
+from django.contrib.staticfiles import finders
 
 
 class TwentyPerPagePagination(PageNumberPagination):
@@ -75,3 +81,87 @@ class ResourcesViewSet(viewsets.ModelViewSet):
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+def obtener_ruta_logo():
+    # Buscamos el archivo en el sistema de archivos de Django
+    relative_path = 'img/logo_cicb.png'
+    absolute_path = finders.find(relative_path)
+
+    if absolute_path:
+        return absolute_path
+
+    # Fallback por si acaso: buscar en STATIC_ROOT si finder falla (en prod)
+    return path.join(settings.STATIC_ROOT, relative_path)
+
+
+class GeneretePerformanceReportPDF(viewsets.ViewSet):
+    queryset = PerformanceTable.objects.all()
+    serializer_class = PerformanceTablePDFSerializer
+    permission_classes = [AllowAny]
+
+    @action(detail=False, methods=['post'], url_path='generar-pdf')
+    def generar_pdf(self, request):
+        ids = request.data.get('ids', [])
+
+        if not ids:
+            return Response({"error": "No se enviaron IDs"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1. Obtener datos optimizados
+        actividades = PerformanceTable.objects.filter(id__in=ids).prefetch_related(
+            'quantifiedresource_set__recurso'
+        )
+        actividades = self.marcar_saltos_pagina(actividades)
+
+        # 2. Configurar el logo y contexto
+        logo_path = obtener_ruta_logo()
+        context = {
+            'actividades': actividades,
+            'logo_path': logo_path,
+        }
+
+        # 3. Renderizar PDF
+        template = get_template('pdf/report_performance.html')
+        html = template.render(context)
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="reporte_rendimientos_cicb.pdf"'
+
+        pisa_status = pisa.CreatePDF(html, dest=response)
+
+        if pisa_status.err:
+            return Response({'error': 'Error al generar el PDF'}, status=500)
+
+        return response
+    
+    def marcar_saltos_pagina(self, actividades):
+        """
+        Estima la altura de cada actividad y marca cuáles deben
+        comenzar en nueva página para evitar que se partan.
+        """
+        ALTURA_PAGINA_PX = 580   # altura útil aprox. en puntos (carta - márgenes)
+        ALTURA_CABECERA  = 28    # fila del título de la actividad
+        ALTURA_FILA      = 20    # cada fila de recurso
+        ALTURA_MARGEN    = 30    # padding + separación entre bloques
+
+        altura_acumulada = 0
+
+        for item in actividades:
+            # Contar filas por categoría
+            recursos = item.quantifiedresource_set.all()
+            n_mat  = sum(1 for r in recursos if r.recurso.categoria == 'Materiales')
+            n_obra = sum(1 for r in recursos if r.recurso.categoria == 'Mano de Obra')
+            n_herr = sum(1 for r in recursos if r.recurso.categoria == 'Herramientas y Equipo')
+
+            filas_max  = max(n_mat, n_obra, n_herr, 1)
+            altura_item = ALTURA_CABECERA + (filas_max * ALTURA_FILA) + ALTURA_MARGEN
+
+            # ¿No cabe en lo que queda de página?
+            if altura_acumulada + altura_item > ALTURA_PAGINA_PX:
+                item.forzar_salto = True
+                altura_acumulada  = altura_item   # reinicia con este bloque
+            else:
+                item.forzar_salto = False
+                altura_acumulada += altura_item
+
+        return actividades
