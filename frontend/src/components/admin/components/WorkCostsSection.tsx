@@ -15,7 +15,7 @@ export function WorkCostsSection({ aranceles }: { aranceles: any[] }) {
     const [isLoading, setIsLoading] = useState(false);
     const { mutate: postCategoria } = useAdminCategoriasPost();
     const { mutateAsync: addItemToCategoria } = useAdminCategoriasPatch();
-    const { mutate: deleteCategoria } = useAdminCategoriasDelete();
+    const { mutate: deleteCategoria, isPending: isDeletingCategory } = useAdminCategoriasDelete();
     const { register, control, handleSubmit, formState: { errors }, reset } = useForm({
         defaultValues: {
             nombre: "",
@@ -105,6 +105,7 @@ export function WorkCostsSection({ aranceles }: { aranceles: any[] }) {
                             category={category}
                             onDeleteCategory={(id) => deleteCategoria(parseInt(id))}
                             onAddNewItem={addItemToCategoria}
+                            isDeletingCategory={isDeletingCategory}
                         />
                     ))}
 

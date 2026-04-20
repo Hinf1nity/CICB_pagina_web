@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const ExperienceSection = ({ antiguedadData }: Props) => {
-    const { mutate: patchIncidencia } = useAdminIncidenciasPatch();
+    const { mutate: patchIncidencia, isPending } = useAdminIncidenciasPatch();
     const { register, control, handleSubmit } = useForm({
         defaultValues: { antiguedad: antiguedadData }
     });
@@ -98,9 +98,9 @@ export const ExperienceSection = ({ antiguedadData }: Props) => {
                             </TableBody>
                         </Table>
                         <div className="mt-4 flex justify-end">
-                            <Button className="bg-[#0B3D2E] hover:bg-[#1B5E3A]" type="submit">
+                            <Button className="bg-[#0B3D2E] hover:bg-[#1B5E3A]" type="submit" disabled={isPending}>
                                 <Save className="w-4 h-4 mr-2" />
-                                Guardar Experiencia Laboral
+                                {isPending ? 'Guardando...' : 'Guardar Experiencia Laboral'}
                             </Button>
                         </div>
                     </form>

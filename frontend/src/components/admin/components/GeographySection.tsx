@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const GeographySection = ({ geographyData }: Props) => {
-    const { mutate: patchIncidencias } = useAdminIncidenciasPatch();
+    const { mutate: patchIncidencias, isPending } = useAdminIncidenciasPatch();
     const { register, control, handleSubmit } = useForm({
         defaultValues: { geografia: geographyData }
     });
@@ -86,9 +86,9 @@ export const GeographySection = ({ geographyData }: Props) => {
                             </div>
                         </div>
                         <div className="mt-4 flex justify-end">
-                            <Button className="bg-[#0B3D2E] hover:bg-[#1B5E3A]">
+                            <Button className="bg-[#0B3D2E] hover:bg-[#1B5E3A]" type="submit" disabled={isPending}>
                                 <Save className="w-4 h-4 mr-2" />
-                                Guardar Configuración Geográfica
+                                {isPending ? 'Guardando...' : 'Guardar Configuración Geográfica'}
                             </Button>
                         </div>
                     </form>

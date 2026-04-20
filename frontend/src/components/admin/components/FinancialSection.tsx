@@ -11,7 +11,7 @@ interface Prop {
 }
 
 export const FinancialSection = ({ salario, ipcNacional, incidenciasMaestria, incidenciaSenior }: { salario: Prop; ipcNacional: Prop; incidenciasMaestria: number; incidenciaSenior: number }) => {
-    const { mutate: patchIncidencias } = useAdminIncidenciasPatch();
+    const { mutate: patchIncidencias, isPending } = useAdminIncidenciasPatch();
     const { register, handleSubmit } = useForm({
         defaultValues: { salario, ipcNacional }
     });
@@ -108,9 +108,9 @@ export const FinancialSection = ({ salario, ipcNacional, incidenciasMaestria, in
                     </CardContent>
                 </Card>
                 <div className="flex justify-end">
-                    <Button className="bg-[#0B3D2E] hover:bg-[#1B5E3A]">
+                    <Button className="bg-[#0B3D2E] hover:bg-[#1B5E3A]" type="submit" disabled={isPending}>
                         <Save className="w-4 h-4 mr-2" />
-                        Guardar Configuración Financiera
+                        {isPending ? 'Guardando...' : 'Guardar Configuración Financiera'}
                     </Button>
                 </div>
             </form>

@@ -31,18 +31,19 @@ class PerformanceTable(models.Model):
 
     def __str__(self):
         return self.codigo
-    
+
     @property
     def tiene_materiales(self):
-        return self.recursos.filter(categoria='Materiales').exists()
+        # Usamos any() sobre los recursos ya prefetcheados en memoria
+        return any(item.recurso.categoria == 'Materiales' for item in self.quantifiedresource_set.all())
 
     @property
     def tiene_obra(self):
-        return self.recursos.filter(categoria='Mano de Obra').exists()
+        return any(item.recurso.categoria == 'Mano de Obra' for item in self.quantifiedresource_set.all())
 
     @property
     def tiene_herramientas(self):
-        return self.recursos.filter(categoria='Herramientas y Equipo').exists()
+        return any(item.recurso.categoria == 'Herramientas y Equipo' for item in self.quantifiedresource_set.all())
 
 
 class QuantifiedResource(models.Model):

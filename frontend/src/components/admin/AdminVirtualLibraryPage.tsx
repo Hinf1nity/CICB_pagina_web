@@ -176,7 +176,7 @@ export function AdminVirtualLibraryPage() {
                         <FileText className="w-10 h-10" />
                         <h1 className="text-3xl font-bold mb-3">Gestión de Biblioteca Virtual</h1>
                     </div>
-                    <p>Administra documentos, manuales, normativas y recursos técnicos de la biblioteca</p>
+                    <p>Administra documentos, libros, manuales y recursos técnicos de la biblioteca</p>
                 </div>
             </div>
 
@@ -446,7 +446,7 @@ export function AdminVirtualLibraryPage() {
                                         Cancelar
                                     </Button>
                                     <Button type='submit' disabled={isPosting || isPatching} className="bg-primary text-primary-foreground">
-                                        {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Normativa') : (isPosting ? 'Guardando...' : 'Guardar Normativa')}
+                                        {editingItem ? (isPatching ? 'Actualizando...' : 'Actualizar Documento') : (isPosting ? 'Guardando...' : 'Guardar Documento')}
                                     </Button>
                                 </div>
                             </form>
@@ -511,10 +511,10 @@ export function AdminVirtualLibraryPage() {
                     </Card>
                 </div>
 
-                {/* Regulations List */}
+                {/* Documents List */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Normativas Registradas</CardTitle>
+                        <CardTitle>Documentos Registrados</CardTitle>
                         <CardDescription>
                             Mostrando {1 + (page - 1) * pageSize}-{Math.min(page * pageSize, count)} de {count} documentos
                         </CardDescription>

@@ -1,13 +1,13 @@
 import { z } from "zod";
 
 const departamentos = ["La Paz", "Cochabamba", "Santa Cruz", "Oruro", "Potosí", "Tarija", "Chuquisaca", "Beni", "Pando"];
-const especialidades = ["estructural", "hidráulica", "geotecnia", "vial", "ambiental", "construcción", "sanitaria", "transporte", "civil"];
+const especialidades = ["estructural", "hidráulica", "geotecnia", "vial", "ambiental", "construcción", "sanitaria", "transporte", "civil", "carreteras"];
 const estados = ["activo", "inactivo"];
 const employeeStatuses = ["empleado", "desempleado"];
 export const userSchema = z.object({
   id: z.number().optional(),
   nombre: z.string().min(2, { message: "Nombre demasiado corto" }).max(100, { message: "Nombre demasiado largo" }),
-  rni: z.string().refine((val) => /^\d{6,10}$/.test(val), { message: "RNI inválido" }),
+  rni: z.string().refine((val) => /^\d{1,10}$/.test(val), { message: "RNI inválido" }),
   rnic: z.string().optional(),
   especialidad: z.enum(especialidades, { message: "Especialidad inválida" }),
   celular: z.string().refine((val) => /^\+?\d{7,15}$/.test(val), { message: "Número de celular inválido" }),
