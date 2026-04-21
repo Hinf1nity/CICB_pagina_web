@@ -85,8 +85,6 @@ export function TablePage() {
       alert("Selecciona al menos una actividad");
       return;
     }
-    // Aquí iría la lógica para generar el PDF con los datos de selectedActions
-    console.log('Generando PDF para las actividades con IDs:', Array.from(selectedIds));
     mutate(Array.from(selectedIds));
   }
 

@@ -47,7 +47,8 @@ class PerformanceTableViewSet(viewsets.ModelViewSet):
     search_fields = ['actividad', 'codigo', 'recursos__nombre']
 
     def get_queryset(self):
-        queryset = PerformanceTable.objects.all().order_by('-id')
+        queryset = PerformanceTable.objects.prefetch_related(
+            'quantifiedresource_set__recurso').all().order_by('-id')
         return queryset
 
     def get_permissions(self):
@@ -96,8 +97,9 @@ def obtener_ruta_logo():
 
 
 class GeneretePerformanceReportPDF(viewsets.ViewSet):
-    queryset = PerformanceTable.objects.all()
-    serializer_class = PerformanceTablePDFSerializer
+    queryset = PerformanceTable.objects.prefetch_related(
+        'quantifiedresource_set__recurso').all()
+    # serializer_class = PerformanceTablePDFSerializer
     permission_classes = [AllowAny]
 
     @action(detail=False, methods=['post'], url_path='generar-pdf')
@@ -109,8 +111,9 @@ class GeneretePerformanceReportPDF(viewsets.ViewSet):
 
         # 1. Obtener datos optimizados
         actividades = PerformanceTable.objects.filter(id__in=ids).prefetch_related(
-            'quantifiedresource_set__recurso'
-        )
+            'quantifiedresource_set__recurso')
+        if not actividades.exists():
+            return Response({"error": "No se encontraron actividades con los IDs proporcionados"}, status=status.HTTP_404_NOT_FOUND)
         actividades = self.marcar_saltos_pagina(actividades)
 
         # 2. Configurar el logo y contexto
@@ -133,33 +136,37 @@ class GeneretePerformanceReportPDF(viewsets.ViewSet):
             return Response({'error': 'Error al generar el PDF'}, status=500)
 
         return response
-    
+
     def marcar_saltos_pagina(self, actividades):
         """
         Estima la altura de cada actividad y marca cuáles deben
         comenzar en nueva página para evitar que se partan.
         """
         ALTURA_PAGINA_PX = 580   # altura útil aprox. en puntos (carta - márgenes)
-        ALTURA_CABECERA  = 28    # fila del título de la actividad
-        ALTURA_FILA      = 20    # cada fila de recurso
-        ALTURA_MARGEN    = 30    # padding + separación entre bloques
+        ALTURA_CABECERA = 28    # fila del título de la actividad
+        ALTURA_FILA = 20    # cada fila de recurso
+        ALTURA_MARGEN = 40    # padding + separación entre bloques
 
         altura_acumulada = 0
 
         for item in actividades:
             # Contar filas por categoría
             recursos = item.quantifiedresource_set.all()
-            n_mat  = sum(1 for r in recursos if r.recurso.categoria == 'Materiales')
-            n_obra = sum(1 for r in recursos if r.recurso.categoria == 'Mano de Obra')
-            n_herr = sum(1 for r in recursos if r.recurso.categoria == 'Herramientas y Equipo')
+            n_mat = sum(
+                1 for r in recursos if r.recurso.categoria == 'Materiales')
+            n_obra = sum(
+                1 for r in recursos if r.recurso.categoria == 'Mano de Obra')
+            n_herr = sum(1 for r in recursos if r.recurso.categoria ==
+                         'Herramientas y Equipo')
 
-            filas_max  = max(n_mat, n_obra, n_herr, 1)
-            altura_item = ALTURA_CABECERA + (filas_max * ALTURA_FILA) + ALTURA_MARGEN
+            filas_max = max(n_mat, n_obra, n_herr, 1)
+            altura_item = ALTURA_CABECERA + \
+                (filas_max * ALTURA_FILA) + ALTURA_MARGEN
 
             # ¿No cabe en lo que queda de página?
             if altura_acumulada + altura_item > ALTURA_PAGINA_PX:
                 item.forzar_salto = True
-                altura_acumulada  = altura_item   # reinicia con este bloque
+                altura_acumulada = altura_item   # reinicia con este bloque
             else:
                 item.forzar_salto = False
                 altura_acumulada += altura_item

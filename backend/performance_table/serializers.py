@@ -10,14 +10,20 @@ class ResourceSerializer(serializers.ModelSerializer):
 
 
 class PerformanceResourceSerializer(serializers.ModelSerializer):
+    recurso_detallado = ResourceSerializer(source='recurso', read_only=True)
+
     class Meta:
         model = QuantifiedResource
-        fields = ['recurso', 'cantidad']
+        fields = ['recurso', 'cantidad', 'recurso_detallado']
+        extra_kwargs = {
+            'recurso': {'write_only': True}
+        }
 
 
 class PerformanceTableSerializer(serializers.ModelSerializer):
     recursos_info = PerformanceResourceSerializer(
-        many=True, write_only=True)
+        source='quantifiedresource_set',
+        many=True)
 
     class Meta:
         model = PerformanceTable
@@ -30,54 +36,49 @@ class PerformanceTableSerializer(serializers.ModelSerializer):
             'recursos_info',
         ]
 
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        recursos = QuantifiedResource.objects.filter(
-            performance_table=instance)
-        response['recursos_info'] = [
-            {
-                'recurso': ResourceSerializer(qr.recurso).data,
-                'cantidad': qr.cantidad
-            }
-            for qr in recursos
-        ]
-        return response
-
     def create(self, validated_data):
-        recursos_data = validated_data.pop('recursos_info')
-        performance_table = PerformanceTable.objects.create(**validated_data)
+        recursos_data = validated_data.pop('quantifiedresource_set')
+        with transaction.atomic():
+            performance_table = PerformanceTable.objects.create(
+                **validated_data)
 
-        for item in recursos_data:
-            QuantifiedResource.objects.create(
-                performance_table=performance_table,
-                **item,
-            )
+            objs = [
+                QuantifiedResource(
+                    performance_table=performance_table,
+                    recurso=item['recurso'],
+                    cantidad=item['cantidad']
+                )
+                for item in recursos_data
+            ]
+            QuantifiedResource.objects.bulk_create(objs)
 
         return performance_table
 
     def update(self, instance, validated_data):
-        recursos_data = validated_data.pop('recursos_info', None)
+        recursos_data = validated_data.pop('quantifiedresource_set', None)
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+        with transaction.atomic():
+            # Actualizar campos de la tabla
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            instance.save()
 
-        if recursos_data is not None:
-            with transaction.atomic():
-                QuantifiedResource.objects.filter(
-                    performance_table=instance).delete()
-                for item in recursos_data:
-                    QuantifiedResource.objects.create(
+            if recursos_data is not None:
+                instance.quantifiedresource_set.all().delete()
+                recursos_objetos = [
+                    QuantifiedResource(
                         performance_table=instance,
-                        **item,
+                        recurso=item['recurso'],
+                        cantidad=item['cantidad']
                     )
+                    for item in recursos_data
+                ]
+                QuantifiedResource.objects.bulk_create(recursos_objetos)
 
         return instance
 
 
 class PerformanceTablePDFSerializer(serializers.ModelSerializer):
-    # Usamos el related_name por defecto o el nombre del modelo en minúscula + _set
-    # para traer los recursos con sus cantidades
     recursos_detallados = PerformanceResourceSerializer(
         source='quantifiedresource_set',
         many=True,
@@ -92,5 +93,5 @@ class PerformanceTablePDFSerializer(serializers.ModelSerializer):
             'actividad',
             'unidad',
             'categoria',
-            'recursos_detallados'
+            'recursos_info'
         ]

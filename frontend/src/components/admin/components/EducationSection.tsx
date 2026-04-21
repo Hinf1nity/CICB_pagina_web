@@ -8,22 +8,31 @@ import { type Incidencia } from "../../../validations/adminArancelesSchema";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from '../../ui/alert';
 import { Label } from "../../ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAdminIncidenciasPatch, useAdminIncidenciasPost, useAdminIncidenciasDelete } from "../../../hooks/useAdminAranceles";
 
 interface Props {
     initialData: Incidencia[];
 }
 
+interface EducationFormValues {
+    formacion: Incidencia[];
+}
+
 export const EducationSection = ({ initialData }: Props) => {
     const [isAddEducationOpen, setIsAddEducationOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const { mutate: patchIncidencia } = useAdminIncidenciasPatch();
-    const { mutate: postIncidencia } = useAdminIncidenciasPost();
-    const { mutate: deleteIncidencia } = useAdminIncidenciasDelete();
-    const { register, control, handleSubmit } = useForm({
+    const { mutate: patchIncidencia, isPending: isPatching } = useAdminIncidenciasPatch();
+    const { mutate: postIncidencia, isPending: isPosting } = useAdminIncidenciasPost();
+    const { mutate: deleteIncidencia, isPending: isDeleting } = useAdminIncidenciasDelete();
+    const { register, control, handleSubmit, reset: resetEducationForm } = useForm<EducationFormValues>({
         defaultValues: { formacion: initialData }
     });
+
+    useEffect(() => {
+        // Keep fields always aligned with the latest server data.
+        resetEducationForm({ formacion: initialData });
+    }, [initialData, resetEducationForm]);
 
     const { fields, remove, append } = useFieldArray({ control, name: "formacion" });
 
@@ -36,6 +45,7 @@ export const EducationSection = ({ initialData }: Props) => {
 
     const onSave = (data: any) => {
         if (data.formacion && data.formacion.length > 0) {
+            data.formacion[data.formacion.length - 1].id = initialData[initialData.length - 1].id;
             patchIncidencia({ oldData: initialData, data: data.formacion });
         }
     };
@@ -44,7 +54,7 @@ export const EducationSection = ({ initialData }: Props) => {
         setIsLoading(true);
         postIncidencia({ nombre: `form_${data.nombre}`, valor: data.valor }, {
             onSuccess: () => {
-                append({ id: Date.now(), nombre: `${data.nombre}`, valor: data.valor });
+                append({ id: initialData[initialData.length - 1]?.id + 1, nombre: `${data.nombre}`, valor: data.valor });
                 reset();
                 setIsAddEducationOpen(false);
             }
@@ -108,6 +118,7 @@ export const EducationSection = ({ initialData }: Props) => {
                                                     }
                                                 }}
                                                 className="bg-red-600 hover:bg-red-700"
+                                                disabled={isPatching || isPosting || isDeleting}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
@@ -118,18 +129,18 @@ export const EducationSection = ({ initialData }: Props) => {
                             </TableBody>
                         </Table>
                         <div className="mt-4 flex justify-end">
-                            <Button className="bg-[#0B3D2E] hover:bg-[#1B5E3A]" type="submit">
+                            <Button className="bg-[#0B3D2E] hover:bg-[#1B5E3A]" type="submit" disabled={isPatching || isPosting || isDeleting}>
                                 <Save className="w-4 h-4 mr-2" />
-                                Guardar Formación Académica
+                                {isPatching ? 'Guardando...' : 'Guardar Formación Académica'}
                             </Button>
                         </div>
                     </form>
                     <div className="mt-4">
                         <Dialog open={isAddEducationOpen} onOpenChange={setIsAddEducationOpen}>
                             <DialogTrigger asChild>
-                                <Button className="bg-[#3C8D50] hover:bg-[#1B5E3A]">
+                                <Button className="bg-[#3C8D50] hover:bg-[#1B5E3A]" disabled={isPosting || isPatching || isDeleting}>
                                     <Plus className="w-4 h-4 mr-2" />
-                                    Agregar Grado
+                                    {isPosting ? 'Agregando...' : 'Agregar Grado'}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
@@ -160,8 +171,8 @@ export const EducationSection = ({ initialData }: Props) => {
                                             <Input
                                                 id="educationMultiplier"
                                                 type="number"
-                                                step="0.1"
-                                                placeholder="Ej: 1.2"
+                                                step="0.01"
+                                                placeholder="Ej: 1.02"
                                                 {...registerNew("valor", { required: "El multiplicador es obligatorio", valueAsNumber: true, min: 0 })}
                                             />
                                             {errors.valor && (

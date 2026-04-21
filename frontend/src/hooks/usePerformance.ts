@@ -78,31 +78,41 @@ export function usePerformance(page: number = 1, search: string = '', category: 
         select: (data) => ({
             ...data,
             results: data.results.map(performance => {
-                const recursos_agrupados = performance.recursos_info.reduce((acc, ri) => {
+                const recursos_info = performance.recursos_info.map((ri) => {
+                    const recursoDetallado = (ri as typeof ri & { recurso_detallado?: Recurso | string }).recurso_detallado;
+                    if (!recursoDetallado) {
+                        return ri;
+                    }
+
+                    return {
+                        recurso: typeof recursoDetallado === 'object'
+                            ? {
+                                nombre: recursoDetallado.nombre || '',
+                                unidad: recursoDetallado.unidad || '',
+                                ...(recursoDetallado.id !== undefined && { id: recursoDetallado.id }),
+                                ...(recursoDetallado.categoria !== undefined && { categoria: recursoDetallado.categoria })
+                            }
+                            : recursoDetallado,
+                        cantidad: ri.cantidad
+                    };
+                });
+
+                const recursos_agrupados = recursos_info.reduce((acc, ri) => {
                     const cat = (typeof ri.recurso === 'object' ? ri.recurso.categoria : null) || "Sin categoría";
 
                     if (!acc[cat]) {
                         acc[cat] = [];
                     }
 
-                    // Al empujar 'ri', mantenemos el objeto que contiene {recurso, cantidad}
-                    acc[cat].push({
-                        ...ri,
-                        recurso: typeof ri.recurso === 'object'
-                            ? {
-                                nombre: ri.recurso.nombre || '',
-                                unidad: ri.recurso.unidad || '',
-                                ...(ri.recurso.id !== undefined && { id: ri.recurso.id })
-                            }
-                            : ri.recurso
-                    });
+                    acc[cat].push(ri);
 
                     return acc;
-                }, {} as Record<string, typeof performance.recursos_info>);
+                }, {} as Record<string, typeof recursos_info>);
 
                 return {
                     ...performance,
-                    recursos_agrupados // Ahora tienes los datos listos para iterar por categoría
+                    recursos_info,
+                    recursos_agrupados
                 };
             })
         }),

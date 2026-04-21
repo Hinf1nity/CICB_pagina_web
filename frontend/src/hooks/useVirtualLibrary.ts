@@ -147,7 +147,6 @@ export function useVirtualLibraryPost() {
             if (data.pdf) {
                 finalPdfId = await presignedUrlPost(data.pdf);
             }
-            console.log("Final PDF ID:", finalPdfId);
 
             const formData = new FormData();
             formData.append("titulo", data.titulo);

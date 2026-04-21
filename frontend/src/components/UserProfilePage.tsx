@@ -458,6 +458,7 @@ export function UserProfilePage() {
                                         <SelectItem value="construcción">Construcción</SelectItem>
                                         <SelectItem value="sanitaria">Sanitaria</SelectItem>
                                         <SelectItem value="transporte">Transporte</SelectItem>
+                                        <SelectItem value="carreteras">Carreteras</SelectItem>
                                         <SelectItem value="civil">Civil</SelectItem>
                                       </SelectContent>
                                     </Select>

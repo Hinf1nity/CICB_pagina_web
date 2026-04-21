@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";
 import { Input } from "../../ui/input";
@@ -17,15 +17,23 @@ interface Props {
 
 export const ActivitySection = ({ activitiesData }: Props) => {
     const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const { mutate: patchIncidencia } = useAdminIncidenciasPatch();
-    const { mutate: postIncidencia } = useAdminIncidenciasPost();
-    const { mutate: deleteIncidencia } = useAdminIncidenciasDelete();
-    const { register, control, handleSubmit } = useForm({
+    const { mutate: patchIncidencia, isPending: isPatching } = useAdminIncidenciasPatch();
+    const { mutate: postIncidencia, isPending: isPosting } = useAdminIncidenciasPost();
+    const { mutate: deleteIncidencia, isPending: isDeleting } = useAdminIncidenciasDelete();
+    const { register, control, handleSubmit, reset: resetActivityForm } = useForm({
         defaultValues: { actividades: activitiesData }
     });
+    useEffect(() => {
+        resetActivityForm({ actividades: activitiesData });
+    }, [activitiesData, resetActivityForm]);
 
     const { fields, remove, append } = useFieldArray({ control, name: "actividades" });
+    const { register: registerNew, handleSubmit: handleSubmitNew, formState: { errors: errorsNew }, reset } = useForm({
+        defaultValues: {
+            nombre: "",
+            valor: 0
+        }
+    });
     const onSave = (data: any) => {
         if (!data.actividades || data.actividades.length === 0) {
             return;
@@ -33,23 +41,14 @@ export const ActivitySection = ({ activitiesData }: Props) => {
         patchIncidencia({ oldData: activitiesData, data: data.actividades });
     };
 
-    const { register: registerNew, handleSubmit: handleSubmitNew, formState: { errors: errorsNew }, reset } = useForm({
-        defaultValues: {
-            nombre: "",
-            valor: 0
-        }
-    });
-
     const onAddActivity = (data: any) => {
-        setIsLoading(true);
         postIncidencia({ nombre: `actividad_${data.nombre}`, valor: data.valor }, {
             onSuccess: () => {
-                append({ id: Date.now(), nombre: data.nombre, valor: data.valor });
+                append({ id: activitiesData[activitiesData.length - 1]?.id + 1, nombre: data.nombre, valor: data.valor });
                 reset();
                 setIsAddActivityOpen(false);
             }
         });
-        setIsLoading(false);
     };
 
     const onDeleteActivity = (id: number) => {
@@ -116,9 +115,9 @@ export const ActivitySection = ({ activitiesData }: Props) => {
                                         <Button
                                             type="submit"
                                             className="bg-[#0B3D2E] hover:bg-[#1B5E3A]"
-                                            disabled={isLoading}
+                                            disabled={isPosting || isPatching || isDeleting}
                                         >
-                                            {isLoading ? "Guardando..." : "Agregar"}
+                                            {isPosting ? "Guardando..." : "Agregar"}
                                         </Button>
                                     </DialogFooter>
                                 </form>
@@ -170,6 +169,7 @@ export const ActivitySection = ({ activitiesData }: Props) => {
                                                     }
                                                 }}
                                                 className="bg-red-600 hover:bg-red-700"
+                                                disabled={isPosting || isPatching || isDeleting}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
@@ -185,9 +185,9 @@ export const ActivitySection = ({ activitiesData }: Props) => {
                             </div>
                         )}
                         <div className="mt-4 flex justify-end">
-                            <Button type="submit" className="bg-[#0B3D2E] hover:bg-[#1B5E3A]">
+                            <Button type="submit" className="bg-[#0B3D2E] hover:bg-[#1B5E3A]" disabled={isPatching || isPosting || isDeleting}>
                                 <Save className="w-4 h-4 mr-2" />
-                                Guardar Actividades
+                                {isPatching ? 'Guardando...' : 'Guardar Actividades'}
                             </Button>
                         </div>
                     </form>

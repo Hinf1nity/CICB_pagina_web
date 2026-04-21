@@ -11,12 +11,14 @@ interface CategoryFormProps {
     category: any;
     onDeleteCategory: (id: string) => void;
     onAddNewItem: any;
+    isDeletingCategory: boolean;
 }
 
-export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem }: CategoryFormProps) => {
+export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem, isDeletingCategory }: CategoryFormProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingSave, setIsLoadingSave] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     // Inicializamos el formulario con los niveles de esta categoría
     const { register, handleSubmit, getValues } = useForm({
         defaultValues: category
@@ -26,10 +28,7 @@ export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem }: Categ
     // se usaría useFieldArray, pero para edición directa la notación de puntos basta.
 
     const handlePrepareNewItem = async (data: any) => {
-        // 1. Clonamos la categoría actual para no mutar el estado directamente
-        const updatedCategory = getValues(); // Obtenemos los valores actuales del formulario
-
-        // 2. Buscamos si el nivel (complexityLevel) ya existe en esta categoría
+        const updatedCategory = getValues();
         const levelIndex = updatedCategory.niveles.findIndex(
             (n: any) => n.nombre === data.complexityLevel
         );
@@ -41,25 +40,20 @@ export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem }: Categ
         };
 
         if (levelIndex !== -1) {
-            // Si el nivel existe, añadimos el elemento al array existente
             updatedCategory.niveles[levelIndex].elementos.push(nuevoElemento);
         } else {
-            // Si el nivel no existe, creamos el nivel con el elemento dentro
             updatedCategory.niveles.push({
                 nombre: data.complexityLevel,
                 elementos: [nuevoElemento]
             });
         }
-
-        // 3. Enviamos el objeto completo al backend usando tu función onSave existente
-        // Esto activará el método .update() de tu serializer en Django
-        return await onAddNewItem(category.id, updatedCategory);
+        return await onAddNewItem({ catId: category.id, data: updatedCategory });
     };
 
     const handleSaveModifiedItem = async (data: any) => {
         try {
             setIsLoadingSave(true);
-            await onAddNewItem(category.id, data);
+            await onAddNewItem({ catId: category.id, data: data });
         }
         catch (error) {
             toast.error("Error al actualizar la categoría");
@@ -70,6 +64,7 @@ export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem }: Categ
     };
 
     const handleRemoveItemAndSave = async (levelIdx: number, itemIdx: number) => {
+        setIsDeleting(true);
         // 1. Obtenemos los datos actuales de los inputs
         const currentData = getValues();
 
@@ -83,10 +78,11 @@ export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem }: Categ
 
         // 4. Enviamos TODO al backend (esto disparará tu PATCH)
         try {
-            await onAddNewItem(category.id, currentData);
+            await onAddNewItem({ catId: category.id, data: currentData });
         } catch (error) {
             toast.error("Error al eliminar el ítem");
         }
+        setIsDeleting(false);
     };
 
     return (
@@ -106,8 +102,11 @@ export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem }: Categ
                         variant="destructive"
                         size="sm"
                         type="button"
-                        onClick={() => onDeleteCategory(category.id)}
+                        onClick={() => (
+                            onDeleteCategory(category.id)
+                        )}
                         className="bg-red-600 hover:bg-red-700"
+                        disabled={isDeletingCategory}
                     >
                         <Trash2 className="w-3 h-3 mr-1" />
                         Eliminar Categoría
@@ -176,6 +175,7 @@ export const CategoryForm = ({ category, onDeleteCategory, onAddNewItem }: Categ
                                                             }
                                                         }}
                                                         className="bg-red-600 hover:bg-red-700"
+                                                        disabled={isDeleting}
                                                     >
                                                         <Trash2 className="w-3 h-3" />
                                                     </Button>

@@ -22,7 +22,7 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = TwentyPerPagePagination
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['estado']
-    search_fields = ['nombre', 'rni', 'celular']
+    search_fields = ['nombre', 'rni', 'celular', 'rnic']
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create", "update", "partial_update", "destroy"]:

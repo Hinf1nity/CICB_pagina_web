@@ -201,7 +201,7 @@ export function useAdminCategoriasPatch() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ catId, data }: { catId: string; data: any }) => {
+        mutationFn: async ({ catId, data }: { catId: number; data: any }) => {
             const response = await api.patch(`aranceles/categorias-admin/${catId}/`, { json: data });
             return response.json();
         },
