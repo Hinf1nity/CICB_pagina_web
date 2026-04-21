@@ -1,10 +1,10 @@
 import csv
 import gc
-from django.db import transaction, connection
+from django.db import close_old_connections, transaction, connection
 from django.core.management.base import BaseCommand
 from django.contrib.auth.hashers import make_password
 from users.models import UsuarioComun, generate_unique_rnic
-from datetime import datetime
+from datetime import datetime, time
 
 
 class Command(BaseCommand):
@@ -104,11 +104,23 @@ class Command(BaseCommand):
                 "No se crearon nuevos usuarios."))
 
     def guardar_batch(self, lista_usuarios):
+        max_retries = 3
+        retry_count = 0
         """Función auxiliar para encapsular la transacción por batch"""
-        try:
-            with transaction.atomic():
-                UsuarioComun.objects.bulk_create(lista_usuarios)
-            connection.queries_log.clear()  # Limpiar el log de consultas para liberar memoria
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(
-                f"Error al insertar bloque: {e}"))
+        while retry_count < max_retries:
+            try:
+                close_old_connections()
+                with transaction.atomic():
+                    UsuarioComun.objects.bulk_create(lista_usuarios)
+                connection.queries_log.clear()  # Limpiar el log de consultas para liberar memoria
+                return  # Salir si la inserción fue exitosa
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(
+                    f"Error al insertar bloque: {e}"))
+                retry_count += 1
+                self.stdout.write(
+                    self.style.WARNING(f"Reintentando bloque (intento {retry_count}/{max_retries})..."))
+                time.sleep(5)  # Esperar un momento antes de reintentar
+
+        raise Exception(
+            f"Error persistente al insertar bloque después de {max_retries} intentos.")
